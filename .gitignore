@@ -1,0 +1,11 @@
+node_modules
+.pnpm-store
+Microsoft
+dist
+.DS_Store
+*.log
+.env.local
+.tmp
+dev
+test.ts
+test.js

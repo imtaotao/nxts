@@ -1,0 +1,41 @@
+{
+  "name": "nxts-workspace",
+  "version": "0.0.1-alpha.26e6c70",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "author": "chentao.arthur",
+  "description": "nxts monorepo.",
+  "scripts": {
+    "prepare": "husky",
+    "dev": "auk dev --workspace",
+    "build": "auk build --workspace",
+    "publish:alpha": "auk publish --workspace --version alpha --token env:NPM_TOKEN",
+    "publish:beta": "auk publish --workspace --version beta --token env:NPM_TOKEN",
+    "publish:patch": "auk publish --workspace --version patch --token env:NPM_TOKEN",
+    "publish:minor": "auk publish --workspace --version minor --token env:NPM_TOKEN",
+    "publish:major": "auk publish --workspace --version major --token env:NPM_TOKEN",
+    "test": "pnpm -r --if-present test",
+    "typecheck": "tsc -p . --noEmit --skipLibCheck",
+    "format": "prettier --write --ignore-unknown --ignore-path .gitignore \"**/*.{js,mjs,cjs,ts,tsx,json,md,css,html}\""
+  },
+  "lint-staged": {
+    "*.{js,mjs,cjs,ts,tsx,json,md,yaml,yml,css}": [
+      "prettier --write --ignore-unknown"
+    ]
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "tsx": "catalog:",
+    "husky": "catalog:",
+    "auklet": "catalog:",
+    "prettier": "catalog:",
+    "lint-staged": "catalog:",
+    "typescript": "catalog:"
+  },
+  "packageManager": "pnpm@10.27.0",
+  "engines": {
+    "node": ">=22",
+    "pnpm": "=10.27.0"
+  }
+}
