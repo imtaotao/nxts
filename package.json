@@ -9,6 +9,7 @@
   "scripts": {
     "prepare": "husky",
     "dev": "auk dev --workspace",
+    "dev:app": "pnpm --filter @nxts/app dev",
     "build": "auk build --workspace",
     "publish:alpha": "auk publish --workspace --version alpha --token env:NPM_TOKEN",
     "publish:beta": "auk publish --workspace --version beta --token env:NPM_TOKEN",

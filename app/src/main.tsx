@@ -1,0 +1,14 @@
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import { WillaShell } from "willa";
+import "willa/style.css";
+import "./index.css";
+import App from "./App.tsx";
+
+createRoot(document.getElementById("root")!).render(
+  <StrictMode>
+    <WillaShell theme="dark">
+      <App />
+    </WillaShell>
+  </StrictMode>,
+);

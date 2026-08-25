@@ -1,0 +1,35 @@
+{
+  "name": "@nxts/app",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@nxts/checker": "workspace:*",
+    "@nxts/cli": "workspace:*",
+    "@nxts/compiler": "workspace:*",
+    "@nxts/host-node": "workspace:*",
+    "@nxts/ir": "workspace:*",
+    "@nxts/llvm-backend": "workspace:*",
+    "@nxts/optimizer": "workspace:*",
+    "@nxts/parser": "workspace:*",
+    "@nxts/runtime": "workspace:*",
+    "aidly": "catalog:",
+    "willa": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:"
+  },
+  "devDependencies": {
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "globals": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:"
+  }
+}
