@@ -5,6 +5,7 @@ const code = `
   const y = 2;
   const z = x + y;
   console.log(z);
+  var a = 1;
 `;
 
 export function run() {
