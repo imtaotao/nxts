@@ -6,13 +6,13 @@ export function rejectNode(node: Node, code: string, messageId: string) {
     code,
     messageId,
     arguments: [],
+    phase: "parser",
+    severity: "error",
     primarySpan: {
-      start: node.start ?? 0,
-      end: node.end ?? 0,
       fileId: 0,
       sourceVersion: 0,
+      start: node.start ?? 0,
+      end: node.end ?? 0,
     },
-    severity: "error",
-    phase: "parser",
   } satisfies Diagnostic;
 }

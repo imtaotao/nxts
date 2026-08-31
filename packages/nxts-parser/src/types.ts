@@ -22,9 +22,15 @@ export type ParseFileResult = {
   diagnostics: Diagnostic[];
   nodes: Node[];
   nodeIds: WeakMap<Node, number>;
+  parents: WeakMap<Node, Node>;
+};
+
+export type RuleContext = {
+  parent: Node | null;
+  parents: WeakMap<Node, Node>;
 };
 
 export type Rule = {
   name: string;
-  check: (node: Node) => Diagnostic | null;
+  check: (node: Node, ctx: RuleContext) => Diagnostic | null;
 };

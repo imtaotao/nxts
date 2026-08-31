@@ -29,16 +29,17 @@ const diagnosticFromBabel = (e: {
 export function parseFile(code: string, sourceFilename: string) {
   try {
     const babelAst = babelParse(code, sourceFilename);
-    const { nodes, nodeIds } = assignNodeIds(babelAst);
+    const { nodes, nodeIds, parents } = assignNodeIds(babelAst);
     const diagnostics = [
       ...babelAst.errors.map(diagnosticFromBabel),
-      ...validate(nodes),
+      ...validate(nodes, parents),
     ];
 
     return {
       ast: babelAst,
       nodes,
       nodeIds,
+      parents,
       diagnostics,
       complete: diagnostics.length === 0,
     };
