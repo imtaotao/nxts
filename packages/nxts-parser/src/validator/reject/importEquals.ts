@@ -8,12 +8,12 @@ import { rejectNode } from "../rejectNode";
 
 export const importEqualsRule: Rule = {
   name: "importEquals",
-  check: (node) => {
+  check: (node, ctx) => {
     if (
       node.type === "TSImportEqualsDeclaration" ||
       node.type === "TSExportAssignment"
     ) {
-      return rejectNode(node, "NXT1001", "parser.importEquals");
+      return rejectNode(node, ctx, "NXT1001", "parser.importEquals");
     }
     return null;
   },

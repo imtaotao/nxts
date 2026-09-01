@@ -12,18 +12,18 @@ const bitwiseAssigns = new Set(["&=", "|=", "^=", "<<=", ">>=", ">>>="]);
 
 export const bitwiseRule: Rule = {
   name: "bitwise",
-  check: (node) => {
+  check: (node, ctx) => {
     if (
       (node.type === "BinaryExpression" || node.type === "UnaryExpression") &&
       bitwiseOps.has(node.operator)
     ) {
-      return rejectNode(node, "NXT1001", "parser.bitwise");
+      return rejectNode(node, ctx, "NXT1001", "parser.bitwise");
     }
     if (
       node.type === "AssignmentExpression" &&
       bitwiseAssigns.has(node.operator)
     ) {
-      return rejectNode(node, "NXT1001", "parser.bitwise");
+      return rejectNode(node, ctx, "NXT1001", "parser.bitwise");
     }
     return null;
   },

@@ -7,9 +7,9 @@ import { rejectNode } from "../rejectNode";
 
 export const objectKeywordRule: Rule = {
   name: "objectKeyword",
-  check: (node) => {
+  check: (node, ctx) => {
     if (node.type === "TSObjectKeyword") {
-      return rejectNode(node, "NXT1001", "parser.objectKeyword");
+      return rejectNode(node, ctx, "NXT1001", "parser.objectKeyword");
     }
     return null;
   },

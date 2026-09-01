@@ -1,7 +1,12 @@
 import type { Node } from "@babel/types";
-import type { Diagnostic } from "../types";
+import type { Diagnostic, RuleContext } from "../types";
 
-export function rejectNode(node: Node, code: string, messageId: string) {
+export function rejectNode(
+  node: Node,
+  ctx: RuleContext,
+  code: string,
+  messageId: string,
+) {
   return {
     code,
     messageId,
@@ -9,8 +14,8 @@ export function rejectNode(node: Node, code: string, messageId: string) {
     phase: "parser",
     severity: "error",
     primarySpan: {
-      fileId: 0,
-      sourceVersion: 0,
+      fileId: ctx.fileId,
+      sourceVersion: ctx.sourceVersion,
       start: node.start ?? 0,
       end: node.end ?? 0,
     },

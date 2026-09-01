@@ -43,13 +43,13 @@ const isDirectLiteral = (node: Node) => {
 
 export const asConstRule: Rule = {
   name: "asConst",
-  check: (node) => {
+  check: (node, ctx) => {
     if (
       node.type === "TSAsExpression" &&
       isConstType(node.typeAnnotation) &&
       !isDirectLiteral(node.expression)
     ) {
-      return rejectNode(node, "NXT1001", "parser.asConst");
+      return rejectNode(node, ctx, "NXT1001", "parser.asConst");
     }
     return null;
   },

@@ -8,14 +8,14 @@ import { rejectNode } from "../rejectNode";
 
 export const usingRule: Rule = {
   name: "using",
-  check: (node) => {
+  check: (node, ctx) => {
     if (node.type === "VariableDeclaration") {
       if (node.kind === "using" || node.kind === "await using") {
-        return rejectNode(node, "NXT1001", "parser.using");
+        return rejectNode(node, ctx, "NXT1001", "parser.using");
       }
     }
     if (node.type === "VoidPattern") {
-      return rejectNode(node, "NXT1001", "parser.using");
+      return rejectNode(node, ctx, "NXT1001", "parser.using");
     }
     return null;
   },

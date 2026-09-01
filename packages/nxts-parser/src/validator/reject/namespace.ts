@@ -8,9 +8,9 @@ import { rejectNode } from "../rejectNode";
 
 export const namespaceRule: Rule = {
   name: "namespace",
-  check: (node) => {
+  check: (node, ctx) => {
     if (node.type === "TSModuleDeclaration") {
-      return rejectNode(node, "NXT1001", "parser.namespace");
+      return rejectNode(node, ctx, "NXT1001", "parser.namespace");
     }
     return null;
   },

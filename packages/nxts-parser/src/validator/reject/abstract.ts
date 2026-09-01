@@ -8,9 +8,9 @@ import { rejectNode } from "../rejectNode";
 
 export const abstractRule: Rule = {
   name: "abstract",
-  check: (node) => {
+  check: (node, ctx) => {
     if ("abstract" in node && node.abstract === true) {
-      return rejectNode(node, "NXT1001", "parser.abstract");
+      return rejectNode(node, ctx, "NXT1001", "parser.abstract");
     }
     return null;
   },

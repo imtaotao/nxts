@@ -8,12 +8,12 @@ import { rejectNode } from "../rejectNode";
 
 export const arrayHoleRule: Rule = {
   name: "arrayHole",
-  check: (node) => {
+  check: (node, ctx) => {
     if (
       node.type === "ArrayExpression" &&
       node.elements.some((element) => element === null)
     ) {
-      return rejectNode(node, "NXT1001", "parser.arrayHole");
+      return rejectNode(node, ctx, "NXT1001", "parser.arrayHole");
     }
     return null;
   },

@@ -38,13 +38,13 @@ const hasRequiredAfterOptional = (params: Node[]) => {
 
 export const optionalOrderRule: Rule = {
   name: "optionalOrder",
-  check: (node) => {
+  check: (node, ctx) => {
     if (
       "params" in node &&
       isArray(node.params) &&
       hasRequiredAfterOptional(node.params)
     ) {
-      return rejectNode(node, "NXT1001", "parser.optionalOrder");
+      return rejectNode(node, ctx, "NXT1001", "parser.optionalOrder");
     }
     return null;
   },

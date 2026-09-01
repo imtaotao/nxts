@@ -21,7 +21,7 @@ export const constTypeParamRule: Rule = {
     }
     const owner = ctx.parents.get(list) ?? null;
     if (owner?.type === "TSInterfaceDeclaration") {
-      return rejectNode(node, "NXT1001", "parser.constTypeParam");
+      return rejectNode(node, ctx, "NXT1001", "parser.constTypeParam");
     }
     return null;
   },

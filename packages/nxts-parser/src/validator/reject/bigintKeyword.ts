@@ -7,9 +7,9 @@ import { rejectNode } from "../rejectNode";
 
 export const bigintKeywordRule: Rule = {
   name: "bigintKeyword",
-  check: (node) => {
+  check: (node, ctx) => {
     if (node.type === "TSBigIntKeyword") {
-      return rejectNode(node, "NXT1001", "parser.bigintKeyword");
+      return rejectNode(node, ctx, "NXT1001", "parser.bigintKeyword");
     }
     return null;
   },

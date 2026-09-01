@@ -7,9 +7,9 @@ import { rejectNode } from "../rejectNode";
 
 export const declareRule: Rule = {
   name: "declare",
-  check: (node) => {
+  check: (node, ctx) => {
     if ("declare" in node && node.declare === true) {
-      return rejectNode(node, "NXT1001", "parser.declare");
+      return rejectNode(node, ctx, "NXT1001", "parser.declare");
     }
     return null;
   },

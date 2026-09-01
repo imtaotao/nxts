@@ -5,11 +5,17 @@ import { rules } from "./rules";
 export function validate(
   nodes: Node[],
   parents: WeakMap<Node, Node> = new WeakMap(),
+  identity: { fileId: number; sourceVersion: number } = {
+    fileId: 0,
+    sourceVersion: 0,
+  },
 ) {
   const diagnostics = [];
   const ctx: RuleContext = {
     parent: null,
     parents,
+    fileId: identity.fileId,
+    sourceVersion: identity.sourceVersion,
   };
   for (const node of nodes) {
     ctx.parent = parents.get(node) ?? null;

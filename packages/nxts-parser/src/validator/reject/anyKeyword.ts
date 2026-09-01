@@ -7,9 +7,9 @@ import { rejectNode } from "../rejectNode";
 
 export const anyKeywordRule: Rule = {
   name: "anyKeyword",
-  check: (node) => {
+  check: (node, ctx) => {
     if (node.type === "TSAnyKeyword") {
-      return rejectNode(node, "NXT1003", "parser.any");
+      return rejectNode(node, ctx, "NXT1003", "parser.any");
     }
     return null;
   },

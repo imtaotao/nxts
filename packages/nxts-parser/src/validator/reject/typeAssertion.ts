@@ -7,9 +7,9 @@ import { rejectNode } from "../rejectNode";
 
 export const typeAssertionRule: Rule = {
   name: "typeAssertion",
-  check: (node) => {
+  check: (node, ctx) => {
     if (node.type === "TSTypeAssertion") {
-      return rejectNode(node, "NXT1001", "parser.typeAssertion");
+      return rejectNode(node, ctx, "NXT1001", "parser.typeAssertion");
     }
     return null;
   },

@@ -51,7 +51,7 @@ const isConcreteArrayRest = (node: Node) => {
 
 export const tupleRestRule: Rule = {
   name: "tupleRest",
-  check: (node) => {
+  check: (node, ctx) => {
     if (node.type !== "TSTupleType" || !isArray(node.elementTypes)) {
       return null;
     }
@@ -63,13 +63,13 @@ export const tupleRestRule: Rule = {
         if (isConcreteArrayRest(element)) {
           concreteRests += 1;
           if (concreteRests >= 2) {
-            return rejectNode(element, "NXT1001", "parser.tupleRest");
+            return rejectNode(element, ctx, "NXT1001", "parser.tupleRest");
           }
         }
         continue;
       }
       if (seenRest && isOptionalElement(element)) {
-        return rejectNode(element, "NXT1001", "parser.tupleRest");
+        return rejectNode(element, ctx, "NXT1001", "parser.tupleRest");
       }
     }
     return null;

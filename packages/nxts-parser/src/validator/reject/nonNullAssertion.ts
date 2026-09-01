@@ -7,9 +7,9 @@ import { rejectNode } from "../rejectNode";
 
 export const nonNullAssertionRule: Rule = {
   name: "nonNullAssertion",
-  check: (node) => {
+  check: (node, ctx) => {
     if (node.type === "TSNonNullExpression") {
-      return rejectNode(node, "NXT1001", "parser.nonNullAssertion");
+      return rejectNode(node, ctx, "NXT1001", "parser.nonNullAssertion");
     }
     return null;
   },

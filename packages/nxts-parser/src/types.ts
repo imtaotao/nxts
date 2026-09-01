@@ -1,4 +1,5 @@
 import type { File, Node } from "@babel/types";
+import type { SourceSnapshot } from "./snapshot";
 
 export type SourceSpan = {
   start: number;
@@ -18,6 +19,7 @@ export type Diagnostic = {
 
 export type ParseFileResult = {
   ast: File | null;
+  snapshot: SourceSnapshot;
   complete: boolean;
   diagnostics: Diagnostic[];
   nodes: Node[];
@@ -28,6 +30,8 @@ export type ParseFileResult = {
 export type RuleContext = {
   parent: Node | null;
   parents: WeakMap<Node, Node>;
+  fileId: number;
+  sourceVersion: number;
 };
 
 export type Rule = {

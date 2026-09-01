@@ -10,13 +10,13 @@ import { rejectNode } from "../rejectNode";
 
 export const accessorTypeParamsRule: Rule = {
   name: "accessorTypeParams",
-  check: (node) => {
+  check: (node, ctx) => {
     if (
       (node.type === "ClassMethod" || node.type === "ClassPrivateMethod") &&
       (node.kind === "get" || node.kind === "set") &&
       node.typeParameters
     ) {
-      return rejectNode(node, "NXT1001", "parser.accessorTypeParams");
+      return rejectNode(node, ctx, "NXT1001", "parser.accessorTypeParams");
     }
     return null;
   },

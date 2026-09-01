@@ -7,9 +7,9 @@ import { rejectNode } from "../rejectNode";
 
 export const taggedTemplateRule: Rule = {
   name: "taggedTemplate",
-  check: (node) => {
+  check: (node, ctx) => {
     if (node.type === "TaggedTemplateExpression") {
-      return rejectNode(node, "NXT1001", "parser.taggedTemplate");
+      return rejectNode(node, ctx, "NXT1001", "parser.taggedTemplate");
     }
     return null;
   },

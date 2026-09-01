@@ -7,9 +7,9 @@ import { rejectNode } from "../rejectNode";
 
 export const overrideRule: Rule = {
   name: "override",
-  check: (node) => {
+  check: (node, ctx) => {
     if ("override" in node && node.override === true) {
-      return rejectNode(node, "NXT1001", "parser.override");
+      return rejectNode(node, ctx, "NXT1001", "parser.override");
     }
     return null;
   },

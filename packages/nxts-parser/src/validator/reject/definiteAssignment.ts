@@ -7,14 +7,14 @@ import { rejectNode } from "../rejectNode";
 
 export const definiteAssignmentRule: Rule = {
   name: "definiteAssignment",
-  check: (node) => {
+  check: (node, ctx) => {
     if (
       (node.type === "ClassProperty" ||
         node.type === "ClassPrivateProperty" ||
         node.type === "ClassAccessorProperty") &&
       node.definite === true
     ) {
-      return rejectNode(node, "NXT1001", "parser.definiteAssignment");
+      return rejectNode(node, ctx, "NXT1001", "parser.definiteAssignment");
     }
     return null;
   },

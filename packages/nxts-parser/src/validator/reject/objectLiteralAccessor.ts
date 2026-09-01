@@ -8,12 +8,12 @@ import { rejectNode } from "../rejectNode";
 
 export const objectLiteralAccessorRule: Rule = {
   name: "objectLiteralAccessor",
-  check: (node) => {
+  check: (node, ctx) => {
     if (
       node.type === "ObjectMethod" &&
       (node.kind === "get" || node.kind === "set")
     ) {
-      return rejectNode(node, "NXT1001", "parser.objectLiteralAccessor");
+      return rejectNode(node, ctx, "NXT1001", "parser.objectLiteralAccessor");
     }
     return null;
   },

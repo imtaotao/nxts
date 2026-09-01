@@ -8,12 +8,12 @@ import type { Rule } from "../../types";
 
 export const eqeqRule: Rule = {
   name: "eqeq",
-  check: (node) => {
+  check: (node, ctx) => {
     if (
       node.type === "BinaryExpression" &&
       (node.operator === "==" || node.operator === "!=")
     ) {
-      return rejectNode(node, "NXT1001", "parser.eqeq");
+      return rejectNode(node, ctx, "NXT1001", "parser.eqeq");
     }
     return null;
   },
