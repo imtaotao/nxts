@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@nxts/binder": "workspace:*",
     "@nxts/checker": "workspace:*",
     "@nxts/cli": "workspace:*",
     "@nxts/compiler": "workspace:*",

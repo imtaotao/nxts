@@ -1,6 +1,6 @@
 {
   "name": "@nxts/runtime",
-  "version": "0.0.4-alpha.26e6c70",
+  "version": "0.0.1",
   "description": "Native runtime and memory management support for Nxts programs.",
   "author": "chentao.arthur",
   "license": "MIT",

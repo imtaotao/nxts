@@ -1,6 +1,6 @@
 {
   "name": "@nxts/llvm-backend",
-  "version": "0.0.4-alpha.26e6c70",
+  "version": "0.0.1",
   "description": "LLVM backend and code generation for Nxts.",
   "author": "chentao.arthur",
   "license": "MIT",

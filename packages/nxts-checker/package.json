@@ -1,7 +1,7 @@
 {
   "name": "@nxts/checker",
-  "version": "0.0.4-alpha.26e6c70",
-  "description": "Name resolution, type checking, and flow analysis for Nxts.",
+  "version": "0.0.1",
+  "description": "Type checking and flow analysis for Nxts.",
   "author": "chentao.arthur",
   "license": "MIT",
   "scripts": {
@@ -30,7 +30,9 @@
     "dist"
   ],
   "dependencies": {
+    "@nxts/binder": "workspace:*",
     "@nxts/parser": "workspace:*",
+    "@babel/types": "catalog:",
     "aidly": "catalog:"
   },
   "devDependencies": {

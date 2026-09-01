@@ -1,6 +1,6 @@
 import { validate } from "./validator";
-import { babelParse } from "./babelParse";
-import { assignNodeIds } from "./assignNodeIds";
+import { babelParse } from "./babel";
+import { assignNodeIds } from "./nodeIds";
 import { diagnosticFromBabel } from "./diagnostics/babel";
 import { finalizeDiagnostics } from "./diagnostics/finalize";
 import type { SourceSnapshot } from "./snapshot";
@@ -11,7 +11,9 @@ export function parseFile(snapshot: SourceSnapshot) {
     const assigned = assignNodeIds(babelAst, snapshot);
     const finalized = finalizeDiagnostics(
       [
-        ...babelAst.errors.map((error) => diagnosticFromBabel(error, snapshot)),
+        ...babelAst.errors.map((error: unknown) =>
+          diagnosticFromBabel(error, snapshot),
+        ),
         ...assigned.diagnostics,
         ...validate(assigned.nodes, assigned.parents, snapshot),
       ],

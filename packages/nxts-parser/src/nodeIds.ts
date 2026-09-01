@@ -1,6 +1,5 @@
 import { isArray } from "aidly";
-import { VISITOR_KEYS, isNode } from "@babel/types";
-import type { Node } from "@babel/types";
+import { VISITOR_KEYS, isNode, type Node } from "@babel/types";
 import { createDiagnostic, type MessageId } from "./diagnostics/catalog";
 import type { SourceSnapshot } from "./snapshot";
 import type { Diagnostic } from "./types";

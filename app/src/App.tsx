@@ -12,7 +12,38 @@ import {
 } from "willa";
 import { run } from "./lib/index.ts";
 
-const DEFAULT_SOURCE = `const n: bigint = 1 as never;
+const DEFAULT_SOURCE = `const n: number = 1;
+
+function f(items: number[]): number {
+  const add = (a: number) => a + n;
+  const { head } = { head: n };
+
+  switch (n) {
+    case 1:
+      let m: number = add(head);
+      return m;
+    default:
+      break;
+  }
+
+  try {
+    throw n;
+  } catch (e) {
+    loop: for (const item of items) {
+      if (item === n) {
+        break loop;
+      }
+    }
+    return e;
+  }
+}
+
+function usedBeforeDecl(): number {
+  return later();
+  function later(): number {
+    return n;
+  }
+}
 `;
 
 type RunStatus = {
@@ -20,11 +51,11 @@ type RunStatus = {
   diagnosticCount: number;
 };
 
-const parseSource = async (source: string) => {
+const bindSource = async (source: string) => {
   const result = await run(source);
   console.log(result);
   return {
-    complete: result.complete,
+    complete: result.diagnostics.length === 0,
     diagnosticCount: result.diagnostics.length,
   };
 };
@@ -37,7 +68,7 @@ export default function App() {
   const execute = useCallback(async (text: string) => {
     setRunning(true);
     try {
-      setStatus(await parseSource(text));
+      setStatus(await bindSource(text));
     } catch (error) {
       console.error(error);
       setStatus({
@@ -60,7 +91,7 @@ export default function App() {
           divided
           eyebrow="Nxts Playground"
           title="源码"
-          description="在这里改代码后解析。结果打到浏览器控制台。"
+          description="在这里改代码后绑定。结果打到浏览器控制台。"
           meta={
             <Badge
               tone={
@@ -94,7 +125,7 @@ export default function App() {
                   void execute(source);
                 }}
               >
-                解析
+                绑定
               </Button>
             </Group>
           }
@@ -103,7 +134,7 @@ export default function App() {
             className="app-source"
             spellCheck={false}
             resize="vertical"
-            rows={22}
+            rows={32}
             width="100%"
             value={source}
             onChange={(event) => {

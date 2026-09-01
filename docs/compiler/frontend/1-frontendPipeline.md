@@ -2,7 +2,7 @@
 
 - 规范状态：已定稿
 - 实现状态：未实现
-- 最后更新：2026-07-28
+- 最后更新：2026-09-01
 - 文档顺序：1
 
 ## 目标与边界
@@ -58,13 +58,14 @@ Checked HIR 构建与验证
 | 包               | 前端职责                                                                                  |
 | ---------------- | ----------------------------------------------------------------------------------------- |
 | `@nxts/parser`   | 调用 Babel、验证 AST 输入契约、分配 NodeId、执行 Nxts 语法子集验证。                      |
-| `@nxts/checker`  | 建立作用域与符号、执行类型检查、常量求值、控制流和副作用分析，输出完整语义侧表。          |
+| `@nxts/binder`   | 建立作用域与符号，解析声明与引用，输出绑定侧表。不检查类型，不分析控制流。                |
+| `@nxts/checker`  | 消费绑定侧表，执行类型检查、常量求值、控制流和副作用分析，输出完整语义侧表。              |
 | `@nxts/ir`       | 定义 Checked HIR 数据结构、构建约束和验证器，不依赖 Babel AST 节点形状。                  |
 | `@nxts/compiler` | 组织文件与模块、调度各阶段、汇总诊断，并在检查成功后根据 AST 与语义侧表构建 Checked HIR。 |
 
-依赖必须保持单向：parser 不依赖 checker、IR、优化器或后端；checker 不依赖优化器、后端、LLVM 或 runtime。标准库 intrinsic 必须在名称绑定后按符号身份识别，parser 不能按源码名称识别。
+依赖必须保持单向：parser 不依赖 binder、checker、IR、优化器或后端；binder 不依赖 checker、IR、优化器或后端；checker 依赖 binder，不依赖优化器、后端、LLVM 或 runtime。标准库 intrinsic 必须在名称绑定后按符号身份识别；parser 不能按源码名称识别，binder 不判定 intrinsic 语义。
 
-Checked HIR 构建不属于 checker。该阶段由 `@nxts/compiler` 调度，消费无编译错误的 Babel AST 和完整语义侧表，并使用 `@nxts/ir` 提供的数据结构与验证器。类型分析 API 因此不需要构建 HIR，也不依赖后端编译流程。
+名称绑定由 `@nxts/binder` 完成，不属于 checker。Checked HIR 构建不属于 checker。该阶段由 `@nxts/compiler` 调度，消费无编译错误的 Babel AST 和完整语义侧表，并使用 `@nxts/ir` 提供的数据结构与验证器。类型分析 API 因此不需要构建 HIR，也不依赖后端编译流程。
 
 ## AST 与语义侧表
 
@@ -78,7 +79,7 @@ Checked HIR 构建不属于 checker。该阶段由 `@nxts/compiler` 调度，消
 | 收窄与可达性   | 控制流分析       | Checker、Checked HIR       |
 | 内建能力身份   | Binder / Checker | Checked HIR、后续 lowering |
 
-不得把 TypeId、SymbolId、运行时布局或 lowering 标记写入 Babel 节点的自定义属性。具体侧表结构由 checker 语义模型定义。
+不得把 TypeId、SymbolId、运行时布局或 lowering 标记写入 Babel 节点的自定义属性。绑定侧表由名称绑定规范定义；类型与控制流侧表由 checker 语义模型定义。
 
 ### NodeId 生命周期
 
@@ -128,7 +129,7 @@ Babel 能形成可恢复 AST 时，前端按无效子树隔离错误：
 
 单文件存在导入时必须通过完整程序入口解析依赖，不能假设外部符号存在或忽略未解析模块。语义查询基于一次检查产生的不可变结果，按 NodeId 提供类型、符号、常量、控制流事实和诊断，不依赖进程级可变全局状态。
 
-具体 API 名称、参数、取消机制和结果数据结构分别由 Babel AST 契约、源码与诊断规范及 checker 语义模型定义。
+具体 API 名称、参数、取消机制和结果数据结构分别由 Babel AST 契约、源码与诊断规范、名称绑定规范及 checker 语义模型定义。
 
 ## 性能约束
 

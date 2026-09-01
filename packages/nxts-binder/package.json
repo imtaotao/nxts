@@ -1,7 +1,7 @@
 {
-  "name": "@nxts/cli",
+  "name": "@nxts/binder",
   "version": "0.0.1",
-  "description": "Command-line interface for the Nxts compiler toolchain.",
+  "description": "Name binding and symbol tables for Nxts.",
   "author": "chentao.arthur",
   "license": "MIT",
   "scripts": {
@@ -30,6 +30,8 @@
     "dist"
   ],
   "dependencies": {
+    "@nxts/parser": "workspace:*",
+    "@babel/types": "catalog:",
     "aidly": "catalog:"
   },
   "devDependencies": {

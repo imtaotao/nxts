@@ -1,6 +1,6 @@
 {
   "name": "@nxts/host-node",
-  "version": "0.0.4-alpha.26e6c70",
+  "version": "0.0.1",
   "description": "Host system abstractions for the Nxts compiler toolchain.",
   "author": "chentao.arthur",
   "license": "MIT",

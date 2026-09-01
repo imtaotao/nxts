@@ -1,7 +1,7 @@
 import type { Node } from "@babel/types";
 import { describe, expect, it } from "vitest";
-import { assignNodeIds } from "../assignNodeIds";
-import { babelParse } from "../babelParse";
+import { assignNodeIds } from "../nodeIds";
+import { babelParse } from "../babel";
 import { snapshotFromText } from "./utils";
 
 const asNode = (node: object) => node as Node;

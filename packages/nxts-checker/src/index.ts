@@ -1,1 +1,1 @@
-console.log("nxts-shared loaded");
+console.log("nxts-checker loaded");

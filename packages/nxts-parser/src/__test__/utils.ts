@@ -1,5 +1,5 @@
-import { assignNodeIds } from "../assignNodeIds";
-import { babelParse } from "../babelParse";
+import { assignNodeIds } from "../nodeIds";
+import { babelParse } from "../babel";
 import { parseFile } from "../index";
 import { createSnapshot } from "../snapshot";
 import { validate } from "../validator/index";
