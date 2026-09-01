@@ -20,14 +20,17 @@ export function snapshotFromText(
   });
 }
 
-export function messageIds(code: string) {
-  const ast = babelParse(code, "test.ts");
-  const { nodes, parents } = assignNodeIds(ast);
-  return validate(nodes, parents).map((diagnostic) => diagnostic.messageId);
+export async function messageIds(code: string) {
+  const snapshot = await snapshotFromText(code);
+  const ast = babelParse(code, snapshot.displayPath);
+  const { nodes, parents } = assignNodeIds(ast, snapshot);
+  return validate(nodes, parents, snapshot).map(
+    (diagnostic) => diagnostic.messageId,
+  );
 }
 
-export function parseMessageIds(code: string) {
-  return parseFile(snapshotFromText(code)).diagnostics.map(
+export async function parseMessageIds(code: string) {
+  return parseFile(await snapshotFromText(code)).diagnostics.map(
     (diagnostic) => diagnostic.messageId,
   );
 }

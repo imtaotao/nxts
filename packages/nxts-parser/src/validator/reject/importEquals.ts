@@ -13,7 +13,7 @@ export const importEqualsRule: Rule = {
       node.type === "TSImportEqualsDeclaration" ||
       node.type === "TSExportAssignment"
     ) {
-      return rejectNode(node, ctx, "NXT1001", "parser.importEquals");
+      return rejectNode(node, ctx, "parser.importEquals");
     }
     return null;
   },

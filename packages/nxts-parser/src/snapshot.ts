@@ -3,7 +3,19 @@
 // createSnapshot 只做：UTF-8、BOM、text、哈希、行表。
 // 读盘、路径规范、按路径发号，不放这里。
 
-import { createHash } from "node:crypto";
+const bytesToHex = (bytes: Uint8Array) => {
+  let hex = "";
+  for (const byte of bytes) {
+    hex += byte.toString(16).padStart(2, "0");
+  }
+  return hex;
+};
+
+const sha256Hex = async (bytes: Uint8Array) => {
+  const copy = bytes.slice();
+  const digest = await crypto.subtle.digest("SHA-256", copy.buffer);
+  return bytesToHex(new Uint8Array(digest));
+};
 
 export type SourceSnapshot = {
   fileId: number;
@@ -32,10 +44,6 @@ const hasUtf8Bom = (utf8: Uint8Array) => {
   );
 };
 
-const sha256Hex = (bytes: Uint8Array) => {
-  return createHash("sha256").update(bytes).digest("hex");
-};
-
 const buildLineStarts = (text: string) => {
   const starts = [0];
   for (let i = 0; i < text.length; i++) {
@@ -52,7 +60,7 @@ const buildLineStarts = (text: string) => {
   return starts;
 };
 
-export function createSnapshot(input: CreateSnapshotInput) {
+export async function createSnapshot(input: CreateSnapshotInput) {
   const hadBom = hasUtf8Bom(input.utf8);
   const bytes = hadBom ? input.utf8.subarray(3) : input.utf8;
   const text = utf8Decoder.decode(bytes);
@@ -63,7 +71,7 @@ export function createSnapshot(input: CreateSnapshotInput) {
     sourceVersion: input.sourceVersion ?? 0,
     canonicalPath: input.canonicalPath,
     displayPath: input.displayPath ?? input.canonicalPath,
-    contentHash: sha256Hex(bytes),
+    contentHash: await sha256Hex(bytes),
     lineStarts: buildLineStarts(text),
   };
 }

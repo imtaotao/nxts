@@ -1,56 +1,47 @@
+import { validate } from "./validator";
 import { babelParse } from "./babelParse";
 import { assignNodeIds } from "./assignNodeIds";
+import { diagnosticFromBabel } from "./diagnostics/babel";
+import { finalizeDiagnostics } from "./diagnostics/finalize";
 import type { SourceSnapshot } from "./snapshot";
-import type { Diagnostic, SourceSpan } from "./types";
-import { validate } from "./validator/index";
 
 export function parseFile(snapshot: SourceSnapshot) {
-  const spanFrom = (start: number, end = start): SourceSpan => ({
-    start,
-    end,
-    fileId: snapshot.fileId,
-    sourceVersion: snapshot.sourceVersion,
-  });
-
-  const diagnosticFromBabel = (e: {
-    message: string;
-    loc?: { index?: number };
-  }) => {
-    return {
-      code: "NXT1000",
-      phase: "parser",
-      severity: "error",
-      messageId: "parser.babel",
-      arguments: [e.message],
-      primarySpan: spanFrom(e.loc?.index ?? 0),
-    } as Diagnostic;
-  };
-
   try {
     const babelAst = babelParse(snapshot.text, snapshot.displayPath);
-    const { nodes, nodeIds, parents } = assignNodeIds(babelAst);
-    const diagnostics = [
-      ...babelAst.errors.map(diagnosticFromBabel),
-      ...validate(nodes, parents, snapshot),
-    ];
+    const assigned = assignNodeIds(babelAst, snapshot);
+    const finalized = finalizeDiagnostics(
+      [
+        ...babelAst.errors.map((error) => diagnosticFromBabel(error, snapshot)),
+        ...assigned.diagnostics,
+        ...validate(assigned.nodes, assigned.parents, snapshot),
+      ],
+      snapshot,
+    );
 
     return {
       ast: babelAst,
       snapshot,
-      nodes,
-      nodeIds,
-      parents,
-      diagnostics,
-      complete: diagnostics.length === 0,
+      nodes: assigned.nodes,
+      nodeIds: assigned.nodeIds,
+      parents: assigned.parents,
+      invalidNodes: assigned.invalidNodes,
+      diagnostics: finalized.diagnostics,
+      diagnosticsTruncated: finalized.diagnosticsTruncated,
+      complete:
+        finalized.diagnostics.length === 0 && !finalized.diagnosticsTruncated,
     };
   } catch (e) {
-    const message = e instanceof Error ? e.message : String(e);
+    const finalized = finalizeDiagnostics(
+      [diagnosticFromBabel(e, snapshot)],
+      snapshot,
+    );
     return {
       ast: null,
       snapshot,
       complete: false,
-      diagnostics: [diagnosticFromBabel({ message })],
-      ...assignNodeIds(null),
+      diagnosticsTruncated: finalized.diagnosticsTruncated,
+      ...assignNodeIds(null, snapshot),
+      diagnostics: finalized.diagnostics,
     };
   }
 }

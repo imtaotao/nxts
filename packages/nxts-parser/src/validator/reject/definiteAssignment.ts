@@ -14,7 +14,7 @@ export const definiteAssignmentRule: Rule = {
         node.type === "ClassAccessorProperty") &&
       node.definite === true
     ) {
-      return rejectNode(node, ctx, "NXT1001", "parser.definiteAssignment");
+      return rejectNode(node, ctx, "parser.definiteAssignment");
     }
     return null;
   },

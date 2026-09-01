@@ -43,10 +43,10 @@ export const newTargetRule: Rule = {
         continue;
       }
       if (current.type === "StaticBlock" || isFunctionBoundary(current)) {
-        return rejectNode(node, ctx, "NXT1001", "parser.newTarget");
+        return rejectNode(node, ctx, "parser.newTarget");
       }
       current = ctx.parents.get(current) ?? null;
     }
-    return rejectNode(node, ctx, "NXT1001", "parser.newTarget");
+    return rejectNode(node, ctx, "parser.newTarget");
   },
 };

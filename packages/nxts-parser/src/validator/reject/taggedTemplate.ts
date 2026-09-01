@@ -9,7 +9,7 @@ export const taggedTemplateRule: Rule = {
   name: "taggedTemplate",
   check: (node, ctx) => {
     if (node.type === "TaggedTemplateExpression") {
-      return rejectNode(node, ctx, "NXT1001", "parser.taggedTemplate");
+      return rejectNode(node, ctx, "parser.taggedTemplate");
     }
     return null;
   },

@@ -1,23 +1,12 @@
 import type { Node } from "@babel/types";
-import type { Diagnostic, RuleContext } from "../types";
+import { createDiagnostic, type MessageId } from "../diagnostics/catalog";
+import type { RuleContext } from "../types";
 
-export function rejectNode(
-  node: Node,
-  ctx: RuleContext,
-  code: string,
-  messageId: string,
-) {
-  return {
-    code,
-    messageId,
-    arguments: [],
-    phase: "parser",
-    severity: "error",
-    primarySpan: {
-      fileId: ctx.fileId,
-      sourceVersion: ctx.sourceVersion,
-      start: node.start ?? 0,
-      end: node.end ?? 0,
-    },
-  } satisfies Diagnostic;
+export function rejectNode(node: Node, ctx: RuleContext, messageId: MessageId) {
+  return createDiagnostic(messageId, {
+    fileId: ctx.fileId,
+    sourceVersion: ctx.sourceVersion,
+    start: node.start ?? 0,
+    end: node.end ?? 0,
+  });
 }

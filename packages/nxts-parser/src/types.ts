@@ -21,10 +21,12 @@ export type ParseFileResult = {
   ast: File | null;
   snapshot: SourceSnapshot;
   complete: boolean;
+  diagnosticsTruncated: boolean;
   diagnostics: Diagnostic[];
   nodes: Node[];
   nodeIds: WeakMap<Node, number>;
   parents: WeakMap<Node, Node>;
+  invalidNodes: Set<Node>;
 };
 
 export type RuleContext = {

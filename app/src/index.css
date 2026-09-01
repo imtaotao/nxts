@@ -11,142 +11,15 @@ body {
   font-family: var(--willa-body-font, system-ui, sans-serif);
 }
 
-.app-scroll {
-  max-height: min(36rem, calc(100svh - 220px));
-  overflow: auto;
-}
-
-.console,
-.console-stack {
-  margin: 0;
+.app-source,
+.app-source textarea {
+  min-height: min(36rem, calc(100svh - 240px));
   font:
     13px/20px Menlo,
     Monaco,
     Consolas,
     "Liberation Mono",
     monospace;
-}
-
-.console-line {
-  display: flex;
-  align-items: center;
-  flex-wrap: nowrap;
-  width: 100%;
-  min-height: 20px;
-  padding: 1px 6px 1px 0;
-  border: 0;
-  border-radius: 4px;
-  color: inherit;
-  background: transparent;
-  text-align: left;
-  white-space: nowrap;
-  overflow: hidden;
-  user-select: text;
-}
-
-.console-line.is-toggle {
-  cursor: pointer;
-}
-
-.console-line:hover {
-  background: rgba(255, 255, 255, 0.045);
-}
-
-.console-arrow {
-  display: inline-flex;
-  flex: 0 0 10px;
-  align-items: center;
-  justify-content: center;
-  width: 10px;
-  height: 12px;
-  margin-right: 2px;
-  color: #9aa0a6;
-  font-size: 10px;
-  line-height: 1;
-  transform-origin: 50% 50%;
-}
-
-.console-arrow::before {
-  content: "▸";
-}
-
-.console-arrow.is-open {
-  transform: rotate(90deg);
-}
-
-.console-arrow.is-placeholder {
-  visibility: hidden;
-}
-
-.console-children {
-  margin-left: 12px;
-}
-
-.console-key {
-  color: #8eb6ff;
-  font-weight: 600;
-}
-
-.console-preview-key {
-  color: #7d8490;
-  font-weight: 400;
-}
-
-.console-colon {
-  padding-inline-end: 0.35em;
-  color: #9aa0a6;
-  font-weight: 400;
-}
-
-.console-type {
-  color: #8b929c;
-  font-size: 11px;
-  font-style: italic;
-  font-weight: 400;
-}
-
-.console-line > .console-type {
-  margin-right: 0.35em;
-}
-
-.console-string {
-  color: #7ec8e3;
-}
-
-.console-number {
-  color: #c9a0ff;
-}
-
-.console-keyword,
-.console-symbol {
-  color: #9aa0a6;
-}
-
-.console-text,
-.console-fn {
-  color: var(--willa-text-strong, #e8eaed);
-}
-
-.console-muted {
-  color: #9aa0a6;
-}
-
-.console-preview {
-  flex: 1 1 auto;
-  min-width: 0;
-  overflow: hidden;
-  color: #9aa0a6;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.console-loc {
-  color: #80c6ff;
-}
-
-.console-stack-line {
-  white-space: pre-wrap;
-  word-break: break-all;
 }
 
 .willa-page-header-heading {

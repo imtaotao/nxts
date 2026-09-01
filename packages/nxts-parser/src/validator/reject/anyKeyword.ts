@@ -9,7 +9,7 @@ export const anyKeywordRule: Rule = {
   name: "anyKeyword",
   check: (node, ctx) => {
     if (node.type === "TSAnyKeyword") {
-      return rejectNode(node, ctx, "NXT1003", "parser.any");
+      return rejectNode(node, ctx, "parser.any");
     }
     return null;
   },

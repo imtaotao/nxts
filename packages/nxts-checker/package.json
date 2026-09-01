@@ -30,6 +30,7 @@
     "dist"
   ],
   "dependencies": {
+    "@nxts/parser": "workspace:*",
     "aidly": "catalog:"
   },
   "devDependencies": {

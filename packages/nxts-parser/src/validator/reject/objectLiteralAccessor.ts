@@ -13,7 +13,7 @@ export const objectLiteralAccessorRule: Rule = {
       node.type === "ObjectMethod" &&
       (node.kind === "get" || node.kind === "set")
     ) {
-      return rejectNode(node, ctx, "NXT1001", "parser.objectLiteralAccessor");
+      return rejectNode(node, ctx, "parser.objectLiteralAccessor");
     }
     return null;
   },

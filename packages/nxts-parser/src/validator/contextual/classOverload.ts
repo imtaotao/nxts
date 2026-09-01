@@ -83,26 +83,26 @@ export const classOverloadRule: Rule = {
     }
     const parent = ctx.parent;
     if (parent?.type !== "ClassBody" || !isArray(parent.body)) {
-      return rejectNode(node, ctx, "NXT1001", "parser.classOverload");
+      return rejectNode(node, ctx, "parser.classOverload");
     }
     const current = readMember(node);
     if (current == null) {
-      return rejectNode(node, ctx, "NXT1001", "parser.classOverload");
+      return rejectNode(node, ctx, "parser.classOverload");
     }
     const body = parent.body as Node[];
     const index = body.indexOf(node);
     if (index < 0) {
-      return rejectNode(node, ctx, "NXT1001", "parser.classOverload");
+      return rejectNode(node, ctx, "parser.classOverload");
     }
     for (let i = index + 1; i < body.length; i++) {
       const next = readMember(body[i]);
       if (next == null || !sameGroup(current, next)) {
-        return rejectNode(node, ctx, "NXT1001", "parser.classOverload");
+        return rejectNode(node, ctx, "parser.classOverload");
       }
       if (next.impl) {
         return null;
       }
     }
-    return rejectNode(node, ctx, "NXT1001", "parser.classOverload");
+    return rejectNode(node, ctx, "parser.classOverload");
   },
 };

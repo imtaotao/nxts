@@ -10,7 +10,7 @@ export const abstractRule: Rule = {
   name: "abstract",
   check: (node, ctx) => {
     if ("abstract" in node && node.abstract === true) {
-      return rejectNode(node, ctx, "NXT1001", "parser.abstract");
+      return rejectNode(node, ctx, "parser.abstract");
     }
     return null;
   },

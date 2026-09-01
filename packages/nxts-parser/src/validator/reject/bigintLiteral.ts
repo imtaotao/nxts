@@ -9,7 +9,7 @@ export const bigintLiteralRule: Rule = {
   name: "bigintLiteral",
   check: (node, ctx) => {
     if (node.type === "BigIntLiteral") {
-      return rejectNode(node, ctx, "NXT1001", "parser.bigintLiteral");
+      return rejectNode(node, ctx, "parser.bigintLiteral");
     }
     return null;
   },

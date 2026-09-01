@@ -9,7 +9,7 @@ export const bigintKeywordRule: Rule = {
   name: "bigintKeyword",
   check: (node, ctx) => {
     if (node.type === "TSBigIntKeyword") {
-      return rejectNode(node, ctx, "NXT1001", "parser.bigintKeyword");
+      return rejectNode(node, ctx, "parser.bigintKeyword");
     }
     return null;
   },

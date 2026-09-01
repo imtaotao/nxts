@@ -75,25 +75,25 @@ export const overloadDeclareRule: Rule = {
     }
     const list = statementList(node, ctx);
     if (list == null) {
-      return rejectNode(node, ctx, "NXT1001", "parser.overloadDeclare");
+      return rejectNode(node, ctx, "parser.overloadDeclare");
     }
     const current = readMember(list.stmt);
     if (current == null) {
-      return rejectNode(node, ctx, "NXT1001", "parser.overloadDeclare");
+      return rejectNode(node, ctx, "parser.overloadDeclare");
     }
     const index = list.body.indexOf(list.stmt);
     if (index < 0) {
-      return rejectNode(node, ctx, "NXT1001", "parser.overloadDeclare");
+      return rejectNode(node, ctx, "parser.overloadDeclare");
     }
     for (let i = index + 1; i < list.body.length; i++) {
       const next = readMember(list.body[i]);
       if (next == null || !sameGroup(current, next)) {
-        return rejectNode(node, ctx, "NXT1001", "parser.overloadDeclare");
+        return rejectNode(node, ctx, "parser.overloadDeclare");
       }
       if (next.impl) {
         return null;
       }
     }
-    return rejectNode(node, ctx, "NXT1001", "parser.overloadDeclare");
+    return rejectNode(node, ctx, "parser.overloadDeclare");
   },
 };

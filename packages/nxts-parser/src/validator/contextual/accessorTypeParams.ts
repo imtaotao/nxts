@@ -16,7 +16,7 @@ export const accessorTypeParamsRule: Rule = {
       (node.kind === "get" || node.kind === "set") &&
       node.typeParameters
     ) {
-      return rejectNode(node, ctx, "NXT1001", "parser.accessorTypeParams");
+      return rejectNode(node, ctx, "parser.accessorTypeParams");
     }
     return null;
   },

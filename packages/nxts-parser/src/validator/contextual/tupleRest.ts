@@ -63,13 +63,13 @@ export const tupleRestRule: Rule = {
         if (isConcreteArrayRest(element)) {
           concreteRests += 1;
           if (concreteRests >= 2) {
-            return rejectNode(element, ctx, "NXT1001", "parser.tupleRest");
+            return rejectNode(element, ctx, "parser.tupleRest");
           }
         }
         continue;
       }
       if (seenRest && isOptionalElement(element)) {
-        return rejectNode(element, ctx, "NXT1001", "parser.tupleRest");
+        return rejectNode(element, ctx, "parser.tupleRest");
       }
     }
     return null;

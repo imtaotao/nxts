@@ -9,7 +9,7 @@ export const privateNameRule: Rule = {
   name: "privateName",
   check: (node, ctx) => {
     if (node.type === "PrivateName") {
-      return rejectNode(node, ctx, "NXT1001", "parser.privateName");
+      return rejectNode(node, ctx, "parser.privateName");
     }
     return null;
   },

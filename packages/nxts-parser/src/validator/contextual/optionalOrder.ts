@@ -44,7 +44,7 @@ export const optionalOrderRule: Rule = {
       isArray(node.params) &&
       hasRequiredAfterOptional(node.params)
     ) {
-      return rejectNode(node, ctx, "NXT1001", "parser.optionalOrder");
+      return rejectNode(node, ctx, "parser.optionalOrder");
     }
     return null;
   },

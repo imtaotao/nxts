@@ -49,7 +49,7 @@ export const asConstRule: Rule = {
       isConstType(node.typeAnnotation) &&
       !isDirectLiteral(node.expression)
     ) {
-      return rejectNode(node, ctx, "NXT1001", "parser.asConst");
+      return rejectNode(node, ctx, "parser.asConst");
     }
     return null;
   },

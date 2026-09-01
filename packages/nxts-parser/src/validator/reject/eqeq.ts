@@ -13,7 +13,7 @@ export const eqeqRule: Rule = {
       node.type === "BinaryExpression" &&
       (node.operator === "==" || node.operator === "!=")
     ) {
-      return rejectNode(node, ctx, "NXT1001", "parser.eqeq");
+      return rejectNode(node, ctx, "parser.eqeq");
     }
     return null;
   },

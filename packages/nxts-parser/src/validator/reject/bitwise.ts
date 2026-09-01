@@ -17,13 +17,13 @@ export const bitwiseRule: Rule = {
       (node.type === "BinaryExpression" || node.type === "UnaryExpression") &&
       bitwiseOps.has(node.operator)
     ) {
-      return rejectNode(node, ctx, "NXT1001", "parser.bitwise");
+      return rejectNode(node, ctx, "parser.bitwise");
     }
     if (
       node.type === "AssignmentExpression" &&
       bitwiseAssigns.has(node.operator)
     ) {
-      return rejectNode(node, ctx, "NXT1001", "parser.bitwise");
+      return rejectNode(node, ctx, "parser.bitwise");
     }
     return null;
   },

@@ -9,7 +9,7 @@ export const varRule: Rule = {
   name: "var",
   check: (node, ctx) => {
     if (node.type === "VariableDeclaration" && node.kind === "var") {
-      return rejectNode(node, ctx, "NXT1001", "parser.var");
+      return rejectNode(node, ctx, "parser.var");
     }
     return null;
   },

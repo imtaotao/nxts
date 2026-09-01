@@ -158,6 +158,9 @@ importers:
 
   packages/nxts-checker:
     dependencies:
+      "@nxts/parser":
+        specifier: workspace:*
+        version: link:../nxts-parser
       aidly:
         specifier: "catalog:"
         version: 1.37.0

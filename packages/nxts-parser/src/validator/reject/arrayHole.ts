@@ -13,7 +13,7 @@ export const arrayHoleRule: Rule = {
       node.type === "ArrayExpression" &&
       node.elements.some((element) => element === null)
     ) {
-      return rejectNode(node, ctx, "NXT1001", "parser.arrayHole");
+      return rejectNode(node, ctx, "parser.arrayHole");
     }
     return null;
   },

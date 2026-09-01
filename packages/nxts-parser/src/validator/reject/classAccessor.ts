@@ -9,7 +9,7 @@ export const classAccessorRule: Rule = {
   name: "classAccessor",
   check: (node, ctx) => {
     if (node.type === "ClassAccessorProperty") {
-      return rejectNode(node, ctx, "NXT1001", "parser.classAccessor");
+      return rejectNode(node, ctx, "parser.classAccessor");
     }
     return null;
   },

@@ -1,13 +1,9 @@
 import { createSnapshot, parseFile } from "@nxts/parser";
 
-const code = `
-  const n: bigint = 1 as never;
-`;
-
-export function run() {
+export async function run(source: string) {
   return parseFile(
-    createSnapshot({
-      utf8: new TextEncoder().encode(code),
+    await createSnapshot({
+      utf8: new TextEncoder().encode(source),
       canonicalPath: "test.ts",
     }),
   );

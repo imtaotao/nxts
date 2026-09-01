@@ -9,7 +9,7 @@ export const nonNullAssertionRule: Rule = {
   name: "nonNullAssertion",
   check: (node, ctx) => {
     if (node.type === "TSNonNullExpression") {
-      return rejectNode(node, ctx, "NXT1001", "parser.nonNullAssertion");
+      return rejectNode(node, ctx, "parser.nonNullAssertion");
     }
     return null;
   },
