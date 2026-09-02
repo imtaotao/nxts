@@ -22,14 +22,14 @@ export class BinderContext {
   private readonly file: ParseFileResult;
   private readonly scopes: ScopeRecord[] = [];
   private readonly symbols: SymbolRecord[] = [];
-  private readonly nodeToSymbol: Array<number | null>;
+  private readonly nodeToSymbols: number[][];
   private readonly names: ScopeNames[] = [];
   private readonly diagnostics: BinderDiagnostic[] = [];
   private current: number | null = null;
 
   constructor(file: ParseFileResult) {
     this.file = file;
-    this.nodeToSymbol = new Array<number | null>(file.nodes.length).fill(null);
+    this.nodeToSymbols = Array.from({ length: file.nodes.length }, () => []);
   }
 
   private nodeIdOf(node: object) {
@@ -41,12 +41,15 @@ export class BinderContext {
   private bind(node: object, symbolId: number) {
     const nodeId = this.nodeIdOf(node);
     if (nodeId == null) return;
-    this.nodeToSymbol[nodeId] = symbolId;
+    const bound = this.nodeToSymbols[nodeId];
+    if (!bound.includes(symbolId)) {
+      bound.push(symbolId);
+    }
   }
 
   isBound(node: object) {
     const nodeId = this.nodeIdOf(node);
-    return nodeId != null && this.nodeToSymbol[nodeId] != null;
+    return nodeId != null && this.nodeToSymbols[nodeId].length > 0;
   }
 
   private diagnose(messageId: MessageId, node: Identifier) {
@@ -121,7 +124,7 @@ export class BinderContext {
       symbols: this.symbols,
       snapshot: this.file.snapshot,
       diagnostics: this.diagnostics,
-      nodeToSymbol: this.nodeToSymbol,
+      nodeToSymbols: this.nodeToSymbols,
     } satisfies BindFileResult;
   }
 }

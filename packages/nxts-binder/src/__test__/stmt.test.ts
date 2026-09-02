@@ -88,8 +88,12 @@ describe('throw and try', () => {
     const fn = file.ast.program.body[0] as FunctionDeclaration;
     const tryStmt = fn.body.body[0] as TryStatement;
     const thrown = (tryStmt.block.body[0] as ThrowStatement).argument;
-    const e = tryStmt.handler?.param;
-    const sum = (tryStmt.handler?.body.body[0] as ReturnStatement)
+    const handler = tryStmt.handler;
+    if (handler == null) {
+      throw new Error('expected catch handler');
+    }
+    const e = handler.param;
+    const sum = (handler.body.body[0] as ReturnStatement)
       .argument as BinaryExpression;
 
     expect(scopeKindOf(bound, 'e')).toBe('catch');
@@ -117,12 +121,15 @@ describe('throw and try', () => {
     );
     const fn = file.ast.program.body[0] as FunctionDeclaration;
     const tryStmt = fn.body.body[0] as TryStatement;
-    const e = (
-      (tryStmt.handler?.param as ObjectPattern).properties[0] as ObjectProperty
-    ).value;
-    const ret = tryStmt.handler?.body.body[0] as ReturnStatement;
-    const finallyRef = (tryStmt.finalizer?.body[0] as ExpressionStatement)
-      .expression;
+    const handler = tryStmt.handler;
+    const finalizer = tryStmt.finalizer;
+    if (handler == null || finalizer == null) {
+      throw new Error('expected catch and finally');
+    }
+    const e = ((handler.param as ObjectPattern).properties[0] as ObjectProperty)
+      .value;
+    const ret = handler.body.body[0] as ReturnStatement;
+    const finallyRef = (finalizer.body[0] as ExpressionStatement).expression;
 
     expect(sameSymbol(bound, file, e, ret.argument)).toBe(true);
     expect(sameSymbol(bound, file, fn.params[0], finallyRef)).toBe(true);

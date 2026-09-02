@@ -1,7 +1,9 @@
 import type { Node, ObjectExpression } from '@babel/types';
+import { bindClassLike } from '../declare/class';
 import { bindFunctionLike } from '../declare/function';
 import { resolvePattern } from '../declare/pattern';
 import type { BinderContext } from '../context';
+import { resolveType } from './resolveType';
 
 const resolveObjectMember = (
   binder: BinderContext,
@@ -15,7 +17,10 @@ const resolveObjectMember = (
     resolveExpr(binder, property.key);
   }
   if (property.type === 'ObjectMethod') {
-    bindFunctionLike(binder, property.params, property.body);
+    bindFunctionLike(binder, property.params, property.body, null, {
+      typeParameters: property.typeParameters,
+      returnType: property.returnType,
+    });
     return;
   }
   resolveExpr(binder, property.value);
@@ -33,18 +38,33 @@ export function resolveExpr(binder: BinderContext, node: Node) {
       resolvePattern(binder, node);
       return;
     case 'FunctionExpression':
-      bindFunctionLike(binder, node.params, node.body, node.id);
+      bindFunctionLike(binder, node.params, node.body, node.id, {
+        typeParameters: node.typeParameters,
+        returnType: node.returnType,
+      });
       return;
     case 'ArrowFunctionExpression':
-      bindFunctionLike(binder, node.params, node.body);
+      bindFunctionLike(binder, node.params, node.body, null, {
+        typeParameters: node.typeParameters,
+        returnType: node.returnType,
+      });
+      return;
+    case 'ClassExpression':
+      bindClassLike(binder, node, true);
       return;
     case 'ParenthesizedExpression':
+    case 'TSNonNullExpression':
+      resolveExpr(binder, node.expression);
+      return;
     case 'TSAsExpression':
     case 'TSSatisfiesExpression':
-    case 'TSNonNullExpression':
-    case 'TSInstantiationExpression':
     case 'TSTypeAssertion':
       resolveExpr(binder, node.expression);
+      resolveType(binder, node.typeAnnotation);
+      return;
+    case 'TSInstantiationExpression':
+      resolveExpr(binder, node.expression);
+      resolveType(binder, node.typeArguments);
       return;
     case 'UnaryExpression':
     case 'UpdateExpression':
@@ -99,6 +119,7 @@ export function resolveExpr(binder: BinderContext, node: Node) {
     case 'NewExpression':
     case 'OptionalCallExpression':
       resolveExpr(binder, node.callee);
+      resolveType(binder, node.typeArguments);
       for (const argument of node.arguments) {
         if (argument.type !== 'ArgumentPlaceholder') {
           resolveExpr(binder, argument);

@@ -48,8 +48,8 @@ export type BindFileResult = {
   scopes: ScopeRecord[];
   // 声明身份。下标是 SymbolId，记录名字、空间、所在作用域和声明节点。
   symbols: SymbolRecord[];
-  // NodeId → SymbolId。下标对齐 parser 的 nodes[]；不是绑定点的节点为 null。
-  nodeToSymbol: Array<number | null>;
+  // NodeId → SymbolId[]。下标对齐 parser 的 nodes[]；一个节点可占多个空间，无绑定为空数组。
+  nodeToSymbols: number[][];
   // 绑定诊断，如未声明、重复声明。
   diagnostics: BinderDiagnostic[];
 };

@@ -64,7 +64,7 @@ describe('expr', () => {
 
   it('binds the inner value of wrapper expressions', async () => {
     const { file, bound } = await bindSource(
-      'function f() {} const n = 1; let a = n satisfies i32; let b = f<i32>; async function g() { return await n; }',
+      'function f() {} const n = 1; let a = n satisfies number; let b = f<number>; async function g() { return await n; }',
     );
     const fn = file.ast.program.body[0] as FunctionDeclaration;
     const n = (file.ast.program.body[1] as VariableDeclaration).declarations[0]

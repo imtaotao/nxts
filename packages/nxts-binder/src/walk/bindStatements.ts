@@ -1,6 +1,7 @@
 import type {
   BlockStatement,
   BreakStatement,
+  ClassDeclaration,
   ContinueStatement,
   DoWhileStatement,
   ExpressionStatement,
@@ -16,12 +17,16 @@ import type {
   SwitchStatement,
   ThrowStatement,
   TryStatement,
+  TSInterfaceDeclaration,
+  TSTypeAliasDeclaration,
   VariableDeclaration,
   WhileStatement,
 } from '@babel/types';
 import type { BinderContext } from '../context';
+import { declareClass } from '../declare/class';
 import { declareFunction } from '../declare/function';
 import { declarePattern } from '../declare/pattern';
+import { declareInterface, declareTypeAlias } from '../declare/type';
 import { declareVariable } from '../declare/variable';
 import { resolveExpr } from './resolveExpr';
 
@@ -69,6 +74,10 @@ const binders = {
     statement: FunctionDeclaration,
   ) => {
     declareFunction(binder, statement);
+  },
+
+  ClassDeclaration: (binder: BinderContext, statement: ClassDeclaration) => {
+    declareClass(binder, statement);
   },
 
   ExpressionStatement: (
@@ -132,10 +141,10 @@ const binders = {
   SwitchStatement: (binder: BinderContext, statement: SwitchStatement) => {
     resolveExpr(binder, statement.discriminant);
     binder.openScope('block');
-    hoistFunctions(
-      binder,
-      statement.cases.flatMap((clause) => clause.consequent),
-    );
+    const clauses = statement.cases.flatMap((clause) => clause.consequent);
+    hoistFunctions(binder, clauses);
+    hoistTypes(binder, clauses);
+    hoistClasses(binder, clauses);
     for (const clause of statement.cases) {
       if (clause.test) {
         resolveExpr(binder, clause.test);
@@ -184,6 +193,20 @@ const binders = {
       binder.resolve('label', statement.label);
     }
   },
+
+  TSTypeAliasDeclaration: (
+    binder: BinderContext,
+    statement: TSTypeAliasDeclaration,
+  ) => {
+    declareTypeAlias(binder, statement);
+  },
+
+  TSInterfaceDeclaration: (
+    binder: BinderContext,
+    statement: TSInterfaceDeclaration,
+  ) => {
+    declareInterface(binder, statement);
+  },
 };
 
 const hoistFunctions = (
@@ -197,11 +220,40 @@ const hoistFunctions = (
   }
 };
 
+const hoistTypes = (
+  binder: BinderContext,
+  statements: Array<Statement | ModuleDeclaration>,
+) => {
+  for (const statement of statements) {
+    if (
+      (statement.type === 'TSTypeAliasDeclaration' ||
+        statement.type === 'TSInterfaceDeclaration') &&
+      statement.id
+    ) {
+      binder.declare('type', statement.id);
+    }
+  }
+};
+
+const hoistClasses = (
+  binder: BinderContext,
+  statements: Array<Statement | ModuleDeclaration>,
+) => {
+  for (const statement of statements) {
+    if (statement.type === 'ClassDeclaration' && statement.id) {
+      binder.declare('value', statement.id);
+      binder.declare('type', statement.id);
+    }
+  }
+};
+
 export function bindStatementList(
   binder: BinderContext,
   statements: Array<Statement | ModuleDeclaration>,
 ) {
   hoistFunctions(binder, statements);
+  hoistTypes(binder, statements);
+  hoistClasses(binder, statements);
   for (const statement of statements) {
     bindStatement(binder, statement);
   }

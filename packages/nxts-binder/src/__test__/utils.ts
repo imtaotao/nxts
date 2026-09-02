@@ -28,11 +28,23 @@ export function symbolOf(
   if (node == null) {
     return null;
   }
+  const ids = symbolsOf(bound, file, node);
+  return ids[0] ?? null;
+}
+
+export function symbolsOf(
+  bound: BindFileResult,
+  file: ParseFileResult,
+  node?: Node | null,
+) {
+  if (node == null) {
+    return [];
+  }
   const nodeId = file.nodeIds.get(node);
   if (nodeId == null) {
-    return null;
+    return [];
   }
-  return bound.nodeToSymbol[nodeId] ?? null;
+  return bound.nodeToSymbols[nodeId] ?? [];
 }
 
 export function sameSymbol(
@@ -41,8 +53,8 @@ export function sameSymbol(
   a?: Node | null,
   b?: Node | null,
 ) {
-  const id = symbolOf(bound, file, a);
-  return id != null && id === symbolOf(bound, file, b);
+  const right = new Set(symbolsOf(bound, file, b));
+  return symbolsOf(bound, file, a).some((id) => right.has(id));
 }
 
 export function scopeKindOf(bound: BindFileResult, name: string) {

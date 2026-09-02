@@ -12,15 +12,17 @@ import {
 } from 'willa';
 import { run } from './lib/index.ts';
 
-const DEFAULT_SOURCE = `const n: number = 1;
+const DEFAULT_SOURCE = `type Count = number;
 
-function f(items: number[]): number {
-  const add = (a: number) => a + n;
+const n: Count = 1;
+
+function f(items: Count[]): Count {
+  const add = (a: Count) => a + n;
   const { head } = { head: n };
 
   switch (n) {
     case 1:
-      let m: number = add(head);
+      let m: Count = add(head);
       return m;
     default:
       break;
@@ -38,13 +40,31 @@ function f(items: number[]): number {
   }
 }
 
-function usedBeforeDecl(): number {
+function usedBeforeDecl(): Count {
   return later();
-  function later(): number {
+  function later(): Count {
     return n;
   }
 }
 `;
+
+const SOURCE_STORAGE_KEY = 'nxts.playground.source';
+
+const readStoredSource = () => {
+  try {
+    return localStorage.getItem(SOURCE_STORAGE_KEY) ?? DEFAULT_SOURCE;
+  } catch {
+    return DEFAULT_SOURCE;
+  }
+};
+
+const writeStoredSource = (source: string) => {
+  try {
+    localStorage.setItem(SOURCE_STORAGE_KEY, source);
+  } catch {
+    return;
+  }
+};
 
 type RunStatus = {
   complete: boolean;
@@ -60,8 +80,8 @@ const bindSource = async (source: string) => {
   };
 };
 
-export default function App() {
-  const [source, setSource] = useState(DEFAULT_SOURCE);
+export function App() {
+  const [source, setSource] = useState(readStoredSource);
   const [status, setStatus] = useState<RunStatus | null>(null);
   const [running, setRunning] = useState(false);
 
@@ -81,8 +101,17 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    void execute(DEFAULT_SOURCE);
+    writeStoredSource(source);
+  }, [source]);
+
+  useEffect(() => {
+    void execute(readStoredSource());
   }, [execute]);
+
+  const restoreDemo = () => {
+    setSource(DEFAULT_SOURCE);
+    void execute(DEFAULT_SOURCE);
+  };
 
   return (
     <Container size='xl' padding='lg'>
@@ -91,7 +120,7 @@ export default function App() {
           divided
           eyebrow='Nxts Playground'
           title='源码'
-          description='在这里改代码后绑定。结果打到浏览器控制台。'
+          description='改动会保存在浏览器里。绑定结果打到控制台。'
           meta={
             <Badge
               tone={
@@ -118,6 +147,13 @@ export default function App() {
           actions={
             <Group gap='sm' align='center'>
               <Kbd size='sm'>⌘↵</Kbd>
+              <Button
+                size='sm'
+                disabled={source === DEFAULT_SOURCE}
+                onClick={restoreDemo}
+              >
+                恢复默认
+              </Button>
               <Button
                 size='sm'
                 loading={running}
