@@ -4,11 +4,9 @@ import { bindStatementList } from './walk/bindStatements';
 
 export function bindFile(file: ParseFileResult) {
   const binder = new BinderContext(file);
-  if (file.ast == null) {
-    return binder.finish();
+  if (file.ast != null) {
+    binder.openScope('module');
+    bindStatementList(binder, file.ast.program.body);
   }
-
-  binder.openScope('module');
-  bindStatementList(binder, file.ast.program.body);
   return binder.finish();
 }

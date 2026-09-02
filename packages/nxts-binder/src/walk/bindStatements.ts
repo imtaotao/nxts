@@ -4,12 +4,15 @@ import type {
   ClassDeclaration,
   ContinueStatement,
   DoWhileStatement,
+  ExportDefaultDeclaration,
+  ExportNamedDeclaration,
   ExpressionStatement,
   ForInStatement,
   ForOfStatement,
   ForStatement,
   FunctionDeclaration,
   IfStatement,
+  ImportDeclaration,
   LabeledStatement,
   ModuleDeclaration,
   ReturnStatement,
@@ -17,6 +20,7 @@ import type {
   SwitchStatement,
   ThrowStatement,
   TryStatement,
+  TSEnumDeclaration,
   TSInterfaceDeclaration,
   TSTypeAliasDeclaration,
   VariableDeclaration,
@@ -24,7 +28,16 @@ import type {
 } from '@babel/types';
 import type { BinderContext } from '../context';
 import { declareClass } from '../declare/class';
+import { declareEnum } from '../declare/enum';
 import { declareFunction } from '../declare/function';
+import {
+  bindExportDefault,
+  bindExportNamed,
+  bindLocalExportSpecifiers,
+  declarationOf,
+  declareImport,
+  hoistImports,
+} from '../declare/module';
 import { declarePattern } from '../declare/pattern';
 import { declareInterface, declareTypeAlias } from '../declare/type';
 import { declareVariable } from '../declare/variable';
@@ -59,6 +72,49 @@ const bindForInOf = (
     resolveExpr(binder, statement.right);
     bindStatement(binder, statement.body);
   });
+};
+
+const hoistFunctions = (
+  binder: BinderContext,
+  statements: Array<Statement | ModuleDeclaration>,
+) => {
+  for (const statement of statements) {
+    const target = declarationOf(statement);
+    if (target?.type === 'FunctionDeclaration' && target.id) {
+      binder.declare('value', target.id);
+    }
+  }
+};
+
+const hoistTypes = (
+  binder: BinderContext,
+  statements: Array<Statement | ModuleDeclaration>,
+) => {
+  for (const statement of statements) {
+    const target = declarationOf(statement);
+    if (
+      target &&
+      (target.type === 'TSTypeAliasDeclaration' ||
+        target.type === 'TSInterfaceDeclaration' ||
+        target.type === 'TSEnumDeclaration') &&
+      target.id
+    ) {
+      binder.declare('type', target.id);
+    }
+  }
+};
+
+const hoistClasses = (
+  binder: BinderContext,
+  statements: Array<Statement | ModuleDeclaration>,
+) => {
+  for (const statement of statements) {
+    const target = declarationOf(statement);
+    if (target?.type === 'ClassDeclaration' && target.id) {
+      binder.declare('value', target.id);
+      binder.declare('type', target.id);
+    }
+  }
 };
 
 const binders = {
@@ -207,56 +263,42 @@ const binders = {
   ) => {
     declareInterface(binder, statement);
   },
-};
 
-const hoistFunctions = (
-  binder: BinderContext,
-  statements: Array<Statement | ModuleDeclaration>,
-) => {
-  for (const statement of statements) {
-    if (statement.type === 'FunctionDeclaration' && statement.id) {
-      binder.declare('value', statement.id);
-    }
-  }
-};
+  TSEnumDeclaration: (binder: BinderContext, statement: TSEnumDeclaration) => {
+    declareEnum(binder, statement);
+  },
 
-const hoistTypes = (
-  binder: BinderContext,
-  statements: Array<Statement | ModuleDeclaration>,
-) => {
-  for (const statement of statements) {
-    if (
-      (statement.type === 'TSTypeAliasDeclaration' ||
-        statement.type === 'TSInterfaceDeclaration') &&
-      statement.id
-    ) {
-      binder.declare('type', statement.id);
-    }
-  }
-};
+  ImportDeclaration: (binder: BinderContext, statement: ImportDeclaration) => {
+    declareImport(binder, statement);
+  },
 
-const hoistClasses = (
-  binder: BinderContext,
-  statements: Array<Statement | ModuleDeclaration>,
-) => {
-  for (const statement of statements) {
-    if (statement.type === 'ClassDeclaration' && statement.id) {
-      binder.declare('value', statement.id);
-      binder.declare('type', statement.id);
-    }
-  }
+  ExportNamedDeclaration: (
+    binder: BinderContext,
+    statement: ExportNamedDeclaration,
+  ) => {
+    bindExportNamed(binder, statement, bindStatement);
+  },
+
+  ExportDefaultDeclaration: (
+    binder: BinderContext,
+    statement: ExportDefaultDeclaration,
+  ) => {
+    bindExportDefault(binder, statement, bindStatement);
+  },
 };
 
 export function bindStatementList(
   binder: BinderContext,
   statements: Array<Statement | ModuleDeclaration>,
 ) {
+  hoistImports(binder, statements);
   hoistFunctions(binder, statements);
   hoistTypes(binder, statements);
   hoistClasses(binder, statements);
   for (const statement of statements) {
     bindStatement(binder, statement);
   }
+  bindLocalExportSpecifiers(binder, statements);
 }
 
 export function bindStatement(

@@ -12,11 +12,12 @@ import {
 } from 'willa';
 import { run } from './lib/index.ts';
 
-const DEFAULT_SOURCE = `type Count = number;
+const DEFAULT_SOURCE = `import { seed } from './seed';
+import type { Count } from './count';
 
-const n: Count = 1;
+export const n: Count = seed;
 
-function f(items: Count[]): Count {
+export function f(items: Count[]): Count {
   const add = (a: Count) => a + n;
   const { head } = { head: n };
 
@@ -46,6 +47,13 @@ function usedBeforeDecl(): Count {
     return n;
   }
 }
+
+export enum Kind {
+  Ready,
+  Busy = Ready,
+}
+
+export const kind: Kind = Kind.Ready;
 `;
 
 const SOURCE_STORAGE_KEY = 'nxts.playground.source';

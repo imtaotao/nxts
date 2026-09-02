@@ -1,5 +1,6 @@
 import type { Identifier } from '@babel/types';
 import { createDiagnostic, type MessageId } from './catalog';
+import { collectModuleBindings } from './collect';
 import type {
   BindFileResult,
   BinderDiagnostic,
@@ -52,6 +53,16 @@ export class BinderContext {
     return nodeId != null && this.nodeToSymbols[nodeId].length > 0;
   }
 
+  isBoundIn(node: object, space: NameSpace) {
+    const nodeId = this.nodeIdOf(node);
+    if (nodeId == null) {
+      return false;
+    }
+    return this.nodeToSymbols[nodeId].some(
+      (id) => this.symbols[id]?.space === space,
+    );
+  }
+
   private diagnose(messageId: MessageId, node: Identifier) {
     this.diagnostics.push(
       createDiagnostic(messageId, [node.name], {
@@ -100,6 +111,7 @@ export class BinderContext {
     });
 
     this.bind(node, id);
+
     if (!table.has(node.name)) {
       table.set(node.name, id);
     }
@@ -119,12 +131,16 @@ export class BinderContext {
   }
 
   finish() {
-    return {
+    const bound = {
       scopes: this.scopes,
       symbols: this.symbols,
       snapshot: this.file.snapshot,
       diagnostics: this.diagnostics,
       nodeToSymbols: this.nodeToSymbols,
+    };
+    return {
+      ...bound,
+      ...collectModuleBindings(this.file, bound),
     } satisfies BindFileResult;
   }
 }

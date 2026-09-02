@@ -11,7 +11,8 @@ export type ScopeKind =
   | 'class'
   | 'typeParams'
   | 'catch'
-  | 'label';
+  | 'label'
+  | 'enum';
 
 export type ScopeRecord = {
   id: number;
@@ -41,6 +42,22 @@ export type BinderDiagnostic = {
   };
 };
 
+export type FileExport = {
+  name: string;
+  space: NameSpace;
+  symbolId: number | null;
+  source: string | null;
+  imported: string | null;
+};
+
+export type FileImport = {
+  local: string;
+  imported: string;
+  space: NameSpace;
+  source: string;
+  symbolId: number;
+};
+
 export type BindFileResult = {
   // 这次绑定用的源码快照，和 parseFile 是同一份。
   snapshot: SourceSnapshot;
@@ -50,6 +67,10 @@ export type BindFileResult = {
   symbols: SymbolRecord[];
   // NodeId → SymbolId[]。下标对齐 parser 的 nodes[]；一个节点可占多个空间，无绑定为空数组。
   nodeToSymbols: number[][];
+  // 本文件出口。symbolId 为空表示尚未链到其他模块的再导出。
+  exports: FileExport[];
+  // 本文件进口。symbolId 是本地占坑，不表示对方文件的 symbol。
+  imports: FileImport[];
   // 绑定诊断，如未声明、重复声明。
   diagnostics: BinderDiagnostic[];
 };
