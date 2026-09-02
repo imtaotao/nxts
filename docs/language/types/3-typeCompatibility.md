@@ -118,7 +118,7 @@ type LabeledPoint = {
 const labeled: LabeledPoint = {
   x: 1,
   y: 2,
-  label: "A",
+  label: 'A',
 };
 
 const point: PointA = labeled; // 编译错误：对象形状不同
@@ -159,7 +159,7 @@ type User = {
   name: string;
 };
 
-const user: User = { name: "Tom" };
+const user: User = { name: 'Tom' };
 const dict: { [key: string]: string } = user;
 
 dict === user; // true
@@ -228,7 +228,7 @@ const requireDog = (animal: Animal) => {
 字面量类型可以赋给对应的基础类型或对应能力明确允许的上位类型：
 
 ```ts
-const status: "ready" = "ready";
+const status: 'ready' = 'ready';
 const text: string = status; // 合法
 ```
 
@@ -236,7 +236,7 @@ const text: string = status; // 合法
 
 ```ts
 const requireReady = (text: string) => {
-  const status: "ready" = text; // 编译错误
+  const status: 'ready' = text; // 编译错误
 };
 ```
 
@@ -249,8 +249,8 @@ const requireReady = (text: string) => {
 T28 的 `Brand<T, Tag>` 是 `T` 的静态下位类型。品牌值可以零成本赋给底层类型；底层类型不能隐式获得品牌：
 
 ```ts
-type UserId = Brand<i64, "UserId">;
-type OrderId = Brand<i64, "OrderId">;
+type UserId = Brand<i64, 'UserId'>;
+type OrderId = Brand<i64, 'OrderId'>;
 
 const checkBrand = (userId: UserId, raw: i64) => {
   const value: i64 = userId; // 合法：丢弃静态品牌

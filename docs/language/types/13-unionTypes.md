@@ -27,7 +27,7 @@
 
 ```ts
 type Result = string | i32;
-type State = "idle" | "running" | "done";
+type State = 'idle' | 'running' | 'done';
 ```
 
 能够作为普通值存储的类型可以成为联合成员，包括基础类型、字面量类型、对象、接口视图、类、函数、数组、元组、泛型实例、`null`、`undefined` 和 `unique symbol`。具体类型仍须满足其所属能力的可构造性和存储规则。
@@ -115,7 +115,7 @@ const assignUnion = (value: string | i32) => {
 
 ```ts
 let value: string | i32 = 1; // UnionInject，必要时写入 tag 和 payload
-value = "ready"; // UnionInject
+value = 'ready'; // UnionInject
 
 const wider: string | i32 | null = value; // 必要时 UnionRepack
 ```
@@ -132,7 +132,7 @@ const wider: string | i32 | null = value; // 必要时 UnionRepack
 
 ```ts
 const compareUnion = (value: string | i32) => {
-  value === "ready"; // 合法，可以收窄 string 成员
+  value === 'ready'; // 合法，可以收窄 string 成员
   value === true; // 编译错误：没有可比较成员
 };
 ```
@@ -145,8 +145,8 @@ const compareUnion = (value: string | i32) => {
 
 ```ts
 type Item =
-  | { kind: "text"; id: i32; value: string }
-  | { kind: "count"; id: i32; value: i32 };
+  | { kind: 'text'; id: i32; value: string }
+  | { kind: 'count'; id: i32; value: i32 };
 
 const readItem = (item: Item) => {
   item.kind; // "text" | "count"
@@ -170,7 +170,7 @@ const updateItem = (item: Item) => {
   item.id = 10; // 合法：10 对两个成员的 id 都是有效 i32
   item.value = 10; // 编译错误：text 成员要求 string
 
-  if (item.kind === "count") {
+  if (item.kind === 'count') {
     item.value = 10; // 合法：已经收窄
   }
 };
@@ -180,7 +180,7 @@ const updateItem = (item: Item) => {
 
 ```ts
 const replaceItem = (item: Item) => {
-  item = { kind: "count", id: 1, value: 10 };
+  item = { kind: 'count', id: 1, value: 10 };
 };
 ```
 

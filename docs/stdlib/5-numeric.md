@@ -18,7 +18,7 @@
 | `tryToTarget(value)` | 仅在值可由目标精确表示时成功，否则 `null`。      | 允许检查，不 trap、不装箱、不分配。 |
 
 ```ts
-import { toF32, toF64, toI32, toI64, tryToI32 } from "std/numeric";
+import { toF32, toF64, toI32, toI64, tryToI32 } from 'std/numeric';
 
 const wide = toI64(smallI32);
 const narrow = toI32(largeI64);

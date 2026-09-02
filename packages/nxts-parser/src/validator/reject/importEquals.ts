@@ -3,17 +3,17 @@
 // no: import fs = require("fs")
 // no: export = fs
 
-import type { Rule } from "../../types";
-import { rejectNode } from "../rejectNode";
+import type { Rule } from '../../types';
+import { rejectNode } from '../rejectNode';
 
 export const importEqualsRule: Rule = {
-  name: "importEquals",
+  name: 'importEquals',
   check: (node, ctx) => {
     if (
-      node.type === "TSImportEqualsDeclaration" ||
-      node.type === "TSExportAssignment"
+      node.type === 'TSImportEqualsDeclaration' ||
+      node.type === 'TSExportAssignment'
     ) {
-      return rejectNode(node, ctx, "parser.importEquals");
+      return rejectNode(node, ctx, 'parser.importEquals');
     }
     return null;
   },

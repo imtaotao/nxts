@@ -3,17 +3,17 @@
 // no: 1 == 2
 // no: 1 != 2
 
-import { rejectNode } from "../rejectNode";
-import type { Rule } from "../../types";
+import { rejectNode } from '../rejectNode';
+import type { Rule } from '../../types';
 
 export const eqeqRule: Rule = {
-  name: "eqeq",
+  name: 'eqeq',
   check: (node, ctx) => {
     if (
-      node.type === "BinaryExpression" &&
-      (node.operator === "==" || node.operator === "!=")
+      node.type === 'BinaryExpression' &&
+      (node.operator === '==' || node.operator === '!=')
     ) {
-      return rejectNode(node, ctx, "parser.eqeq");
+      return rejectNode(node, ctx, 'parser.eqeq');
     }
     return null;
   },

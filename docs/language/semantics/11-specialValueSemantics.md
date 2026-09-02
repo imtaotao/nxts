@@ -60,7 +60,7 @@ consume(fail(), sideEffect());
 每次 `Symbol()` 求值创建与所有既有 symbol 不同的新身份。描述不参与身份或相等：
 
 ```ts
-Symbol("x") === Symbol("x"); // false
+Symbol('x') === Symbol('x'); // false
 ```
 
 省略描述或传入 `undefined` 表示无描述；数值描述使用 JavaScript Number 文本格式。其他类型不执行 `ToPrimitive` 或隐式字符串转换。当前描述只用于诊断和调试，不可由源码读取。

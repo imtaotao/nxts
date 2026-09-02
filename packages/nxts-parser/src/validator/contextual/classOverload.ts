@@ -4,45 +4,45 @@
 // ok: class A { m(a: number): void; m(a: string): void; m(a: number | string) {} }
 // no: class A { m(a: number): void; n() {} m(a: number) {} }
 
-import { isArray } from "aidly";
-import type { Node } from "@babel/types";
-import type { Rule } from "../../types";
-import { rejectNode } from "../rejectNode";
+import { isArray } from 'aidly';
+import type { Node } from '@babel/types';
+import type { Rule } from '../../types';
+import { rejectNode } from '../rejectNode';
 
 const memberName = (node: Node) => {
-  if (node.type !== "TSDeclareMethod" && node.type !== "ClassMethod") {
+  if (node.type !== 'TSDeclareMethod' && node.type !== 'ClassMethod') {
     return null;
   }
   const key = node.key;
-  if (key.type === "Identifier") {
+  if (key.type === 'Identifier') {
     return key.name;
   }
-  if (key.type === "StringLiteral") {
+  if (key.type === 'StringLiteral') {
     return key.value;
   }
-  if (key.type === "NumericLiteral") {
+  if (key.type === 'NumericLiteral') {
     return String(key.value);
   }
   return null;
 };
 
 const visibility = (node: Node) => {
-  if (node.type !== "TSDeclareMethod" && node.type !== "ClassMethod") {
-    return "public";
+  if (node.type !== 'TSDeclareMethod' && node.type !== 'ClassMethod') {
+    return 'public';
   }
-  if (node.accessibility === "private" || node.accessibility === "protected") {
+  if (node.accessibility === 'private' || node.accessibility === 'protected') {
     return node.accessibility;
   }
-  return "public";
+  return 'public';
 };
 
 const isAmbientMember = (node: Node) =>
-  ("declare" in node && node.declare === true) ||
-  ("abstract" in node && node.abstract === true);
+  ('declare' in node && node.declare === true) ||
+  ('abstract' in node && node.abstract === true);
 
 const readMember = (node: Node) => {
   if (
-    (node.type !== "TSDeclareMethod" && node.type !== "ClassMethod") ||
+    (node.type !== 'TSDeclareMethod' && node.type !== 'ClassMethod') ||
     isAmbientMember(node)
   ) {
     return null;
@@ -59,7 +59,7 @@ const readMember = (node: Node) => {
     async: node.async === true,
     generator: node.generator === true,
     visibility: visibility(node),
-    impl: node.type === "ClassMethod",
+    impl: node.type === 'ClassMethod',
   };
 };
 
@@ -76,33 +76,33 @@ const sameGroup = (
   left.visibility === right.visibility;
 
 export const classOverloadRule: Rule = {
-  name: "classOverload",
+  name: 'classOverload',
   check: (node, ctx) => {
-    if (node.type !== "TSDeclareMethod" || isAmbientMember(node)) {
+    if (node.type !== 'TSDeclareMethod' || isAmbientMember(node)) {
       return null;
     }
     const parent = ctx.parent;
-    if (parent?.type !== "ClassBody" || !isArray(parent.body)) {
-      return rejectNode(node, ctx, "parser.classOverload");
+    if (parent?.type !== 'ClassBody' || !isArray(parent.body)) {
+      return rejectNode(node, ctx, 'parser.classOverload');
     }
     const current = readMember(node);
     if (current == null) {
-      return rejectNode(node, ctx, "parser.classOverload");
+      return rejectNode(node, ctx, 'parser.classOverload');
     }
     const body = parent.body as Node[];
     const index = body.indexOf(node);
     if (index < 0) {
-      return rejectNode(node, ctx, "parser.classOverload");
+      return rejectNode(node, ctx, 'parser.classOverload');
     }
     for (let i = index + 1; i < body.length; i++) {
       const next = readMember(body[i]);
       if (next == null || !sameGroup(current, next)) {
-        return rejectNode(node, ctx, "parser.classOverload");
+        return rejectNode(node, ctx, 'parser.classOverload');
       }
       if (next.impl) {
         return null;
       }
     }
-    return rejectNode(node, ctx, "parser.classOverload");
+    return rejectNode(node, ctx, 'parser.classOverload');
   },
 };

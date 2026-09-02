@@ -5,18 +5,18 @@
 // no: class A { get x<T>(): T { return this.v } }
 // no: class A { set x<T>(v: T) {} }
 
-import type { Rule } from "../../types";
-import { rejectNode } from "../rejectNode";
+import type { Rule } from '../../types';
+import { rejectNode } from '../rejectNode';
 
 export const accessorTypeParamsRule: Rule = {
-  name: "accessorTypeParams",
+  name: 'accessorTypeParams',
   check: (node, ctx) => {
     if (
-      (node.type === "ClassMethod" || node.type === "ClassPrivateMethod") &&
-      (node.kind === "get" || node.kind === "set") &&
+      (node.type === 'ClassMethod' || node.type === 'ClassPrivateMethod') &&
+      (node.kind === 'get' || node.kind === 'set') &&
       node.typeParameters
     ) {
-      return rejectNode(node, ctx, "parser.accessorTypeParams");
+      return rejectNode(node, ctx, 'parser.accessorTypeParams');
     }
     return null;
   },

@@ -48,17 +48,17 @@ function fail(message: string): never {
 
 function read(flag: boolean): string {
   if (!flag) {
-    fail("missing");
+    fail('missing');
   }
 
-  return "ready";
+  return 'ready';
 }
 ```
 
 静态类型本身为 `never` 的表达式没有正常控制流后继，并在类型格合并中按 T04 规则被其他可达类型吸收。
 
 ```ts
-const value = flag ? fail("missing") : "ready";
+const value = flag ? fail('missing') : 'ready';
 // value: "ready"
 ```
 
@@ -76,7 +76,7 @@ checker 根据上述语言控制流规则直接证明的顺序不可达语句或
 let value: string;
 value.length; // 编译错误：读取前未赋值
 
-value = "ready";
+value = 'ready';
 value.length; // 合法
 ```
 
@@ -86,7 +86,7 @@ value.length; // 合法
 let value: string;
 
 if (flag) {
-  value = "ready";
+  value = 'ready';
 }
 
 value.length; // 编译错误：flag 为 false 时未赋值
@@ -100,7 +100,7 @@ T06 采用保守赋值状态分析。只有当前控制流内、checker 能直�
 let value: string;
 
 while (flag) {
-  value = "ready";
+  value = 'ready';
 }
 
 value.length; // 编译错误：循环可能未执行
@@ -112,7 +112,7 @@ value.length; // 编译错误：循环可能未执行
 let value: string;
 
 do {
-  value = "ready";
+  value = 'ready';
 } while (flag);
 
 value.length; // 合法
@@ -126,7 +126,7 @@ value.length; // 合法
 let value: string;
 
 run(() => {
-  value = "ready";
+  value = 'ready';
 });
 
 value.length; // 编译错误：checker 不能证明回调已经执行
@@ -221,7 +221,7 @@ function read(value: string | undefined) {
 
 ```ts
 function read(value: string | number) {
-  if (typeof value === "string") {
+  if (typeof value === 'string') {
     value.length; // value: string
   }
 }
@@ -254,8 +254,8 @@ parser 可以接受合法 JavaScript `typeof` 表达式；checker 只对本小�
 具体 `unique symbol` token 的 `===`、`!==` 判断可以收窄有限 unique symbol 联合。相等分支保留对应 `typeof token`，不等分支排除该成员：
 
 ```ts
-const Ready = Symbol("ready");
-const Failed = Symbol("failed");
+const Ready = Symbol('ready');
+const Failed = Symbol('failed');
 
 function read(value: typeof Ready | typeof Failed) {
   if (value === Ready) {
@@ -321,7 +321,7 @@ if (value !== undefined) {
 ```ts
 const alias = result;
 
-if (result.kind === "ok") {
+if (result.kind === 'ok') {
   // alias 写入是否影响 result 的属性收窄，由对象和别名分析规则定义。
 }
 ```
@@ -336,17 +336,17 @@ if (result.kind === "ok") {
 
 ```ts
 type Ok = {
-  kind: "ok";
+  kind: 'ok';
   value: string;
 };
 
 type Err = {
-  kind: "err";
+  kind: 'err';
   message: string;
 };
 
 function read(result: Ok | Err) {
-  if (result.kind === "ok") {
+  if (result.kind === 'ok') {
     result.value; // result: Ok
   } else {
     result.message; // result: Err
@@ -357,8 +357,8 @@ function read(result: Ok | Err) {
 判别字段比较只支持静态属性访问和字面量比较：
 
 ```ts
-result.kind === "ok";
-result.kind !== "err";
+result.kind === 'ok';
+result.kind !== 'err';
 ```
 
 Nxts 不通过动态 key、任意对象形状猜测或用户函数结果识别判别联合。
@@ -367,35 +367,35 @@ Nxts 不通过动态 key、任意对象形状猜测或用户函数结果识别�
 
 ```ts
 let result: Ok = {
-  kind: "ok",
-  value: "done",
+  kind: 'ok',
+  value: 'done',
 };
 
-result.value = "updated"; // 合法
+result.value = 'updated'; // 合法
 ```
 
 判别字段不能通过属性写入改变对象所属成员：
 
 ```ts
 let result: Ok | Err = {
-  kind: "ok",
-  value: "done",
+  kind: 'ok',
+  value: 'done',
 };
 
-result.kind = "err"; // 编译错误：不能通过修改判别字段改变联合成员
+result.kind = 'err'; // 编译错误：不能通过修改判别字段改变联合成员
 ```
 
 状态切换应通过重新赋值为另一个完整成员对象表达。变量重新赋值后，checker 按新的赋值更新当前控制流类型：
 
 ```ts
 let result: Ok | Err = {
-  kind: "ok",
-  value: "done",
+  kind: 'ok',
+  value: 'done',
 };
 
 result = {
-  kind: "err",
-  message: "failed",
+  kind: 'err',
+  message: 'failed',
 }; // 合法
 ```
 
@@ -403,17 +403,17 @@ result = {
 
 ```ts
 type ResultState = {
-  kind: "ok" | "err";
+  kind: 'ok' | 'err';
   value?: string;
   message?: string;
 };
 
 const state: ResultState = {
-  kind: "ok",
-  value: "done",
+  kind: 'ok',
+  value: 'done',
 };
 
-state.kind = "err"; // 合法：这是普通固定形状对象的可写属性
+state.kind = 'err'; // 合法：这是普通固定形状对象的可写属性
 ```
 
 ## `instanceof` 收窄
@@ -507,7 +507,7 @@ if (valid) {
 
 ```ts
 function isString(value: i32 | string) {
-  return typeof value === "string";
+  return typeof value === 'string';
 }
 ```
 
@@ -591,20 +591,20 @@ value; // string | undefined
 
 ```ts
 function assertNever(value: never): never {
-  throw new Error("unreachable");
+  throw new Error('unreachable');
 }
 ```
 
 当 checker 能证明所有联合成员已经被覆盖时，剩余分支类型为 `never`。
 
 ```ts
-type Result = { kind: "ok"; value: string } | { kind: "err"; message: string };
+type Result = { kind: 'ok'; value: string } | { kind: 'err'; message: string };
 
 function read(result: Result): string {
   switch (result.kind) {
-    case "ok":
+    case 'ok':
       return result.value;
-    case "err":
+    case 'err':
       return result.message;
     default:
       return assertNever(result); // result: never
@@ -617,7 +617,7 @@ function read(result: Result): string {
 ```ts
 function read(result: Result): string {
   switch (result.kind) {
-    case "ok":
+    case 'ok':
       return result.value;
     default:
       return assertNever(result); // 编译错误：result 仍可能是 Err

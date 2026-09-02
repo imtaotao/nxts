@@ -49,10 +49,10 @@ T40 支持以下 TypeScript 语法：
 ```ts
 type UserKeys = keyof User;
 type ConfigType = typeof config;
-type UserName = User["name"];
+type UserName = User['name'];
 
 const fixed = {
-  mode: "fast",
+  mode: 'fast',
   retries: 3,
 } as const;
 ```
@@ -131,8 +131,8 @@ type UserKey = keyof User;
 
 ```ts
 class Service {
-  public name = "service";
-  private token = "secret";
+  public name = 'service';
+  private token = 'secret';
 
   run(): void {}
 }
@@ -312,7 +312,7 @@ type StateKey = keyof typeof State;
 
 ```ts
 const config = {
-  host: "localhost",
+  host: 'localhost',
   port: 8080,
 };
 
@@ -355,7 +355,7 @@ type Invalid = typeof User;
 
 ```ts
 function read(value: string | i32) {
-  if (typeof value === "string") {
+  if (typeof value === 'string') {
     type Current = typeof value;
     // string
   }
@@ -439,7 +439,7 @@ enum State {
 }
 
 type StateNamespace = typeof State;
-type Idle = StateNamespace["Idle"];
+type Idle = StateNamespace['Idle'];
 ```
 
 该类型只允许继续参与 `keyof`、索引访问和 T41 的类型级运算。它不能作为变量、属性、参数、返回值或普通泛型存储实参：
@@ -456,7 +456,7 @@ const enumObject: typeof State = State;
 T40 保留 TypeScript 的静态模块类型查询：
 
 ```ts
-type ApiModule = typeof import("./api");
+type ApiModule = typeof import('./api');
 ```
 
 规则如下：
@@ -482,13 +482,13 @@ type User = {
   nickname?: string;
 };
 
-type Id = User["id"];
+type Id = User['id'];
 // i32
 
-type Identity = User["id" | "name"];
+type Identity = User['id' | 'name'];
 // i32 | string
 
-type Nickname = User["nickname"];
+type Nickname = User['nickname'];
 // string | undefined
 ```
 
@@ -518,10 +518,10 @@ type Right = {
   enabled: boolean;
 };
 
-type Id = (Left | Right)["id"];
+type Id = (Left | Right)['id'];
 // i32
 
-type Name = (Left | Right)["name"];
+type Name = (Left | Right)['name'];
 // 编译错误
 ```
 
@@ -550,7 +550,7 @@ type Config = {
   [key: string]: string;
 };
 
-type Mode = Config["mode"];
+type Mode = Config['mode'];
 // string
 
 type Dynamic = Config[string];
@@ -565,7 +565,7 @@ readonly 字典具有相同读取结果。写权限不能由索引访问类型�
 type Item = string[][i32];
 // string | undefined
 
-type Length = string[]["length"];
+type Length = string[]['length'];
 // i32
 ```
 
@@ -583,7 +583,7 @@ type Entry = [string, i32];
 type First = Entry[0];
 // string
 
-type Second = Entry["1"];
+type Second = Entry['1'];
 // i32
 ```
 
@@ -610,10 +610,10 @@ type Invalid = Entry[2];
 type Character = string[i32];
 // string | undefined
 
-type StringLength = string["length"];
+type StringLength = string['length'];
 // i32
 
-type FunctionName = (() => void)["name"];
+type FunctionName = (() => void)['name'];
 // string
 ```
 
@@ -628,7 +628,7 @@ class Service {
   static version = 1;
 }
 
-type Version = (typeof Service)["version"];
+type Version = (typeof Service)['version'];
 // i32
 ```
 
@@ -642,7 +642,7 @@ enum State {
   Running,
 }
 
-type Idle = (typeof State)["Idle"];
+type Idle = (typeof State)['Idle'];
 // State.Idle
 
 type AnyState = (typeof State)[keyof typeof State];
@@ -708,13 +708,13 @@ function set<T, K extends keyof T>(target: T, key: K, value: T[K]): void {
 固定单键实例化可以接受：
 
 ```ts
-set(user, "age", 20);
+set(user, 'age', 20);
 ```
 
 宽联合键和值不能只因分别属于读取联合就视为相关：
 
 ```ts
-function update(user: User, key: "name" | "age", value: string | i32): void {
+function update(user: User, key: 'name' | 'age', value: string | i32): void {
   set(user, key, value);
   // 编译错误：key 与 value 可能不匹配
 }
@@ -746,7 +746,7 @@ TypeScript 可能接受部分此类泛型调用。Nxts 要求固定键、可证�
 ```ts
 function readConfig() {
   return {
-    mode: "fast",
+    mode: 'fast',
   };
 }
 
@@ -757,7 +757,7 @@ const first = readConfig() as const;
 需要保留条件分支字面量时，在各直接字面量分支上分别使用：
 
 ```ts
-const mode = flag ? ("fast" as const) : ("safe" as const);
+const mode = flag ? ('fast' as const) : ('safe' as const);
 // "fast" | "safe"
 ```
 
@@ -765,7 +765,7 @@ const mode = flag ? ("fast" as const) : ("safe" as const);
 
 ```ts
 const config = {
-  mode: "fast",
+  mode: 'fast',
   retries: 3,
   flags: [true, false],
 } as const;
@@ -775,7 +775,7 @@ const config = {
 
 ```ts
 type Config = {
-  readonly mode: "fast";
+  readonly mode: 'fast';
   readonly retries: 3;
   readonly flags: readonly [true, false];
 };
@@ -804,7 +804,7 @@ const values = [1, 2];
 const config = {
   values,
   nested: {
-    mode: "fast",
+    mode: 'fast',
   },
 } as const;
 ```
@@ -815,7 +815,7 @@ const config = {
 type Config = {
   readonly values: i32[];
   readonly nested: {
-    readonly mode: "fast";
+    readonly mode: 'fast';
   };
 };
 ```
@@ -841,7 +841,7 @@ config.values.length = 0;
 
 ```ts
 const base = {
-  mode: "fast",
+  mode: 'fast',
 };
 
 const config = {
@@ -859,10 +859,10 @@ spread 创建、复制或合并值的成本属于 spread 本身。`as const` 不
 固定计算键产生 readonly 固定属性：
 
 ```ts
-const key = "mode";
+const key = 'mode';
 
 const config = {
-  [key]: "fast",
+  [key]: 'fast',
 } as const;
 // { readonly mode: "fast" }
 ```
@@ -872,7 +872,7 @@ const config = {
 ```ts
 function createTable(key: string) {
   return {
-    [key]: "value",
+    [key]: 'value',
   } as const;
 }
 ```
@@ -889,7 +889,7 @@ type MutableConfig = {
 };
 
 const config: MutableConfig = {
-  mode: "fast",
+  mode: 'fast',
 } as const;
 // 编译错误：readonly 不能进入 mutable
 ```
@@ -898,10 +898,10 @@ const config: MutableConfig = {
 
 ```ts
 const config = {
-  mode: "fast" as const,
+  mode: 'fast' as const,
 };
 
-config.mode = "fast";
+config.mode = 'fast';
 // 合法
 ```
 
@@ -917,7 +917,7 @@ function identity<T>(value: T): T {
 }
 
 const config = identity({
-  mode: "fast",
+  mode: 'fast',
 } as const);
 // { readonly mode: "fast" }
 ```
@@ -930,7 +930,7 @@ function define<const T>(value: T): T {
 }
 
 const config = define({
-  mode: "fast",
+  mode: 'fast',
 });
 // { readonly mode: "fast" }
 ```
@@ -943,7 +943,7 @@ T42 已确定 Nxts 不支持 `satisfies`，因此 TypeScript 中合法的组合�
 
 ```ts
 const config = {
-  mode: "fast",
+  mode: 'fast',
 } as const satisfies ReadonlyConfig;
 // 编译错误：Nxts 不支持 satisfies
 ```
@@ -984,7 +984,7 @@ interface Node {
 type NodeKey = keyof Node;
 // "value" | "next"
 
-type Next = Node["next"];
+type Next = Node['next'];
 // Node | null
 ```
 

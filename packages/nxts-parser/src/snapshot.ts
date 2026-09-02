@@ -4,16 +4,16 @@
 // 读盘、路径规范、按路径发号，不放这里。
 
 const bytesToHex = (bytes: Uint8Array) => {
-  let hex = "";
+  let hex = '';
   for (const byte of bytes) {
-    hex += byte.toString(16).padStart(2, "0");
+    hex += byte.toString(16).padStart(2, '0');
   }
   return hex;
 };
 
 const sha256Hex = async (bytes: Uint8Array) => {
   const copy = bytes.slice();
-  const digest = await crypto.subtle.digest("SHA-256", copy.buffer);
+  const digest = await crypto.subtle.digest('SHA-256', copy.buffer);
   return bytesToHex(new Uint8Array(digest));
 };
 
@@ -36,7 +36,7 @@ export type CreateSnapshotInput = {
   sourceVersion?: number;
 };
 
-const utf8Decoder = new TextDecoder("utf-8", { fatal: true });
+const utf8Decoder = new TextDecoder('utf-8', { fatal: true });
 
 const hasUtf8Bom = (utf8: Uint8Array) => {
   return (

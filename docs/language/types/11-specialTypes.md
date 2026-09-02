@@ -115,7 +115,7 @@ function missing(): undefined {}
 
 function read(flag: boolean): string | undefined {
   if (flag) {
-    return "ready";
+    return 'ready';
   }
 }
 ```
@@ -291,7 +291,7 @@ const value = input as never; // 编译错误
 
 ```ts
 function fail(): never {
-  throw new Error("failed");
+  throw new Error('failed');
 }
 
 const value: string = fail(); // 合法
@@ -417,8 +417,8 @@ consume(dynamic(1)); // 合法
 `unknown` 已能显式打包 `null` 和 `undefined`。`unknown` 不能与普通类型直接构造混合联合，`T | unknown` 也不归一化为 `unknown`；调用方必须先把每个普通分支显式打包，使合并结果的静态类型和运行时表示均为 `unknown`：
 
 ```ts
-const invalid = flag ? dynamic(1) : "text"; // 编译错误
-const valid = flag ? dynamic(1) : dynamic("text"); // unknown
+const invalid = flag ? dynamic(1) : 'text'; // 编译错误
+const valid = flag ? dynamic(1) : dynamic('text'); // unknown
 ```
 
 ### 收窄前的合法操作
@@ -491,7 +491,7 @@ Symbol(description?: string | number): symbol
 | 在既有 unique symbol 值之间选择 | 保留对应 `typeof A \| typeof B` 联合，完整规则由 T20、T21 定义。 |
 
 ```ts
-const token = Symbol("token");
+const token = Symbol('token');
 const alias: typeof token = token;
 
 let invalid: unique symbol = Symbol(); // 编译错误：必须使用 const
@@ -555,7 +555,7 @@ bigint 类型、字面量和构造入口均不形成有效类型或表达式：
 ```ts
 const literal = 123n; // 编译错误
 let value: bigint; // 编译错误
-const converted = BigInt("123"); // 编译错误：不提供内建 BigInt
+const converted = BigInt('123'); // 编译错误：不提供内建 BigInt
 ```
 
 `typeof value === "bigint"` 不能形成有效收窄目标，也是编译错误。导入声明、FFI 描述、标准库签名、类型工具和生成代码均不能使用 `bigint` 绕过该限制。

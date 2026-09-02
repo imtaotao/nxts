@@ -6,28 +6,28 @@
 // no: class A { m() { new.target } }
 // no: class A { static { new.target } }
 
-import type { Node } from "@babel/types";
-import type { Rule } from "../../types";
-import { rejectNode } from "../rejectNode";
+import type { Node } from '@babel/types';
+import type { Rule } from '../../types';
+import { rejectNode } from '../rejectNode';
 
 const isNewTarget = (node: Node) =>
-  node.type === "MetaProperty" &&
-  node.meta.name === "new" &&
-  node.property.name === "target";
+  node.type === 'MetaProperty' &&
+  node.meta.name === 'new' &&
+  node.property.name === 'target';
 
 const isConstructor = (node: Node) =>
-  (node.type === "ClassMethod" || node.type === "ClassPrivateMethod") &&
-  node.kind === "constructor";
+  (node.type === 'ClassMethod' || node.type === 'ClassPrivateMethod') &&
+  node.kind === 'constructor';
 
 const isFunctionBoundary = (node: Node) =>
-  node.type === "FunctionDeclaration" ||
-  node.type === "FunctionExpression" ||
-  node.type === "ObjectMethod" ||
-  node.type === "ClassMethod" ||
-  node.type === "ClassPrivateMethod";
+  node.type === 'FunctionDeclaration' ||
+  node.type === 'FunctionExpression' ||
+  node.type === 'ObjectMethod' ||
+  node.type === 'ClassMethod' ||
+  node.type === 'ClassPrivateMethod';
 
 export const newTargetRule: Rule = {
-  name: "newTarget",
+  name: 'newTarget',
   check: (node, ctx) => {
     if (!isNewTarget(node)) {
       return null;
@@ -38,15 +38,15 @@ export const newTargetRule: Rule = {
       if (isConstructor(current)) {
         return null;
       }
-      if (current.type === "ArrowFunctionExpression") {
+      if (current.type === 'ArrowFunctionExpression') {
         current = ctx.parents.get(current) ?? null;
         continue;
       }
-      if (current.type === "StaticBlock" || isFunctionBoundary(current)) {
-        return rejectNode(node, ctx, "parser.newTarget");
+      if (current.type === 'StaticBlock' || isFunctionBoundary(current)) {
+        return rejectNode(node, ctx, 'parser.newTarget');
       }
       current = ctx.parents.get(current) ?? null;
     }
-    return rejectNode(node, ctx, "parser.newTarget");
+    return rejectNode(node, ctx, 'parser.newTarget');
   },
 };

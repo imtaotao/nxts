@@ -3,14 +3,14 @@
 // no: abstract class A {}
 // no: abstract m(): void
 
-import type { Rule } from "../../types";
-import { rejectNode } from "../rejectNode";
+import type { Rule } from '../../types';
+import { rejectNode } from '../rejectNode';
 
 export const abstractRule: Rule = {
-  name: "abstract",
+  name: 'abstract',
   check: (node, ctx) => {
-    if ("abstract" in node && node.abstract === true) {
-      return rejectNode(node, ctx, "parser.abstract");
+    if ('abstract' in node && node.abstract === true) {
+      return rejectNode(node, ctx, 'parser.abstract');
     }
     return null;
   },

@@ -1,5 +1,5 @@
-import type { File, Node } from "@babel/types";
-import type { SourceSnapshot } from "./snapshot";
+import type { File, Node } from '@babel/types';
+import type { SourceSnapshot } from './snapshot';
 
 export type SourceSpan = {
   start: number;
@@ -13,8 +13,8 @@ export type Diagnostic = {
   messageId: string;
   primarySpan: SourceSpan;
   arguments: readonly unknown[];
-  severity: "error" | "warning" | "info";
-  phase: "parser";
+  severity: 'error' | 'warning' | 'info';
+  phase: 'parser';
 };
 
 export type ParseFileResult = {

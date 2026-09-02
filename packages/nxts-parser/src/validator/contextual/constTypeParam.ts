@@ -6,22 +6,22 @@
 // no: interface I<const T> {}
 // no: type T<const U> = U
 
-import type { Rule } from "../../types";
-import { rejectNode } from "../rejectNode";
+import type { Rule } from '../../types';
+import { rejectNode } from '../rejectNode';
 
 export const constTypeParamRule: Rule = {
-  name: "constTypeParam",
+  name: 'constTypeParam',
   check: (node, ctx) => {
-    if (node.type !== "TSTypeParameter" || node.const !== true) {
+    if (node.type !== 'TSTypeParameter' || node.const !== true) {
       return null;
     }
     const list = ctx.parent;
-    if (list?.type !== "TSTypeParameterDeclaration") {
+    if (list?.type !== 'TSTypeParameterDeclaration') {
       return null;
     }
     const owner = ctx.parents.get(list) ?? null;
-    if (owner?.type === "TSInterfaceDeclaration") {
-      return rejectNode(node, ctx, "parser.constTypeParam");
+    if (owner?.type === 'TSInterfaceDeclaration') {
+      return rejectNode(node, ctx, 'parser.constTypeParam');
     }
     return null;
   },

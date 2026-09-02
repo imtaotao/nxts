@@ -43,7 +43,7 @@ interface UserService {
   readonly name: string;
   timeout?: i32;
   execute(input: string): string;
-  ["status"]: string;
+  ['status']: string;
 }
 ```
 
@@ -117,7 +117,7 @@ interface Entity {
 
 const user = {
   id: 1,
-  name: "Tom",
+  name: 'Tom',
   save() {},
 };
 
@@ -219,7 +219,7 @@ interface Animal {
 }
 
 interface Dog extends Animal {
-  readonly kind: "dog";
+  readonly kind: 'dog';
 }
 ```
 
@@ -237,7 +237,7 @@ interface Options {
 const raw = {};
 const options: Options = raw;
 
-options.cache = "memory";
+options.cache = 'memory';
 ```
 
 读取类型为 `T | undefined`。可写接口允许写入 `T`，并使该属性成为底层对象实际存在的自身属性。接口转换不因属性缺失而失败。

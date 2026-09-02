@@ -2,14 +2,14 @@
 // 空值要用收窄、?? 或显式判断，不能靠断言骗过布局。
 // no: const x = y!
 
-import type { Rule } from "../../types";
-import { rejectNode } from "../rejectNode";
+import type { Rule } from '../../types';
+import { rejectNode } from '../rejectNode';
 
 export const nonNullAssertionRule: Rule = {
-  name: "nonNullAssertion",
+  name: 'nonNullAssertion',
   check: (node, ctx) => {
-    if (node.type === "TSNonNullExpression") {
-      return rejectNode(node, ctx, "parser.nonNullAssertion");
+    if (node.type === 'TSNonNullExpression') {
+      return rejectNode(node, ctx, 'parser.nonNullAssertion');
     }
     return null;
   },

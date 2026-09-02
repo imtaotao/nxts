@@ -1,6 +1,6 @@
-import type { File, Node } from "@babel/types";
-import { createSnapshot, parseFile } from "@nxts/parser";
-import { bindFile, type BindFileResult, type ParseFileResult } from "../index";
+import type { File, Node } from '@babel/types';
+import { createSnapshot, parseFile } from '@nxts/parser';
+import { bindFile, type BindFileResult, type ParseFileResult } from '../index';
 
 type ParsedFile = ParseFileResult & { ast: File };
 
@@ -8,11 +8,11 @@ export async function bindSource(code: string) {
   const file = parseFile(
     await createSnapshot({
       utf8: new TextEncoder().encode(code),
-      canonicalPath: "test.ts",
+      canonicalPath: 'test.ts',
     }),
   );
   if (file.ast == null) {
-    throw new Error("parse failed");
+    throw new Error('parse failed');
   }
   return {
     file: file as ParsedFile,

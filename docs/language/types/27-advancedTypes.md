@@ -73,7 +73,7 @@ type Result<T> = T extends string ? TextResult : OtherResult;
 条件类型中的 `Source extends Target` 表示 `Source` 的全部值是否满足 `Target` 的静态类型契约。它复用 T03、T26–T30、T36–T38 已定义的类型关系和约束满足规则，但不执行显式转换：
 
 ```ts
-type A = "ready" extends string ? true : false;
+type A = 'ready' extends string ? true : false;
 // true
 
 type B = Dog extends Animal ? true : false;
@@ -101,7 +101,7 @@ type D = number extends i32 ? true : false;
 条件类型的两个分支都必须完成名称绑定和声明期静态检查。真分支可以使用 `extends` 提供的类型事实：
 
 ```ts
-type Message<T> = T extends { message: infer _Message } ? T["message"] : never;
+type Message<T> = T extends { message: infer _Message } ? T['message'] : never;
 ```
 
 真分支已经证明 `T` 具有 `message`，因此索引访问合法。分支事实只在对应分支内有效，不进入外层别名或否定分支。
@@ -109,7 +109,7 @@ type Message<T> = T extends { message: infer _Message } ? T["message"] : never;
 条件类型不能采用实例化后试错：
 
 ```ts
-type Invalid<T> = T extends string ? T["missing"] : never;
+type Invalid<T> = T extends string ? T['missing'] : never;
 // 编译错误：真分支中的类型操作不合法
 ```
 
@@ -150,7 +150,7 @@ type Result = Whole<string | i32>;
 `never` 在分布式条件中表示空成员集合：
 
 ```ts
-type Check<T> = T extends string ? "yes" : "no";
+type Check<T> = T extends string ? 'yes' : 'no';
 
 type A = Check<never>;
 // never
@@ -159,7 +159,7 @@ type A = Check<never>;
 关闭分发后，`never` 按 T16 的底类型关系参与普通判断：
 
 ```ts
-type B = [never] extends [string] ? "yes" : "no";
+type B = [never] extends [string] ? 'yes' : 'no';
 // "yes"
 ```
 
@@ -363,7 +363,7 @@ type C = NonNullable<string | null | undefined>;
 工具只处理已有联合成员，不对无限值域执行集合减法：
 
 ```ts
-type Text = Exclude<string, "reserved">;
+type Text = Exclude<string, 'reserved'>;
 // string
 ```
 
@@ -423,7 +423,7 @@ Nxts 支持 TypeScript 的 `as` 键重映射：
 
 ```ts
 type WithoutId<T> = {
-  [K in keyof T as K extends "id" ? never : K]: T[K];
+  [K in keyof T as K extends 'id' ? never : K]: T[K];
 };
 
 type Getters<T> = {
@@ -437,17 +437,17 @@ type Getters<T> = {
 
 ```ts
 type Source = {
-  readonly optional?: "a";
-  required: "b";
+  readonly optional?: 'a';
+  required: 'b';
 };
 
 type Result = {
-  [K in keyof Source as "value"]: Source[K];
+  [K in keyof Source as 'value']: Source[K];
 };
 
 // 等价于：
 type Normalized = {
-  readonly value?: "a" | "b";
+  readonly value?: 'a' | 'b';
 };
 ```
 
@@ -538,9 +538,9 @@ type View = Readonly<User>;
 ### `Pick` 与 `Omit`
 
 ```ts
-type PublicUser = Pick<User, "id" | "name">;
+type PublicUser = Pick<User, 'id' | 'name'>;
 
-type SafeUser = Omit<User, "password">;
+type SafeUser = Omit<User, 'password'>;
 ```
 
 `Pick` 要求每个选择键满足 `keyof T`。`Omit` 接受合法键类型并与 TypeScript 一样忽略不属于 `keyof T` 的键。两者保留剩余属性的类型、可选性和 readonly。
@@ -589,7 +589,7 @@ function select<C extends string>(
   return fallback;
 }
 
-select(["red", "green"] as const, "blue");
+select(['red', 'green'] as const, 'blue');
 // 编译错误
 ```
 
@@ -639,7 +639,7 @@ Nxts 不因该工具恢复函数 `call`、`apply` 或 `bind`。`ThisType<T>` 依
 Nxts 支持 TypeScript 模板字符串类型：
 
 ```ts
-type Event = `${"open" | "close"}Changed`;
+type Event = `${'open' | 'close'}Changed`;
 // "openChanged" | "closeChanged"
 
 type UserId = `user:${i32}`;
@@ -702,7 +702,7 @@ function formatCount(count: i32): `count:${i32}` {
 ```ts
 type EventName<T> = T extends `${infer Name}Changed` ? Name : never;
 
-type A = EventName<"userChanged">;
+type A = EventName<'userChanged'>;
 // "user"
 
 type Pair<T> = T extends `${infer Left}:${infer Right}` ? [Left, Right] : never;
@@ -715,10 +715,10 @@ type Pair<T> = T extends `${infer Left}:${infer Right}` ? [Left, Right] : never;
 ```ts
 type Port<T> = T extends `${infer N extends i32}` ? N : never;
 
-type A = Port<"8080">;
+type A = Port<'8080'>;
 // 8080，对应 i32 字面量
 
-type B = Port<"2147483648">;
+type B = Port<'2147483648'>;
 // never，超出 i32 范围
 ```
 
@@ -729,16 +729,16 @@ type B = Port<"2147483648">;
 Nxts 提供：
 
 ```ts
-type A = Uppercase<"ready">;
+type A = Uppercase<'ready'>;
 // "READY"
 
-type B = Lowercase<"HTTP">;
+type B = Lowercase<'HTTP'>;
 // "http"
 
-type C = Capitalize<"user">;
+type C = Capitalize<'user'>;
 // "User"
 
-type D = Uncapitalize<"User">;
+type D = Uncapitalize<'User'>;
 // "user"
 ```
 
@@ -749,12 +749,12 @@ type D = Uncapitalize<"User">;
 类型工具不转换运行时值：
 
 ```ts
-type Upper = Uppercase<"hello">;
+type Upper = Uppercase<'hello'>;
 
-const a: Upper = "hello";
+const a: Upper = 'hello';
 // 编译错误
 
-const b: Upper = "HELLO";
+const b: Upper = 'HELLO';
 // 合法
 ```
 

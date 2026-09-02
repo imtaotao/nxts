@@ -1,13 +1,13 @@
-import type { VariableDeclaration } from "@babel/types";
-import type { BinderContext } from "../context";
-import { resolveExpr } from "../walk/resolveExpr";
-import { declarePattern } from "./pattern";
+import type { VariableDeclaration } from '@babel/types';
+import type { BinderContext } from '../context';
+import { declarePattern } from './pattern';
+import { resolveExpr } from '../walk/resolveExpr';
 
 export function declareVariable(
   binder: BinderContext,
   statement: VariableDeclaration,
 ) {
-  if (statement.kind !== "const" && statement.kind !== "let") {
+  if (statement.kind !== 'const' && statement.kind !== 'let') {
     return;
   }
   for (const declarator of statement.declarations) {

@@ -3,19 +3,19 @@
 // no: using x = foo()
 // no: await using x = foo()
 
-import type { Rule } from "../../types";
-import { rejectNode } from "../rejectNode";
+import type { Rule } from '../../types';
+import { rejectNode } from '../rejectNode';
 
 export const usingRule: Rule = {
-  name: "using",
+  name: 'using',
   check: (node, ctx) => {
-    if (node.type === "VariableDeclaration") {
-      if (node.kind === "using" || node.kind === "await using") {
-        return rejectNode(node, ctx, "parser.using");
+    if (node.type === 'VariableDeclaration') {
+      if (node.kind === 'using' || node.kind === 'await using') {
+        return rejectNode(node, ctx, 'parser.using');
       }
     }
-    if (node.type === "VoidPattern") {
-      return rejectNode(node, ctx, "parser.using");
+    if (node.type === 'VoidPattern') {
+      return rejectNode(node, ctx, 'parser.using');
     }
     return null;
   },

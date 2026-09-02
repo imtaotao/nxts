@@ -87,11 +87,11 @@ enum State {
 ```ts
 enum HttpStatus {
   Ok = 200,
-  "not-found" = 404,
+  'not-found' = 404,
 }
 
 const ok = HttpStatus.Ok;
-const missing = HttpStatus["not-found"];
+const missing = HttpStatus['not-found'];
 ```
 
 成员名可以是标识符、静态属性关键字或字符串字面量。以下形式编译错误：
@@ -139,8 +139,8 @@ enum Status {
 
 ```ts
 enum Mode {
-  Fast = "fast",
-  Safe = "safe",
+  Fast = 'fast',
+  Safe = 'safe',
 }
 ```
 
@@ -153,7 +153,7 @@ enum Mode {
 ```ts
 enum Invalid {
   Numeric = 1,
-  Text = "text",
+  Text = 'text',
 }
 // 编译错误
 ```
@@ -284,7 +284,7 @@ function parseState(raw: i32) {
 ```ts
 const next = State.Idle + 1; // i32
 const ordered = State.Idle < 10; // boolean
-const label = "mode:" + Mode.Fast; // string
+const label = 'mode:' + Mode.Fast; // string
 ```
 
 | 操作                          | 结果                                         |

@@ -13,23 +13,23 @@ import type {
   RestElement,
   ReturnStatement,
   VariableDeclaration,
-} from "@babel/types";
-import { describe, expect, it } from "vitest";
+} from '@babel/types';
+import { describe, expect, it } from 'vitest';
 import {
   bindSource,
   diagnosticIds,
   sameSymbol,
   scopeKindOf,
   symbolOf,
-} from "./utils";
+} from './utils';
 
 const declaratorOf = (
-  file: Awaited<ReturnType<typeof bindSource>>["file"],
+  file: Awaited<ReturnType<typeof bindSource>>['file'],
   index: number,
 ) => (file.ast.program.body[index] as VariableDeclaration).declarations[0];
 
 const assignmentOf = (
-  file: Awaited<ReturnType<typeof bindSource>>["file"],
+  file: Awaited<ReturnType<typeof bindSource>>['file'],
   index: number,
 ) =>
   (
@@ -37,10 +37,10 @@ const assignmentOf = (
       .expression as ParenthesizedExpression
   ).expression as AssignmentExpression;
 
-describe("destructure", () => {
-  it("declares object pattern names and skips static keys", async () => {
+describe('destructure', () => {
+  it('declares object pattern names and skips static keys', async () => {
     const { file, bound } = await bindSource(
-      "const src = 1; const k = 1; const { a, b: c, [k]: d, e = src, ...r } = src;",
+      'const src = 1; const k = 1; const { a, b: c, [k]: d, e = src, ...r } = src;',
     );
     const src = declaratorOf(file, 0).id;
     const k = declaratorOf(file, 1).id;
@@ -62,9 +62,9 @@ describe("destructure", () => {
     expect(bound.diagnostics).toEqual([]);
   });
 
-  it("declares array pattern names including rest", async () => {
+  it('declares array pattern names including rest', async () => {
     const { file, bound } = await bindSource(
-      "const src = 1; const [a, , b, ...r] = src;",
+      'const src = 1; const [a, , b, ...r] = src;',
     );
     const pattern = declaratorOf(file, 1).id as ArrayPattern;
 
@@ -76,9 +76,9 @@ describe("destructure", () => {
     expect(bound.diagnostics).toEqual([]);
   });
 
-  it("binds a nested pattern name at its use site", async () => {
+  it('binds a nested pattern name at its use site', async () => {
     const { file, bound } = await bindSource(
-      "const src = 1; const { a: { b } } = src; b;",
+      'const src = 1; const { a: { b } } = src; b;',
     );
     const pattern = declaratorOf(file, 1).id as ObjectPattern;
     const inner = (pattern.properties[0] as ObjectProperty)
@@ -90,9 +90,9 @@ describe("destructure", () => {
     expect(bound.diagnostics).toEqual([]);
   });
 
-  it("resolves assignment pattern names", async () => {
+  it('resolves assignment pattern names', async () => {
     const { file, bound } = await bindSource(
-      "const src = 1; let a; let c; ({ a, b: c } = src);",
+      'const src = 1; let a; let c; ({ a, b: c } = src);',
     );
     const src = declaratorOf(file, 0).id;
     const a = declaratorOf(file, 1).id;
@@ -109,33 +109,33 @@ describe("destructure", () => {
     expect(bound.diagnostics).toEqual([]);
   });
 
-  it("leaves an assignment pattern name unbound when it was not declared", async () => {
-    const { file, bound } = await bindSource("const src = 1; ({ a } = src);");
+  it('leaves an assignment pattern name unbound when it was not declared', async () => {
+    const { file, bound } = await bindSource('const src = 1; ({ a } = src);');
     const assign = assignmentOf(file, 1);
     const a = ((assign.left as ObjectPattern).properties[0] as ObjectProperty)
       .value;
 
     expect(symbolOf(bound, file, a)).toBe(null);
-    expect(diagnosticIds(bound)).toEqual(["binder.unresolved"]);
-    expect(bound.diagnostics[0]?.arguments).toEqual(["a"]);
+    expect(diagnosticIds(bound)).toEqual(['binder.unresolved']);
+    expect(bound.diagnostics[0]?.arguments).toEqual(['a']);
   });
 
-  it("reports a duplicate name inside one pattern", async () => {
+  it('reports a duplicate name inside one pattern', async () => {
     const { file, bound } = await bindSource(
-      "const src = 1; const { a, b: a } = src;",
+      'const src = 1; const { a, b: a } = src;',
     );
     const pattern = declaratorOf(file, 1).id as ObjectPattern;
     const first = (pattern.properties[0] as ObjectProperty).value;
     const second = (pattern.properties[1] as ObjectProperty).value;
 
     expect(sameSymbol(bound, file, first, second)).toBe(false);
-    expect(diagnosticIds(bound)).toEqual(["binder.duplicate"]);
-    expect(bound.diagnostics[0]?.arguments).toEqual(["a"]);
+    expect(diagnosticIds(bound)).toEqual(['binder.duplicate']);
+    expect(bound.diagnostics[0]?.arguments).toEqual(['a']);
   });
 
-  it("declares destructured function parameters", async () => {
+  it('declares destructured function parameters', async () => {
     const { file, bound } = await bindSource(
-      "const n = 1; function f({ a }, [b]) { return a + b + n; }",
+      'const n = 1; function f({ a }, [b]) { return a + b + n; }',
     );
     const n = declaratorOf(file, 0).id;
     const fn = file.ast.program.body[1] as FunctionDeclaration;
@@ -147,17 +147,17 @@ describe("destructure", () => {
       .argument as BinaryExpression;
     const left = sum.left as BinaryExpression;
 
-    expect(scopeKindOf(bound, "a")).toBe("function");
-    expect(scopeKindOf(bound, "b")).toBe("function");
+    expect(scopeKindOf(bound, 'a')).toBe('function');
+    expect(scopeKindOf(bound, 'b')).toBe('function');
     expect(sameSymbol(bound, file, a, left.left)).toBe(true);
     expect(sameSymbol(bound, file, b, left.right)).toBe(true);
     expect(sameSymbol(bound, file, n, sum.right)).toBe(true);
     expect(bound.diagnostics).toEqual([]);
   });
 
-  it("declares a for-of object pattern in the loop scope", async () => {
+  it('declares a for-of object pattern in the loop scope', async () => {
     const { file, bound } = await bindSource(
-      "function f(items) { for (const { x } of items) { return x; } }",
+      'function f(items) { for (const { x } of items) { return x; } }',
     );
     const fn = file.ast.program.body[0] as FunctionDeclaration;
     const loop = fn.body.body[0] as ForOfStatement;
@@ -167,15 +167,15 @@ describe("destructure", () => {
     ).value;
     const ret = (loop.body as BlockStatement).body[0] as ReturnStatement;
 
-    expect(scopeKindOf(bound, "x")).toBe("block");
+    expect(scopeKindOf(bound, 'x')).toBe('block');
     expect(sameSymbol(bound, file, x, ret.argument)).toBe(true);
     expect(sameSymbol(bound, file, fn.params[0], loop.right)).toBe(true);
     expect(bound.diagnostics).toEqual([]);
   });
 
-  it("resolves a for-of assignment pattern without declaring it", async () => {
+  it('resolves a for-of assignment pattern without declaring it', async () => {
     const { file, bound } = await bindSource(
-      "function f(x, items) { for ({ a: x } of items) { return x; } }",
+      'function f(x, items) { for ({ a: x } of items) { return x; } }',
     );
     const fn = file.ast.program.body[0] as FunctionDeclaration;
     const loop = fn.body.body[0] as ForOfStatement;

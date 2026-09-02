@@ -1,6 +1,6 @@
-import type { Node } from "@babel/types";
-import type { RuleContext } from "../types";
-import { rules } from "./rules";
+import type { Node } from '@babel/types';
+import type { RuleContext } from '../types';
+import { rules } from './rules';
 
 export function validate(
   nodes: Node[],

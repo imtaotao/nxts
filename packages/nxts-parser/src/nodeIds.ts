@@ -1,11 +1,11 @@
-import { isArray } from "aidly";
-import { VISITOR_KEYS, isNode, type Node } from "@babel/types";
-import { createDiagnostic, type MessageId } from "./diagnostics/catalog";
-import type { SourceSnapshot } from "./snapshot";
-import type { Diagnostic } from "./types";
+import { isArray } from 'aidly';
+import { VISITOR_KEYS, isNode, type Node } from '@babel/types';
+import { createDiagnostic, type MessageId } from './diagnostics/catalog';
+import type { SourceSnapshot } from './snapshot';
+import type { Diagnostic } from './types';
 
 const isFiniteNumber = (value: unknown): value is number => {
-  return typeof value === "number" && Number.isFinite(value);
+  return typeof value === 'number' && Number.isFinite(value);
 };
 
 const readSpan = (node: Node) => {
@@ -22,10 +22,10 @@ const spanMessageId = (
 ): MessageId | null => {
   const span = readSpan(node);
   if (!span) {
-    return "parser.ast.missingSpan";
+    return 'parser.ast.missingSpan';
   }
   if (span.start < 0 || span.end > textLength || span.start > span.end) {
-    return "parser.ast.invalidSpan";
+    return 'parser.ast.invalidSpan';
   }
   if (node.range != null) {
     if (
@@ -34,7 +34,7 @@ const spanMessageId = (
       node.range[0] !== span.start ||
       node.range[1] !== span.end
     ) {
-      return "parser.ast.invalidSpan";
+      return 'parser.ast.invalidSpan';
     }
   }
   if (parent) {
@@ -43,7 +43,7 @@ const spanMessageId = (
       parentSpan &&
       (span.start < parentSpan.start || span.end > parentSpan.end)
     ) {
-      return "parser.ast.parentSpan";
+      return 'parser.ast.parentSpan';
     }
   }
   return null;
@@ -99,7 +99,7 @@ export function assignNodeIds(root: Node | null, snapshot: SourceSnapshot) {
     if (VISITOR_KEYS[node.type] == null) {
       invalidNodes.add(node);
       diagnostics.push(
-        contractDiagnostic(node, "parser.ast.unknownNode", false),
+        contractDiagnostic(node, 'parser.ast.unknownNode', false),
       );
       return;
     }
@@ -111,7 +111,7 @@ export function assignNodeIds(root: Node | null, snapshot: SourceSnapshot) {
         contractDiagnostic(
           node,
           messageId,
-          messageId === "parser.ast.parentSpan",
+          messageId === 'parser.ast.parentSpan',
         ),
       );
     } else {

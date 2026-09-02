@@ -3,17 +3,17 @@
 // 空洞会逼出孔位标记或哈希槽，破坏固定元素布局和扫描；不是单纯禁一种写法。
 // no: const a = [1, , 2]
 
-import type { Rule } from "../../types";
-import { rejectNode } from "../rejectNode";
+import type { Rule } from '../../types';
+import { rejectNode } from '../rejectNode';
 
 export const arrayHoleRule: Rule = {
-  name: "arrayHole",
+  name: 'arrayHole',
   check: (node, ctx) => {
     if (
-      node.type === "ArrayExpression" &&
+      node.type === 'ArrayExpression' &&
       node.elements.some((element) => element === null)
     ) {
-      return rejectNode(node, ctx, "parser.arrayHole");
+      return rejectNode(node, ctx, 'parser.arrayHole');
     }
     return null;
   },

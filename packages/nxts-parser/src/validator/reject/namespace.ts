@@ -3,14 +3,14 @@
 // no: namespace A {}
 // no: declare global {}
 
-import type { Rule } from "../../types";
-import { rejectNode } from "../rejectNode";
+import type { Rule } from '../../types';
+import { rejectNode } from '../rejectNode';
 
 export const namespaceRule: Rule = {
-  name: "namespace",
+  name: 'namespace',
   check: (node, ctx) => {
-    if (node.type === "TSModuleDeclaration") {
-      return rejectNode(node, ctx, "parser.namespace");
+    if (node.type === 'TSModuleDeclaration') {
+      return rejectNode(node, ctx, 'parser.namespace');
     }
     return null;
   },

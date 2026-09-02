@@ -25,7 +25,7 @@
 交叉类型使用 TypeScript 的 `&` 语法：
 
 ```ts
-type Ready = string & "ready";
+type Ready = string & 'ready';
 type Entity = { id: i32 } & { name: string };
 ```
 
@@ -91,7 +91,7 @@ unknown & never       => never
 T28 的标准 `Brand<T, Tag>` 在 TypeScript 工具侧可以声明为底层类型与 `unique symbol` 幻象属性的交叉。Nxts checker 在确认该标准库声明身份后，将它解析为专用静态 `BrandType(T, Tag)`，不进入普通对象交叉归一化：
 
 ```ts
-type UserId = Brand<i64, "UserId">;
+type UserId = Brand<i64, 'UserId'>;
 ```
 
 该特例不允许用户声明任意 symbol 属性键，也不使 `i64 & { readonly marker: "UserId" }` 一类基础类型与对象交叉合法。品牌兼容、构造和擦除规则由 T28、T43 定义。
@@ -162,7 +162,7 @@ type Person = {
 同名属性的值类型递归计算交叉：
 
 ```ts
-type Narrowed = { value: string } & { value: "ready" };
+type Narrowed = { value: string } & { value: 'ready' };
 
 // { value: "ready" }
 ```
@@ -190,7 +190,7 @@ type Invalid = { value: string } & { value: i32 };
 
 ```ts
 const person: Person = {
-  name: "Tom",
+  name: 'Tom',
   age: 20,
 };
 ```
@@ -251,8 +251,7 @@ A & (B | C) => normalize((A & B) | (A & C))
 
 ```ts
 type Result = (
-  | { kind: "text"; value: string }
-  | { kind: "count"; value: i32 }
+  { kind: 'text'; value: string } | { kind: 'count'; value: i32 }
 ) & { id: i32 };
 ```
 
@@ -260,8 +259,8 @@ type Result = (
 
 ```ts
 type Result =
-  | { id: i32; kind: "text"; value: string }
-  | { id: i32; kind: "count"; value: i32 };
+  | { id: i32; kind: 'text'; value: string }
+  | { id: i32; kind: 'count'; value: i32 };
 ```
 
 分配律只作用于顶层交叉成员，不进入普通类型构造器：

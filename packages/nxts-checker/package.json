@@ -2,14 +2,15 @@
   "name": "@nxts/checker",
   "version": "0.0.1",
   "description": "Type checking and flow analysis for Nxts.",
-  "author": "chentao.arthur",
   "license": "MIT",
-  "scripts": {
-    "dev": "auk dev",
-    "build": "auk build",
-    "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
-  },
+  "author": "chentao.arthur",
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.cts",
+  "unpkg": "./dist/index.global.js",
   "exports": {
     ".": {
       "import": {
@@ -22,23 +23,22 @@
       }
     }
   },
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.mjs",
-  "unpkg": "./dist/index.global.js",
-  "types": "./dist/index.d.cts",
-  "files": [
-    "dist"
-  ],
+  "scripts": {
+    "dev": "auk dev",
+    "build": "auk build",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
   "dependencies": {
+    "@babel/types": "catalog:",
     "@nxts/binder": "workspace:*",
     "@nxts/parser": "workspace:*",
-    "@babel/types": "catalog:",
     "aidly": "catalog:"
   },
   "devDependencies": {
     "@vitest/coverage-v8": "catalog:",
     "auklet": "catalog:",
-    "vitest": "catalog:",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }

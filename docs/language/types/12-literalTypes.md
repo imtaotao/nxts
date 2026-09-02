@@ -14,7 +14,7 @@
 T20 支持以下字面量类型：
 
 ```ts
-type Direction = "left" | "right";
+type Direction = 'left' | 'right';
 type Status = 200 | 404;
 type Enabled = true;
 ```
@@ -64,7 +64,7 @@ NumericLiteral(number, 1.0)
 
 ```ts
 const sum = 1 + 1; // i32，不是 2
-const text = "a" + "b"; // string，不是 "ab"
+const text = 'a' + 'b'; // string，不是 "ab"
 ```
 
 优化器仍可把这些表达式折叠为常量，但优化结果不能反向改变 checker 类型或诊断。具体运算符若需要产生字面量结果，必须由 T50 明确列入静态规则，不能依赖优化级别。
@@ -106,13 +106,13 @@ widening 只丢弃静态精确信息，不执行运行时转换：
 | 条件表达式                        | 无上下文时保留不同字面量联合；有上下文时按目标检查。  |
 
 ```ts
-const mode = "on"; // "on"
+const mode = 'on'; // "on"
 const alias = mode; // "on"
-let mutable = "on"; // string
+let mutable = 'on'; // string
 
-const config = { mode: "on" }; // { mode: string }
-const modes = ["on", "off"]; // string[]
-const selected = flag ? "on" : "off"; // "on" | "off"
+const config = { mode: 'on' }; // { mode: string }
+const modes = ['on', 'off']; // string[]
+const selected = flag ? 'on' : 'off'; // "on" | "off"
 ```
 
 `readonly` 上下文中的精确属性类型可以保留字面量，但 T20 不通过普通对象字面量自行推导 `readonly`。`as const` 的支持范围和递归只读行为由 [T40](./26-typeOperators.md) 定义。
@@ -128,13 +128,13 @@ const selected = flag ? "on" : "off"; // "on" | "off"
 
 ```ts
 function single() {
-  return "ready";
+  return 'ready';
 }
 // () => string
 
 function multiple(flag: boolean) {
-  if (flag) return "ready";
-  return "failed";
+  if (flag) return 'ready';
+  return 'failed';
 }
 // () => "ready" | "failed"
 
@@ -149,11 +149,11 @@ const choose = (flag: boolean) => (flag ? 1 : 2);
 字面量类型可以零成本赋给对应基础类型。基础类型不能赋给字面量类型，除非源表达式的静态类型已经是该字面量，或控制流规则已经证明对应有限成员：
 
 ```ts
-const ready: "ready" = "ready";
+const ready: 'ready' = 'ready';
 const text: string = ready;
 
 const requireReady = (unknownText: string) => {
-  const invalid: "ready" = unknownText; // 编译错误
+  const invalid: 'ready' = unknownText; // 编译错误
 };
 ```
 
@@ -180,7 +180,7 @@ function identity<T>(value: T) {
   return value;
 }
 
-const value = identity("ready"); // "ready"
+const value = identity('ready'); // "ready"
 ```
 
 多个候选按 T04、T05 计算公共类型，不能使用 `any`、`unknown` 或隐藏转换兜底。参数约束、可变容器位置和上下文返回类型是否要求 widening 由 T37 结合本节的基础关系定义。

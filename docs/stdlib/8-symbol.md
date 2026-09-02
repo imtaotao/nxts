@@ -14,7 +14,7 @@
 当前只提供可调用、不可构造的 `Symbol`：
 
 ```ts
-const token = Symbol("token");
+const token = Symbol('token');
 const numbered = Symbol(1);
 const anonymous = Symbol();
 ```

@@ -7,28 +7,28 @@
 // no: type T = [...number[], string, ...boolean[]]
 // no: type T = [...number[], string?]
 
-import { isArray } from "aidly";
-import type { Node } from "@babel/types";
-import type { Rule } from "../../types";
-import { rejectNode } from "../rejectNode";
+import { isArray } from 'aidly';
+import type { Node } from '@babel/types';
+import type { Rule } from '../../types';
+import { rejectNode } from '../rejectNode';
 
 const isOptionalElement = (node: Node) =>
-  node.type === "TSOptionalType" ||
-  (node.type === "TSNamedTupleMember" && node.optional === true);
+  node.type === 'TSOptionalType' ||
+  (node.type === 'TSNamedTupleMember' && node.optional === true);
 
 const unwrapRestAnnotation = (annotation: Node) => {
   let inner = annotation;
-  if (inner.type === "TSNamedTupleMember") {
+  if (inner.type === 'TSNamedTupleMember') {
     inner = inner.elementType;
   }
-  if (inner.type === "TSTypeOperator" && inner.operator === "readonly") {
+  if (inner.type === 'TSTypeOperator' && inner.operator === 'readonly') {
     inner = inner.typeAnnotation;
   }
   return inner;
 };
 
 const restInner = (node: Node) => {
-  if (node.type !== "TSRestType") {
+  if (node.type !== 'TSRestType') {
     return null;
   }
   return unwrapRestAnnotation(node.typeAnnotation);
@@ -39,37 +39,37 @@ const isConcreteArrayRest = (node: Node) => {
   if (inner == null) {
     return false;
   }
-  if (inner.type === "TSArrayType") {
+  if (inner.type === 'TSArrayType') {
     return true;
   }
   return (
-    inner.type === "TSTypeReference" &&
-    inner.typeName.type === "Identifier" &&
-    (inner.typeName.name === "Array" || inner.typeName.name === "ReadonlyArray")
+    inner.type === 'TSTypeReference' &&
+    inner.typeName.type === 'Identifier' &&
+    (inner.typeName.name === 'Array' || inner.typeName.name === 'ReadonlyArray')
   );
 };
 
 export const tupleRestRule: Rule = {
-  name: "tupleRest",
+  name: 'tupleRest',
   check: (node, ctx) => {
-    if (node.type !== "TSTupleType" || !isArray(node.elementTypes)) {
+    if (node.type !== 'TSTupleType' || !isArray(node.elementTypes)) {
       return null;
     }
     let seenRest = false;
     let concreteRests = 0;
     for (const element of node.elementTypes) {
-      if (element.type === "TSRestType") {
+      if (element.type === 'TSRestType') {
         seenRest = true;
         if (isConcreteArrayRest(element)) {
           concreteRests += 1;
           if (concreteRests >= 2) {
-            return rejectNode(element, ctx, "parser.tupleRest");
+            return rejectNode(element, ctx, 'parser.tupleRest');
           }
         }
         continue;
       }
       if (seenRest && isOptionalElement(element)) {
-        return rejectNode(element, ctx, "parser.tupleRest");
+        return rejectNode(element, ctx, 'parser.tupleRest');
       }
     }
     return null;

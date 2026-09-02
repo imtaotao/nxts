@@ -2,14 +2,14 @@
 // Nxts 的 private 只是静态访问控制，字段仍是普通自身属性。
 // no: class A { #x = 1 }
 
-import type { Rule } from "../../types";
-import { rejectNode } from "../rejectNode";
+import type { Rule } from '../../types';
+import { rejectNode } from '../rejectNode';
 
 export const privateNameRule: Rule = {
-  name: "privateName",
+  name: 'privateName',
   check: (node, ctx) => {
-    if (node.type === "PrivateName") {
-      return rejectNode(node, ctx, "parser.privateName");
+    if (node.type === 'PrivateName') {
+      return rejectNode(node, ctx, 'parser.privateName');
     }
     return null;
   },

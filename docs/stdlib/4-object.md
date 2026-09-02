@@ -20,8 +20,8 @@ type Options = {
 const a: Options = {};
 const b: Options = { value: undefined };
 
-Object.hasOwn(a, "value"); // false
-Object.hasOwn(b, "value"); // true
+Object.hasOwn(a, 'value'); // false
+Object.hasOwn(b, 'value'); // true
 ```
 
 | key 与自身形状关系 | 处理                   |

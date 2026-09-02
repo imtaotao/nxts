@@ -1,6 +1,6 @@
-import { isObject } from "aidly";
-import { createDiagnostic } from "./catalog";
-import type { SourceSnapshot } from "../snapshot";
+import { isObject } from 'aidly';
+import { createDiagnostic } from './catalog';
+import type { SourceSnapshot } from '../snapshot';
 
 type BabelErrorLike = {
   message?: string;
@@ -25,14 +25,14 @@ export function diagnosticFromBabel(error: unknown, snapshot: SourceSnapshot) {
     fileId: snapshot.fileId,
     sourceVersion: snapshot.sourceVersion,
   };
-  if (e.reasonCode === "MissingPlugin") {
+  if (e.reasonCode === 'MissingPlugin') {
     return createDiagnostic(
-      "parser.unsupported",
+      'parser.unsupported',
       primarySpan,
       e.details?.missingPlugin ?? [],
     );
   }
-  return createDiagnostic("parser.babel", primarySpan, [
+  return createDiagnostic('parser.babel', primarySpan, [
     e.message ?? String(error),
   ]);
 }

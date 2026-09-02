@@ -39,8 +39,8 @@ first === copy; // false
 ```ts
 type Result = [value: string, error?: Error];
 
-const omitted: Result = ["ok"];
-const explicit: Result = ["ok", undefined];
+const omitted: Result = ['ok'];
+const explicit: Result = ['ok', undefined];
 
 omitted.length; // 1
 explicit.length; // 2

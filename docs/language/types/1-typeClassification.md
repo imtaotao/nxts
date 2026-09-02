@@ -85,7 +85,7 @@ never
 
 ```ts
 true;
-("ready");
+('ready');
 200;
 ```
 

@@ -1,17 +1,17 @@
-import type { parseFile, SourceSnapshot } from "@nxts/parser";
+import type { parseFile, SourceSnapshot } from '@nxts/parser';
 
 export type ParseFileResult = ReturnType<typeof parseFile>;
 
-export type NameSpace = "value" | "type" | "label";
+export type NameSpace = 'value' | 'type' | 'label';
 
 export type ScopeKind =
-  | "module"
-  | "function"
-  | "block"
-  | "class"
-  | "typeParams"
-  | "catch"
-  | "label";
+  | 'module'
+  | 'function'
+  | 'block'
+  | 'class'
+  | 'typeParams'
+  | 'catch'
+  | 'label';
 
 export type ScopeRecord = {
   id: number;
@@ -31,8 +31,8 @@ export type BinderDiagnostic = {
   code: string;
   messageId: string;
   arguments: readonly unknown[];
-  phase: "binder";
-  severity: "error" | "warning" | "info";
+  phase: 'binder';
+  severity: 'error' | 'warning' | 'info';
   primarySpan: {
     start: number;
     end: number;

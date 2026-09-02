@@ -46,7 +46,7 @@ const point = {
 };
 
 point.x = 3;
-point.label = "A"; // 编译错误
+point.label = 'A'; // 编译错误
 delete point.x; // 编译错误
 ```
 
@@ -91,7 +91,7 @@ Nxts 不采用 TypeScript 将 `{}` 解释为“除 `null` 和 `undefined` 外任
 普通对象支持数据属性、属性简写和对象方法简写：
 
 ```ts
-const name = "Nxts";
+const name = 'Nxts';
 const service = {
   name,
   version: 1,
@@ -111,12 +111,12 @@ const service = {
 
 ```ts
 const value = {
-  ["name"]: "Nxts",
-  [0]: "first",
+  ['name']: 'Nxts',
+  [0]: 'first',
 };
 
 const key: string = readKey();
-const dynamic = { [key]: "value" }; // 字符串字典
+const dynamic = { [key]: 'value' }; // 字符串字典
 ```
 
 | key 的静态类型             | 结果类别                           |
@@ -159,7 +159,7 @@ type Options = {
 };
 
 const options: Options = {};
-options.value = "enabled";
+options.value = 'enabled';
 ```
 
 可选属性和必需的 `T | undefined` 不同：
@@ -211,7 +211,7 @@ type LabeledPoint = {
 const labeled: LabeledPoint = {
   x: 1,
   y: 2,
-  label: "A",
+  label: 'A',
 };
 
 const point: PointA = labeled; // 编译错误
@@ -222,9 +222,9 @@ const point: PointA = labeled; // 编译错误
 ```ts
 function draw(point: PointA) {}
 
-draw({ x: 1, y: 2, label: "A" }); // 编译错误
+draw({ x: 1, y: 2, label: 'A' }); // 编译错误
 
-const value = { x: 1, y: 2, label: "A" };
+const value = { x: 1, y: 2, label: 'A' };
 draw(value); // 编译错误
 ```
 
@@ -279,8 +279,8 @@ type User = {
 };
 
 const updateUser = (user: User) => {
-  user.profile = { name: "new" }; // 编译错误
-  user.profile.name = "new"; // 合法
+  user.profile = { name: 'new' }; // 编译错误
+  user.profile.name = 'new'; // 合法
 };
 ```
 

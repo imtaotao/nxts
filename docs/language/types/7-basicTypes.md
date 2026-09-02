@@ -78,7 +78,7 @@ checker 只执行保守收窄：
 `&&` 与 `||` 不是只接受并返回 `boolean` 的运算符。它们的结果类型来自 JavaScript 值选择语义：
 
 ```ts
-const name = input || "anonymous";
+const name = input || 'anonymous';
 const user = ready && currentUser;
 ```
 

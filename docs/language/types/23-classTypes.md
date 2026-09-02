@@ -41,7 +41,7 @@ class User {
   }
 }
 
-let user: User = new User("Ada");
+let user: User = new User('Ada');
 let constructorValue: typeof User = User;
 ```
 
@@ -183,11 +183,11 @@ class Base {
 }
 
 class Valid extends Base {
-  value = ""; // 仍为 string | i32
+  value = ''; // 仍为 string | i32
 }
 
 class Invalid extends Base {
-  value: string = ""; // 编译错误
+  value: string = ''; // 编译错误
 }
 ```
 
@@ -422,7 +422,7 @@ interface Named {
 }
 
 class User implements Named {
-  name = "user";
+  name = 'user';
 }
 ```
 
@@ -443,10 +443,10 @@ class User implements Named {
 可在编译期归一为字符串或数值字面量的计算成员名按固定成员处理：
 
 ```ts
-const key = "status";
+const key = 'status';
 
 class Task {
-  [key] = "ready";
+  [key] = 'ready';
 }
 ```
 

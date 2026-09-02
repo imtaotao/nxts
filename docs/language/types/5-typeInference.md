@@ -38,10 +38,10 @@
 显式类型注解优先于默认推导。checker 先解析注解为目标类型，再检查初始化表达式是否赋值兼容。
 
 ```ts
-const mode: string = "on";
+const mode: string = 'on';
 // mode: string
 
-let exact: "on" = "on";
+let exact: 'on' = 'on';
 // exact: "on"
 ```
 
@@ -62,7 +62,7 @@ const requireNative = (value: number) => {
 `const` 绑定的基础字面量默认保留字面量类型：
 
 ```ts
-const mode = "on";
+const mode = 'on';
 // mode: "on"
 
 const enabled = true;
@@ -72,17 +72,17 @@ const enabled = true;
 `let` 绑定的基础字面量默认 widening 到对应基础类型：
 
 ```ts
-let status = "ready";
+let status = 'ready';
 // status: string
 
-status = "done"; // 合法
+status = 'done'; // 合法
 ```
 
 显式注解可以要求 `let` 使用字面量类型：
 
 ```ts
-let status: "ready" = "ready";
-status = "done"; // 编译错误
+let status: 'ready' = 'ready';
+status = 'done'; // 编译错误
 ```
 
 数字字面量的默认类型、上下文推导到原生数值类型、越界诊断和负数字面量规则由字面量类型与数值类型规范定义。T05 只规定 `const` 默认保留、`let` 默认 widening 的方向。
@@ -94,7 +94,7 @@ status = "done"; // 编译错误
 直接以 `Symbol()` 初始化的 `const` 声明获得新的 `unique symbol` 类型。该精确身份不会默认传播到可重新赋值或可批量存储的位置：
 
 ```ts
-const token = Symbol("token"); // typeof token
+const token = Symbol('token'); // typeof token
 const alias = token; // symbol
 const exact: typeof token = token;
 
@@ -113,21 +113,21 @@ const object = { token }; // { token: symbol }
 
 ```ts
 const config = {
-  mode: "on",
+  mode: 'on',
 };
 // config: { mode: string }
 
-config.mode = "off"; // 合法
+config.mode = 'off'; // 合法
 ```
 
 需要保留对象属性字面量类型时，使用显式类型注解或 [`as const`](./26-typeOperators.md)：
 
 ```ts
-const config: { mode: "on" } = {
-  mode: "on",
+const config: { mode: 'on' } = {
+  mode: 'on',
 };
 
-config.mode = "off"; // 编译错误
+config.mode = 'off'; // 编译错误
 ```
 
 `as const` 按 T40 保留直接字面量、递归处理当前字面量并产生 readonly 对象或元组；完整规则见 [`26-typeOperators.md`](./26-typeOperators.md)。
@@ -136,10 +136,10 @@ config.mode = "off"; // 编译错误
 
 ```ts
 const inferDictionary = (key: string) => {
-  const text = { [key]: "value" };
+  const text = { [key]: 'value' };
   // { [key: string]: string }
 
-  const mixed = { [key]: "value", count: 1 };
+  const mixed = { [key]: 'value', count: 1 };
   // { [key: string]: string | number }
 };
 ```
@@ -171,17 +171,17 @@ const inferDictionary = (key: string) => {
 存在上下文类型时，checker 使用上下文类型分别检查两个分支：
 
 ```ts
-const mode: string = flag ? "on" : "off";
+const mode: string = flag ? 'on' : 'off';
 // mode: string
 ```
 
 无上下文类型时，checker 先分别推导两个分支类型，再使用 T04 的最小公共上界规则合并：
 
 ```ts
-const mode = flag ? "on" : "off";
+const mode = flag ? 'on' : 'off';
 // mode: "on" | "off"
 
-const value = flag ? "on" : 1;
+const value = flag ? 'on' : 1;
 // value: "on" | 1
 ```
 
@@ -190,7 +190,7 @@ const value = flag ? "on" : 1;
 `never` 分支被另一侧吸收：
 
 ```ts
-const value = flag ? fail("missing") : "ready";
+const value = flag ? fail('missing') : 'ready';
 // value: "ready"
 ```
 
@@ -205,7 +205,7 @@ const value = flag ? fail("missing") : "ready";
 ```ts
 function read(flag: boolean): string {
   if (flag) {
-    return "ok";
+    return 'ok';
   }
 
   return; // 编译错误：undefined 不能赋给 string
@@ -221,10 +221,10 @@ function read(flag: boolean): string {
 ```ts
 function read(flag: boolean) {
   if (flag) {
-    return "ok";
+    return 'ok';
   }
 
-  return "missing";
+  return 'missing';
 }
 // () => "ok" | "missing"
 ```
@@ -243,7 +243,7 @@ function log(message: string) {
 ```ts
 function read(flag: boolean) {
   if (flag) {
-    return "ok";
+    return 'ok';
   }
 
   return;
@@ -262,17 +262,17 @@ function missing() {
 
 ```ts
 function declarationThrow() {
-  throw new Error("failed");
+  throw new Error('failed');
 }
 // () => void
 
 const expressionThrow = () => {
-  throw new Error("failed");
+  throw new Error('failed');
 };
 // () => never
 
 function declarationReturn() {
-  return fail("failed");
+  return fail('failed');
 }
 // () => never
 ```
@@ -285,7 +285,7 @@ function returnsNumber(value: never): number {
 }
 
 function nestedReturn() {
-  return returnsNumber(fail("failed"));
+  return returnsNumber(fail('failed'));
 }
 // () => number；函数体的正常完成状态为“不能完成”
 ```
@@ -308,7 +308,7 @@ const values = [1, 2, 3];
 
 values.push(4); // 合法
 
-const mixed = [1, "x"];
+const mixed = [1, 'x'];
 // mixed: (i32 | string)[]
 ```
 
@@ -351,7 +351,7 @@ const extra: Point = { x: 1, y: 2, z: 3 }; // 编译错误：对象形状不同
 
 ```ts
 const config = {
-  mode: "on",
+  mode: 'on',
 };
 // config: { mode: string }
 ```
@@ -378,7 +378,7 @@ interface OptionsView {
 
 const raw = {}; // 精确空对象形状
 const options: OptionsView = raw; // 合法：可选成员可以缺失
-options.cache = "memory"; // 合法：存储语义由 T29 定义
+options.cache = 'memory'; // 合法：存储语义由 T29 定义
 ```
 
 若接口存在源对象未提供的必选成员，仍然编译错误。接口转换可能生成固定大小的 `InterfacePack`，但不执行运行时字段扫描、对象复制或堆分配。
@@ -393,7 +393,7 @@ options.cache = "memory"; // 合法：存储语义由 T29 定义
 let empty = null;
 // empty: null
 
-empty = "value"; // 编译错误
+empty = 'value'; // 编译错误
 
 let missing = undefined;
 // missing: undefined
@@ -405,7 +405,7 @@ missing = 1; // 编译错误
 
 ```ts
 let name: string | null = null;
-name = "Nxts"; // 合法
+name = 'Nxts'; // 合法
 
 let value: i32 | undefined = undefined;
 value = 1; // 合法
@@ -426,7 +426,7 @@ function id<T>(value: T): T {
   return value;
 }
 
-const text = id<string>("on");
+const text = id<string>('on');
 // text: string
 ```
 
@@ -441,10 +441,10 @@ function pair<T>(left: T, right: T): T[] {
   return [left, right];
 }
 
-const selected = choose("on", "off");
+const selected = choose('on', 'off');
 // T 推导为 "on" | "off"
 
-const modes = pair("on", "off");
+const modes = pair('on', 'off');
 // T 推导为 string，modes 为 string[]
 ```
 
@@ -453,10 +453,10 @@ const modes = pair("on", "off");
 静态类型真实为 `never` 的实参可以提供泛型候选。所有候选均为 `never` 时推导对应类型参数为 `never`；同时存在普通候选时，`never` 按 T04 底类型规则被普通候选吸收。表达式能否正常完成仍按 T16 独立传播，不改变泛型调用的静态结果类型。
 
 ```ts
-const onlyNever = id(fail("failed"));
+const onlyNever = id(fail('failed'));
 // onlyNever: never
 
-const mixed = pair(1, fail("failed"));
+const mixed = pair(1, fail('failed'));
 // mixed: 1；调用不能正常完成
 ```
 
@@ -493,7 +493,7 @@ parser 和 Babel AST converter 可以识别并保留该语法节点，以便在 
 
 ```ts
 const config = {
-  mode: "on",
+  mode: 'on',
 } satisfies Config;
 // 编译错误：Nxts 不支持 satisfies
 ```
@@ -502,7 +502,7 @@ const config = {
 
 ```ts
 const config: Config = {
-  mode: "on",
+  mode: 'on',
 };
 ```
 

@@ -12,19 +12,19 @@ import type {
   TSInstantiationExpression,
   TSSatisfiesExpression,
   VariableDeclaration,
-} from "@babel/types";
-import { describe, expect, it } from "vitest";
-import { bindSource, sameSymbol, symbolOf } from "./utils";
+} from '@babel/types';
+import { describe, expect, it } from 'vitest';
+import { bindSource, sameSymbol, symbolOf } from './utils';
 
 const initOf = (
-  file: Awaited<ReturnType<typeof bindSource>>["file"],
+  file: Awaited<ReturnType<typeof bindSource>>['file'],
   index: number,
 ) => (file.ast.program.body[index] as VariableDeclaration).declarations[0].init;
 
-describe("expr", () => {
-  it("binds object values and computed keys, not static keys", async () => {
+describe('expr', () => {
+  it('binds object values and computed keys, not static keys', async () => {
     const { file, bound } = await bindSource(
-      "const n = 1; let m = { n, k: n, [n]: 1, ...n };",
+      'const n = 1; let m = { n, k: n, [n]: 1, ...n };',
     );
     const n = (file.ast.program.body[0] as VariableDeclaration).declarations[0]
       .id;
@@ -42,9 +42,9 @@ describe("expr", () => {
     expect(bound.diagnostics).toEqual([]);
   });
 
-  it("binds identifiers nested in value expressions", async () => {
+  it('binds identifiers nested in value expressions', async () => {
     const { file, bound } = await bindSource(
-      "const n = 1; let m = n ? [n, ...n] : (n, n);",
+      'const n = 1; let m = n ? [n, ...n] : (n, n);',
     );
     const n = (file.ast.program.body[0] as VariableDeclaration).declarations[0]
       .id;
@@ -62,9 +62,9 @@ describe("expr", () => {
     expect(bound.diagnostics).toEqual([]);
   });
 
-  it("binds the inner value of wrapper expressions", async () => {
+  it('binds the inner value of wrapper expressions', async () => {
     const { file, bound } = await bindSource(
-      "function f() {} const n = 1; let a = n satisfies i32; let b = f<i32>; async function g() { return await n; }",
+      'function f() {} const n = 1; let a = n satisfies i32; let b = f<i32>; async function g() { return await n; }',
     );
     const fn = file.ast.program.body[0] as FunctionDeclaration;
     const n = (file.ast.program.body[1] as VariableDeclaration).declarations[0]

@@ -2,14 +2,14 @@
 // 这块运行时对象和调用约定未定义；普通插值模板 `hi ${1}` 可以。
 // no: foo`hi`
 
-import type { Rule } from "../../types";
-import { rejectNode } from "../rejectNode";
+import type { Rule } from '../../types';
+import { rejectNode } from '../rejectNode';
 
 export const taggedTemplateRule: Rule = {
-  name: "taggedTemplate",
+  name: 'taggedTemplate',
   check: (node, ctx) => {
-    if (node.type === "TaggedTemplateExpression") {
-      return rejectNode(node, ctx, "parser.taggedTemplate");
+    if (node.type === 'TaggedTemplateExpression') {
+      return rejectNode(node, ctx, 'parser.taggedTemplate');
     }
     return null;
   },

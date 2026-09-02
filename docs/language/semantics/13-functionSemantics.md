@@ -23,9 +23,9 @@ function range(start = 0, end = start + 10): void {}
 默认参数位于必选参数之前时，调用方必须保留槽位并显式传入 `undefined` 才能触发默认值：
 
 ```ts
-function open(mode = "read", path: string): void {}
+function open(mode = 'read', path: string): void {}
 
-open(undefined, "data.txt");
+open(undefined, 'data.txt');
 ```
 
 进入函数体后，默认参数已经初始化为其非空缺类型。

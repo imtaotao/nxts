@@ -18,12 +18,12 @@ import type {
   TryStatement,
   VariableDeclaration,
   WhileStatement,
-} from "@babel/types";
-import type { BinderContext } from "../context";
-import { declareFunction } from "../declare/function";
-import { declarePattern } from "../declare/pattern";
-import { declareVariable } from "../declare/variable";
-import { resolveExpr } from "./resolveExpr";
+} from '@babel/types';
+import type { BinderContext } from '../context';
+import { declareFunction } from '../declare/function';
+import { declarePattern } from '../declare/pattern';
+import { declareVariable } from '../declare/variable';
+import { resolveExpr } from './resolveExpr';
 
 const bindForBinding = (
   binder: BinderContext,
@@ -31,7 +31,7 @@ const bindForBinding = (
   rest: () => void,
 ) => {
   if (declaration) {
-    binder.openScope("block");
+    binder.openScope('block');
     declareVariable(binder, declaration);
   }
   rest();
@@ -45,10 +45,10 @@ const bindForInOf = (
   statement: ForOfStatement | ForInStatement,
 ) => {
   const declaration =
-    statement.left.type === "VariableDeclaration" ? statement.left : null;
+    statement.left.type === 'VariableDeclaration' ? statement.left : null;
 
   bindForBinding(binder, declaration, () => {
-    if (statement.left.type !== "VariableDeclaration") {
+    if (statement.left.type !== 'VariableDeclaration') {
       resolveExpr(binder, statement.left);
     }
     resolveExpr(binder, statement.right);
@@ -85,7 +85,7 @@ const binders = {
   },
 
   BlockStatement: (binder: BinderContext, statement: BlockStatement) => {
-    binder.openScope("block");
+    binder.openScope('block');
     bindStatementList(binder, statement.body);
     binder.closeScope();
   },
@@ -110,10 +110,10 @@ const binders = {
 
   ForStatement: (binder: BinderContext, statement: ForStatement) => {
     const declaration =
-      statement.init?.type === "VariableDeclaration" ? statement.init : null;
+      statement.init?.type === 'VariableDeclaration' ? statement.init : null;
 
     bindForBinding(binder, declaration, () => {
-      if (statement.init && statement.init.type !== "VariableDeclaration") {
+      if (statement.init && statement.init.type !== 'VariableDeclaration') {
         resolveExpr(binder, statement.init);
       }
       if (statement.test) {
@@ -131,7 +131,7 @@ const binders = {
 
   SwitchStatement: (binder: BinderContext, statement: SwitchStatement) => {
     resolveExpr(binder, statement.discriminant);
-    binder.openScope("block");
+    binder.openScope('block');
     hoistFunctions(
       binder,
       statement.cases.flatMap((clause) => clause.consequent),
@@ -155,7 +155,7 @@ const binders = {
     bindStatement(binder, statement.block);
     if (statement.handler) {
       if (statement.handler.param) {
-        binder.openScope("catch");
+        binder.openScope('catch');
         declarePattern(binder, statement.handler.param);
         bindStatement(binder, statement.handler.body);
         binder.closeScope();
@@ -169,19 +169,19 @@ const binders = {
   },
 
   LabeledStatement: (binder: BinderContext, statement: LabeledStatement) => {
-    binder.declare("label", statement.label);
+    binder.declare('label', statement.label);
     bindStatement(binder, statement.body);
   },
 
   BreakStatement: (binder: BinderContext, statement: BreakStatement) => {
     if (statement.label) {
-      binder.resolve("label", statement.label);
+      binder.resolve('label', statement.label);
     }
   },
 
   ContinueStatement: (binder: BinderContext, statement: ContinueStatement) => {
     if (statement.label) {
-      binder.resolve("label", statement.label);
+      binder.resolve('label', statement.label);
     }
   },
 };
@@ -191,8 +191,8 @@ const hoistFunctions = (
   statements: Array<Statement | ModuleDeclaration>,
 ) => {
   for (const statement of statements) {
-    if (statement.type === "FunctionDeclaration" && statement.id) {
-      binder.declare("value", statement.id);
+    if (statement.type === 'FunctionDeclaration' && statement.id) {
+      binder.declare('value', statement.id);
     }
   }
 };

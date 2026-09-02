@@ -32,7 +32,7 @@ type User = {
   name: string;
 };
 
-type Status = "pending" | "done";
+type Status = 'pending' | 'done';
 ```
 
 别名声明只存在于类型空间，不生成运行时值。
@@ -173,8 +173,8 @@ checker 使用别名依赖图和强连通分量检测循环，把合法递归建
 普通 `type` 始终透明。需要防止相同底层类型被误用时，使用标准类型库提供的 `Brand<T, Tag>`：
 
 ```ts
-type UserId = Brand<i64, "UserId">;
-type OrderId = Brand<i64, "OrderId">;
+type UserId = Brand<i64, 'UserId'>;
+type OrderId = Brand<i64, 'OrderId'>;
 
 const useBrand = (value: i64) => {
   const userId = value as UserId;

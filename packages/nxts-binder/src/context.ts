@@ -1,5 +1,5 @@
-import type { Identifier } from "@babel/types";
-import { createDiagnostic, type MessageId } from "./catalog";
+import type { Identifier } from '@babel/types';
+import { createDiagnostic, type MessageId } from './catalog';
 import type {
   BindFileResult,
   BinderDiagnostic,
@@ -8,7 +8,7 @@ import type {
   ScopeKind,
   ScopeRecord,
   SymbolRecord,
-} from "./types";
+} from './types';
 
 type ScopeNames = Record<NameSpace, Map<string, number>>;
 
@@ -34,7 +34,7 @@ export class BinderContext {
 
   private nodeIdOf(node: object) {
     return (
-      this.file.nodeIds.get(node as ParseFileResult["nodes"][number]) ?? null
+      this.file.nodeIds.get(node as ParseFileResult['nodes'][number]) ?? null
     );
   }
 
@@ -84,7 +84,7 @@ export class BinderContext {
     }
     const table = this.names[this.current][space];
     if (table.has(node.name)) {
-      this.diagnose("binder.duplicate", node);
+      this.diagnose('binder.duplicate', node);
     }
     const id = this.symbols.length;
 
@@ -112,7 +112,7 @@ export class BinderContext {
       }
       scope = this.scopes[scope].parent;
     }
-    this.diagnose("binder.unresolved", node);
+    this.diagnose('binder.unresolved', node);
   }
 
   finish() {

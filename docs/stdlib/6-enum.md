@@ -14,7 +14,7 @@
 候选入口为：
 
 ```ts
-import { tryToEnum } from "std/enum";
+import { tryToEnum } from 'std/enum';
 
 function parseMode(raw: string): Mode | null {
   return tryToEnum<Mode>(raw);
@@ -39,7 +39,7 @@ function parseMode(raw: string): Mode | null {
 候选入口为：
 
 ```ts
-import { enumValues } from "std/enum";
+import { enumValues } from 'std/enum';
 
 const values = enumValues<State>();
 // readonly State[]

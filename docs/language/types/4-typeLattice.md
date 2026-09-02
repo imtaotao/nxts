@@ -50,7 +50,7 @@ function fail(message: string): never {
   throw new Error(message);
 }
 
-const value: string = fail("missing"); // 合法
+const value: string = fail('missing'); // 合法
 ```
 
 联合类型归一化时，`never` 成员被消去：
@@ -77,7 +77,7 @@ never | never  =>  never
 因此，不同类型合并时不能退化为 `any` 或 `unknown`：
 
 ```ts
-const value = flag ? "ready" : 1;
+const value = flag ? 'ready' : 1;
 // 推导为 string | number，而不是 unknown 或 any
 ```
 
@@ -134,10 +134,10 @@ UniqueSymbol(token) <= symbol
 同一基础类型下的多个字面量合并时，优先保留为字面量联合；如果上下文要求基础类型，或推导规则需要 widening，则使用对应基础类型。
 
 ```ts
-const a = flag ? "on" : "off";
+const a = flag ? 'on' : 'off';
 // 无上下文时可推导为 "on" | "off"
 
-const b: string = flag ? "on" : "off";
+const b: string = flag ? 'on' : 'off';
 // 上下文类型为 string
 ```
 
@@ -409,7 +409,7 @@ TypeScript 允许一些返回值被赋给 `void` 返回位置的宽松模式。N
 无上下文类型格合并优先保留字面量联合：
 
 ```ts
-const mode = flag ? "on" : "off";
+const mode = flag ? 'on' : 'off';
 // "on" | "off"
 ```
 

@@ -3,17 +3,17 @@
 // 类访问器挂在类上，编译期已知，不走这条。
 // no: const o = { get x() { return 1 } }
 
-import type { Rule } from "../../types";
-import { rejectNode } from "../rejectNode";
+import type { Rule } from '../../types';
+import { rejectNode } from '../rejectNode';
 
 export const objectLiteralAccessorRule: Rule = {
-  name: "objectLiteralAccessor",
+  name: 'objectLiteralAccessor',
   check: (node, ctx) => {
     if (
-      node.type === "ObjectMethod" &&
-      (node.kind === "get" || node.kind === "set")
+      node.type === 'ObjectMethod' &&
+      (node.kind === 'get' || node.kind === 'set')
     ) {
-      return rejectNode(node, ctx, "parser.objectLiteralAccessor");
+      return rejectNode(node, ctx, 'parser.objectLiteralAccessor');
     }
     return null;
   },

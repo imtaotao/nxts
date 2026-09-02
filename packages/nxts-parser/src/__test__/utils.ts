@@ -1,8 +1,8 @@
-import { assignNodeIds } from "../nodeIds";
-import { babelParse } from "../babel";
-import { parseFile } from "../index";
-import { createSnapshot } from "../snapshot";
-import { validate } from "../validator/index";
+import { assignNodeIds } from '../nodeIds';
+import { babelParse } from '../babel';
+import { parseFile } from '../index';
+import { createSnapshot } from '../snapshot';
+import { validate } from '../validator/index';
 
 export function snapshotFromText(
   code: string,
@@ -14,7 +14,7 @@ export function snapshotFromText(
 ) {
   return createSnapshot({
     utf8: new TextEncoder().encode(code),
-    canonicalPath: options?.canonicalPath ?? "test.ts",
+    canonicalPath: options?.canonicalPath ?? 'test.ts',
     fileId: options?.fileId,
     sourceVersion: options?.sourceVersion,
   });

@@ -1,8 +1,8 @@
-import type { BinderDiagnostic } from "./types";
+import type { BinderDiagnostic } from './types';
 
 export const messageCodes = {
-  "binder.unresolved": "NXT2101",
-  "binder.duplicate": "NXT2102",
+  'binder.unresolved': 'NXT2101',
+  'binder.duplicate': 'NXT2102',
 } as const;
 
 export type MessageId = keyof typeof messageCodes;
@@ -21,8 +21,8 @@ export function createDiagnostic(
     messageId,
     primarySpan: span,
     arguments: args,
-    phase: "binder",
-    severity: "error",
+    phase: 'binder',
+    severity: 'error',
     code: messageCodes[messageId],
   } satisfies BinderDiagnostic;
 }

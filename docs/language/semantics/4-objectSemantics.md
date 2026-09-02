@@ -48,8 +48,8 @@ const a: Options = {};
 const b: Options = { value: undefined };
 
 a.value === b.value; // true
-Object.hasOwn(a, "value"); // false
-Object.hasOwn(b, "value"); // true
+Object.hasOwn(a, 'value'); // false
+Object.hasOwn(b, 'value'); // true
 ```
 
 写入缺失的可写可选属性会使其存在；赋值为 `undefined` 仍保持存在。`delete` 清除存在状态，且缺失属性不能继续保活只由旧值引用的对象：

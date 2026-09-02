@@ -31,9 +31,9 @@
 const raw = {};
 const options: Options = raw;
 
-Object.hasOwn(raw, "cache"); // false
-options.cache = "memory";
-Object.hasOwn(raw, "cache"); // true
+Object.hasOwn(raw, 'cache'); // false
+options.cache = 'memory';
+Object.hasOwn(raw, 'cache'); // true
 ```
 
 接口转换本身不分配。若具体对象没有预留槽位，首次写入可以按需分配有限扩展状态；该成本发生在写入，不发生在转换或普通字段访问。

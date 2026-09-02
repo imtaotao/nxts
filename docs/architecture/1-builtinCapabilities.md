@@ -44,7 +44,7 @@
 编译器按名称解析后的符号身份识别内建 API，不能按成员名称文本匹配：
 
 ```ts
-import { checkedAddI32 } from "std/numeric";
+import { checkedAddI32 } from 'std/numeric';
 
 const customCheckedAddI32 = (a: i32, b: i32) => a + b;
 

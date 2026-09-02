@@ -5,15 +5,15 @@
 // no: function f(a: number): void;
 // no: function f(a: number): void; const x = 1; function f(a: number) {}
 
-import { isArray } from "aidly";
-import type { Node } from "@babel/types";
-import type { Rule, RuleContext } from "../../types";
-import { rejectNode } from "../rejectNode";
+import { isArray } from 'aidly';
+import type { Node } from '@babel/types';
+import type { Rule, RuleContext } from '../../types';
+import { rejectNode } from '../rejectNode';
 
 const unwrapExport = (stmt: Node) => {
   if (
-    stmt.type === "ExportNamedDeclaration" ||
-    stmt.type === "ExportDefaultDeclaration"
+    stmt.type === 'ExportNamedDeclaration' ||
+    stmt.type === 'ExportDefaultDeclaration'
   ) {
     return { wrap: stmt.type, fn: stmt.declaration };
   }
@@ -24,7 +24,7 @@ const readMember = (stmt: Node) => {
   const { wrap, fn } = unwrapExport(stmt);
   if (
     fn == null ||
-    (fn.type !== "TSDeclareFunction" && fn.type !== "FunctionDeclaration") ||
+    (fn.type !== 'TSDeclareFunction' && fn.type !== 'FunctionDeclaration') ||
     fn.declare === true
   ) {
     return null;
@@ -34,7 +34,7 @@ const readMember = (stmt: Node) => {
     name: fn.id ? fn.id.name : null,
     async: fn.async === true,
     generator: fn.generator === true,
-    impl: fn.type === "FunctionDeclaration",
+    impl: fn.type === 'FunctionDeclaration',
   };
 };
 
@@ -51,13 +51,13 @@ const statementList = (node: Node, ctx: RuleContext) => {
   let stmt: Node = node;
   let parent = ctx.parent;
   if (
-    parent?.type === "ExportNamedDeclaration" ||
-    parent?.type === "ExportDefaultDeclaration"
+    parent?.type === 'ExportNamedDeclaration' ||
+    parent?.type === 'ExportDefaultDeclaration'
   ) {
     stmt = parent;
     parent = ctx.parents.get(parent) ?? null;
   }
-  if (parent == null || parent.type === "ClassBody" || !("body" in parent)) {
+  if (parent == null || parent.type === 'ClassBody' || !('body' in parent)) {
     return null;
   }
   const body = parent.body;
@@ -68,32 +68,32 @@ const statementList = (node: Node, ctx: RuleContext) => {
 };
 
 export const overloadDeclareRule: Rule = {
-  name: "overloadDeclare",
+  name: 'overloadDeclare',
   check: (node, ctx) => {
-    if (node.type !== "TSDeclareFunction" || node.declare === true) {
+    if (node.type !== 'TSDeclareFunction' || node.declare === true) {
       return null;
     }
     const list = statementList(node, ctx);
     if (list == null) {
-      return rejectNode(node, ctx, "parser.overloadDeclare");
+      return rejectNode(node, ctx, 'parser.overloadDeclare');
     }
     const current = readMember(list.stmt);
     if (current == null) {
-      return rejectNode(node, ctx, "parser.overloadDeclare");
+      return rejectNode(node, ctx, 'parser.overloadDeclare');
     }
     const index = list.body.indexOf(list.stmt);
     if (index < 0) {
-      return rejectNode(node, ctx, "parser.overloadDeclare");
+      return rejectNode(node, ctx, 'parser.overloadDeclare');
     }
     for (let i = index + 1; i < list.body.length; i++) {
       const next = readMember(list.body[i]);
       if (next == null || !sameGroup(current, next)) {
-        return rejectNode(node, ctx, "parser.overloadDeclare");
+        return rejectNode(node, ctx, 'parser.overloadDeclare');
       }
       if (next.impl) {
         return null;
       }
     }
-    return rejectNode(node, ctx, "parser.overloadDeclare");
+    return rejectNode(node, ctx, 'parser.overloadDeclare');
   },
 };

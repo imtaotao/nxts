@@ -2,14 +2,14 @@
 // 应用源码必须自带定义；重载签名没有 declare 标志，不能按节点类型误杀。
 // no: declare const x: number
 
-import type { Rule } from "../../types";
-import { rejectNode } from "../rejectNode";
+import type { Rule } from '../../types';
+import { rejectNode } from '../rejectNode';
 
 export const declareRule: Rule = {
-  name: "declare",
+  name: 'declare',
   check: (node, ctx) => {
-    if ("declare" in node && node.declare === true) {
-      return rejectNode(node, ctx, "parser.declare");
+    if ('declare' in node && node.declare === true) {
+      return rejectNode(node, ctx, 'parser.declare');
     }
     return null;
   },

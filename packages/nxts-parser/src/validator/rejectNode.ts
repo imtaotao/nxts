@@ -1,6 +1,6 @@
-import type { Node } from "@babel/types";
-import { createDiagnostic, type MessageId } from "../diagnostics/catalog";
-import type { RuleContext } from "../types";
+import type { Node } from '@babel/types';
+import { createDiagnostic, type MessageId } from '../diagnostics/catalog';
+import type { RuleContext } from '../types';
 
 export function rejectNode(node: Node, ctx: RuleContext, messageId: MessageId) {
   return createDiagnostic(messageId, {

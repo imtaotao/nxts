@@ -59,18 +59,18 @@ Nxts 支持标准 ES Module 的静态导入、导出和重新导出形式。
 | 仅类型模块 | `import type`、`export type`                                                   |
 
 ```ts
-import defaultValue from "./defaultValue";
-import { value, other as renamed } from "./values";
-import * as values from "./values";
-import "./initialize";
-import type { Options } from "./types";
+import defaultValue from './defaultValue';
+import { value, other as renamed } from './values';
+import * as values from './values';
+import './initialize';
+import type { Options } from './types';
 
 export const result = defaultValue;
 export { value, renamed };
-export { value as externalValue } from "./values";
-export * from "./values";
-export * as values from "./values";
-export type { Options } from "./types";
+export { value as externalValue } from './values';
+export * from './values';
+export * as values from './values';
+export type { Options } from './types';
 export default result;
 ```
 
@@ -81,7 +81,7 @@ export default result;
 Parser 和 Validator 接受标准 `with` 形式的 import attributes，并完整保留 `ImportAttribute` 节点、属性顺序和源码范围：
 
 ```ts
-import data from "./data.json" with { type: "json" };
+import data from './data.json' with { type: 'json' };
 ```
 
 语法接受不代表资源模块能力已经实现。在资源类型、加载方式、缓存、产物格式和 Host 边界形成完整方案前，模块语义检查必须产生明确的能力诊断并阻止生成 HIR。旧 import assertions 的 `assert {}` 形式不受支持，也不作为 `with {}` 的兼容别名。
@@ -98,19 +98,19 @@ import data from "./data.json" with { type: "json" };
 - 相对路径不隐式解析目录入口；导入目录中的入口文件时必须明确写出文件名。
 
 ```ts
-import { value } from "./value"; // 优先解析 ./value.ntx，其次解析 ./value.ts
-import { ntxValue } from "./value.ntx";
-import { tsValue } from "./value.ts";
-import { feature } from "./feature/index";
+import { value } from './value'; // 优先解析 ./value.ntx，其次解析 ./value.ts
+import { ntxValue } from './value.ntx';
+import { tsValue } from './value.ts';
+import { feature } from './feature/index';
 ```
 
 以下模块标识符当前不受支持：
 
 ```ts
-import "package-name";
-import "/absolute/path/module.ntx";
-import "https://example.com/module.ntx";
-import "@/aliased/module";
+import 'package-name';
+import '/absolute/path/module.ntx';
+import 'https://example.com/module.ntx';
+import '@/aliased/module';
 ```
 
 ### `import()` 与顶层 `await` 的实现顺序

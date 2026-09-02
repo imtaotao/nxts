@@ -1,6 +1,6 @@
-import { BinderContext } from "./context";
-import type { ParseFileResult } from "./types";
-import { bindStatementList } from "./walk/bindStatements";
+import { BinderContext } from './context';
+import type { ParseFileResult } from './types';
+import { bindStatementList } from './walk/bindStatements';
 
 export function bindFile(file: ParseFileResult) {
   const binder = new BinderContext(file);
@@ -8,7 +8,7 @@ export function bindFile(file: ParseFileResult) {
     return binder.finish();
   }
 
-  binder.openScope("module");
+  binder.openScope('module');
   bindStatementList(binder, file.ast.program.body);
   return binder.finish();
 }

@@ -4,25 +4,25 @@
 // ok: function f(a?: number, b = 1)
 // no: function f(a?: number, b: string)
 
-import { isArray } from "aidly";
-import type { Node } from "@babel/types";
-import type { Rule } from "../../types";
-import { rejectNode } from "../rejectNode";
+import { isArray } from 'aidly';
+import type { Node } from '@babel/types';
+import type { Rule } from '../../types';
+import { rejectNode } from '../rejectNode';
 
 const isOptionalParam = (param: Node) => {
-  if (param.type === "TSParameterProperty") {
+  if (param.type === 'TSParameterProperty') {
     return isOptionalParam(param.parameter);
   }
   return (
-    param.type === "AssignmentPattern" ||
-    ("optional" in param && param.optional === true)
+    param.type === 'AssignmentPattern' ||
+    ('optional' in param && param.optional === true)
   );
 };
 
 const hasRequiredAfterOptional = (params: Node[]) => {
   let seenOptional = false;
   for (const param of params) {
-    if (param.type === "RestElement") {
+    if (param.type === 'RestElement') {
       continue;
     }
     if (isOptionalParam(param)) {
@@ -37,14 +37,14 @@ const hasRequiredAfterOptional = (params: Node[]) => {
 };
 
 export const optionalOrderRule: Rule = {
-  name: "optionalOrder",
+  name: 'optionalOrder',
   check: (node, ctx) => {
     if (
-      "params" in node &&
+      'params' in node &&
       isArray(node.params) &&
       hasRequiredAfterOptional(node.params)
     ) {
-      return rejectNode(node, ctx, "parser.optionalOrder");
+      return rejectNode(node, ctx, 'parser.optionalOrder');
     }
     return null;
   },

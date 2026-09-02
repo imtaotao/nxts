@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from 'react';
 import {
   Badge,
   Button,
@@ -9,8 +9,8 @@ import {
   Panel,
   Stack,
   TextArea,
-} from "willa";
-import { run } from "./lib/index.ts";
+} from 'willa';
+import { run } from './lib/index.ts';
 
 const DEFAULT_SOURCE = `const n: number = 1;
 
@@ -85,41 +85,41 @@ export default function App() {
   }, [execute]);
 
   return (
-    <Container size="xl" padding="lg">
-      <Stack gap="md">
+    <Container size='xl' padding='lg'>
+      <Stack gap='md'>
         <PageHeader
           divided
-          eyebrow="Nxts Playground"
-          title="源码"
-          description="在这里改代码后绑定。结果打到浏览器控制台。"
+          eyebrow='Nxts Playground'
+          title='源码'
+          description='在这里改代码后绑定。结果打到浏览器控制台。'
           meta={
             <Badge
               tone={
                 status == null
-                  ? "neutral"
+                  ? 'neutral'
                   : status.complete
-                    ? "success"
-                    : "danger"
+                    ? 'success'
+                    : 'danger'
               }
-              variant="soft"
+              variant='soft'
             >
               {status == null
-                ? "未运行"
+                ? '未运行'
                 : status.complete
-                  ? "complete"
+                  ? 'complete'
                   : `${status.diagnosticCount} diagnostics`}
             </Badge>
           }
         />
 
         <Panel
-          title="test.ts"
-          padding="sm"
+          title='test.ts'
+          padding='sm'
           actions={
-            <Group gap="sm" align="center">
-              <Kbd size="sm">⌘↵</Kbd>
+            <Group gap='sm' align='center'>
+              <Kbd size='sm'>⌘↵</Kbd>
               <Button
-                size="sm"
+                size='sm'
                 loading={running}
                 onClick={() => {
                   void execute(source);
@@ -131,17 +131,17 @@ export default function App() {
           }
         >
           <TextArea
-            className="app-source"
+            className='app-source'
             spellCheck={false}
-            resize="vertical"
+            resize='vertical'
             rows={32}
-            width="100%"
+            width='100%'
             value={source}
             onChange={(event) => {
               setSource(event.target.value);
             }}
             onKeyDown={(event) => {
-              if (event.key === "Enter" && (event.metaKey || event.ctrlKey)) {
+              if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
                 event.preventDefault();
                 void execute(source);
               }

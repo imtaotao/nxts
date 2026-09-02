@@ -2,14 +2,14 @@
 // 未知外部值用 unknown 再显式收窄。
 // no: const x: any = 1
 
-import type { Rule } from "../../types";
-import { rejectNode } from "../rejectNode";
+import type { Rule } from '../../types';
+import { rejectNode } from '../rejectNode';
 
 export const anyKeywordRule: Rule = {
-  name: "anyKeyword",
+  name: 'anyKeyword',
   check: (node, ctx) => {
-    if (node.type === "TSAnyKeyword") {
-      return rejectNode(node, ctx, "parser.any");
+    if (node.type === 'TSAnyKeyword') {
+      return rejectNode(node, ctx, 'parser.any');
     }
     return null;
   },

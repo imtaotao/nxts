@@ -269,14 +269,14 @@ function pair<T, U = T>(left: T, right: U): [T, U] {
   return [left, right];
 }
 
-const inferred = pair("x", 1); // [string, i32]
-const defaulted = pair<string>("x", "y"); // [string, string]
+const inferred = pair('x', 1); // [string, i32]
+const defaulted = pair<string>('x', 'y'); // [string, string]
 
 function required<T, U>(left: T, right: U): [T, U] {
   return [left, right];
 }
 
-required<string>("x", 1);
+required<string>('x', 1);
 // 编译错误：U 没有默认值
 ```
 
@@ -340,9 +340,9 @@ function pair<T>(left: T, right: T): T[] {
   return [left, right];
 }
 
-const exact = identity("on"); // "on"
-const selected = choose("on", "off"); // "on" | "off"
-const values = pair("on", "off"); // string[]
+const exact = identity('on'); // "on"
+const selected = choose('on', 'off'); // "on" | "off"
+const values = pair('on', 'off'); // string[]
 ```
 
 不同基础类别的候选不能仅为完成推导而合成为联合：
@@ -367,7 +367,7 @@ function transform<T, U>(value: T, fn: (value: T) => U): U {
   return fn(value);
 }
 
-const length = transform("hello", (text) => text.length);
+const length = transform('hello', (text) => text.length);
 // T = string，U = i32
 ```
 
@@ -391,7 +391,7 @@ function inferCycle(cycle: Cycle): void {
 显式类型实参优先于全部推导候选：
 
 ```ts
-const value = identity<string>("on"); // string
+const value = identity<string>('on'); // string
 ```
 
 提供显式实参后，checker 检查约束和普通实参兼容，不通过实参把显式类型改成更窄或更宽的类型。部分显式实参遵循默认参数规则。
@@ -418,7 +418,7 @@ class Defaulted<T = string> {
   value!: T;
 }
 
-const box = new Box("value"); // Box<string>
+const box = new Box('value'); // Box<string>
 const contextual: Empty<i32> = new Empty(); // Empty<i32>
 const defaulted = new Defaulted(); // Defaulted<string>
 const invalid = new Empty(); // 编译错误
@@ -435,7 +435,7 @@ function defineRoutes<const T extends readonly string[]>(routes: T): T {
   return routes;
 }
 
-const routes = defineRoutes(["/", "/users"]);
+const routes = defineRoutes(['/', '/users']);
 // readonly ["/", "/users"]
 ```
 
@@ -463,7 +463,7 @@ function invoke<T extends readonly unknown[], R>(
 
 const result = invoke(
   (name: string, count: i32) => `${name}:${count}`,
-  "item",
+  'item',
   10,
 );
 ```
@@ -500,7 +500,7 @@ function collect<T>(left: T, right?: T): T[] {
 type Identity = <T>(value: T) => T;
 
 function useIdentity(fn: Identity): string {
-  return fn("value");
+  return fn('value');
 }
 
 const identity: Identity = <T>(value: T): T => value;

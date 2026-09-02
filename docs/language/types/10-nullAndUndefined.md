@@ -76,7 +76,7 @@ function isMissing(value: string) {
 
 ```ts
 typeof value === undefined; // 编译错误
-typeof value === "undefined"; // 合法
+typeof value === 'undefined'; // 合法
 value === undefined; // 合法
 ```
 
@@ -98,7 +98,7 @@ function examples(
   count: i32 | undefined,
   value: string | null,
 ) {
-  const displayName = name ?? "default"; // string
+  const displayName = name ?? 'default'; // string
   const normalizedCount = count ?? 0; // i32
   const result = value ?? 10; // string | number
 }

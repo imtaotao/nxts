@@ -44,7 +44,7 @@
 ```ts
 const dict: { [key: string]: i32 } = {};
 
-dict["missing"]; // undefined
+dict['missing']; // undefined
 ```
 
 属性声明本身允许 `undefined` 时，存在状态仍独立：

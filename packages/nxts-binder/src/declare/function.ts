@@ -4,11 +4,11 @@ import type {
   FunctionDeclaration,
   Identifier,
   Node,
-} from "@babel/types";
-import type { BinderContext } from "../context";
-import { bindStatementList } from "../walk/bindStatements";
-import { resolveExpr } from "../walk/resolveExpr";
-import { declarePattern } from "./pattern";
+} from '@babel/types';
+import type { BinderContext } from '../context';
+import { declarePattern } from './pattern';
+import { resolveExpr } from '../walk/resolveExpr';
+import { bindStatementList } from '../walk/bindStatements';
 
 export function bindFunctionLike(
   binder: BinderContext,
@@ -16,14 +16,14 @@ export function bindFunctionLike(
   body: BlockStatement | Expression,
   name?: Identifier | null,
 ) {
-  binder.openScope("function");
+  binder.openScope('function');
   if (name) {
-    binder.declare("value", name);
+    binder.declare('value', name);
   }
   for (const param of params) {
     declarePattern(binder, param);
   }
-  if (body.type === "BlockStatement") {
+  if (body.type === 'BlockStatement') {
     bindStatementList(binder, body.body);
   } else {
     resolveExpr(binder, body);
@@ -36,7 +36,7 @@ export function declareFunction(
   statement: FunctionDeclaration,
 ) {
   if (statement.id && !binder.isBound(statement.id)) {
-    binder.declare("value", statement.id);
+    binder.declare('value', statement.id);
   }
   bindFunctionLike(binder, statement.params, statement.body);
 }

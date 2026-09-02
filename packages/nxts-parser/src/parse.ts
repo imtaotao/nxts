@@ -1,9 +1,9 @@
-import { validate } from "./validator";
-import { babelParse } from "./babel";
-import { assignNodeIds } from "./nodeIds";
-import { diagnosticFromBabel } from "./diagnostics/babel";
-import { finalizeDiagnostics } from "./diagnostics/finalize";
-import type { SourceSnapshot } from "./snapshot";
+import { validate } from './validator';
+import { babelParse } from './babel';
+import { assignNodeIds } from './nodeIds';
+import { diagnosticFromBabel } from './diagnostics/babel';
+import { finalizeDiagnostics } from './diagnostics/finalize';
+import type { SourceSnapshot } from './snapshot';
 
 export function parseFile(snapshot: SourceSnapshot) {
   try {

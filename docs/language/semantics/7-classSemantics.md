@@ -101,7 +101,7 @@ class Options {
 
 const options = new Options();
 
-Object.hasOwn(options, "cache"); // true
+Object.hasOwn(options, 'cache'); // true
 Object.keys(options); // ["cache"]
 options.cache; // undefined
 ```
@@ -174,7 +174,7 @@ new Derived();
 ```ts
 class Animal {
   speak(): string {
-    return "animal";
+    return 'animal';
   }
 }
 
@@ -286,7 +286,7 @@ class Registry {
 const createBagClass = (dynamicKey: string) => {
   class Bag {
     [key: string]: string;
-    [dynamicKey] = "value";
+    [dynamicKey] = 'value';
   }
 
   return Bag;
@@ -331,8 +331,8 @@ animal.constructor === Dog; // true
 默认 `constructor` 不占实例字段：
 
 ```ts
-Object.hasOwn(animal, "constructor"); // false
-"constructor" in animal; // true
+Object.hasOwn(animal, 'constructor'); // false
+'constructor' in animal; // true
 ```
 
 实例不能覆盖或删除默认 `constructor`。动态索引签名中的同名键遵循 T30 遮蔽和诊断规则。

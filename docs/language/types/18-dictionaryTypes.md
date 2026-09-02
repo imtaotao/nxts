@@ -115,7 +115,7 @@ interface Config {
 
 ```ts
 config.mode; // string
-config["mode"]; // string
+config['mode']; // string
 config[key]; // string | undefined
 ```
 
@@ -136,7 +136,7 @@ config[key]; // string | undefined
 ```ts
 const createStringDictionary = (key: string) => {
   const mixed = {
-    [key]: "value",
+    [key]: 'value',
     count: 1,
   };
   // { [key: string]: string | number }
@@ -148,7 +148,7 @@ const createStringDictionary = (key: string) => {
 ```ts
 const createNumberDictionary = (index: number) => {
   const values = {
-    [index]: "value",
+    [index]: 'value',
     count: 1,
   };
   // { [key: number]: string; count: number }
@@ -178,7 +178,7 @@ const view: { [key: string]: i32 } = raw; // 零复制视图
 ```ts
 const dict: { [key: string]: i32 } = {};
 
-dict["missing"]; // i32 | undefined
+dict['missing']; // i32 | undefined
 ```
 
 | 场景                   | 结果类型                   |
@@ -206,7 +206,7 @@ if (key in dict) {
 可写字典接受可赋给 `V` 的值。已知固定 key 仍使用成员自身类型和权限：
 
 ```ts
-config.mode = "fast"; // 合法
+config.mode = 'fast'; // 合法
 config.mode = 1; // 编译错误
 ```
 
@@ -242,12 +242,12 @@ type User = {
   name: string;
 };
 
-const user: User = { name: "Tom" };
+const user: User = { name: 'Tom' };
 const dict: { [key: string]: string } = user;
 
-dict.city = "Shanghai";
+dict.city = 'Shanghai';
 dict === user; // true
-dict.name = "Jerry";
+dict.name = 'Jerry';
 user.name; // "Jerry"
 user.city; // 编译错误
 ```
@@ -291,7 +291,7 @@ user.city; // 编译错误
 
 ```ts
 dict.name;
-dict["name"];
+dict['name'];
 dict[key];
 ```
 

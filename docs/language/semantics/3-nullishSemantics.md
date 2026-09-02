@@ -38,8 +38,8 @@ null !== undefined; // true
 `typeof` 保持 JavaScript 的可观察结果：
 
 ```ts
-typeof undefined === "undefined"; // true
-typeof null === "object"; // true
+typeof undefined === 'undefined'; // true
+typeof null === 'object'; // true
 ```
 
 `typeof` 不执行用户代码，也不把 `null` 改写为独立的 `"null"` 结果。未绑定名称由静态名称绑定拒绝，不提供 JavaScript 的动态查询特例。
@@ -56,8 +56,8 @@ typeof null === "object"; // true
 ```ts
 0 ?? 10; // 0
 false ?? true; // false
-"" ?? "default"; // ""
-null ?? "value"; // "value"
+'' ?? 'default'; // ""
+null ?? 'value'; // "value"
 ```
 
 左侧静态确定非空或确定为空时允许消除条件分支，但不得删除左侧求值或改变副作用顺序。`??` 不执行 truthiness 判断、隐式转换或动态类型分派。
@@ -110,8 +110,8 @@ const present: { value?: string } = { value: undefined };
 
 absent.value; // undefined
 present.value; // undefined
-Object.hasOwn(absent, "value"); // false
-Object.hasOwn(present, "value"); // true
+Object.hasOwn(absent, 'value'); // false
+Object.hasOwn(present, 'value'); // true
 ```
 
 读取结果相同，但存在性、枚举、删除和重新添加行为必须保持差异。具体对象行为见 [`4-objectSemantics.md`](./4-objectSemantics.md)。

@@ -107,9 +107,9 @@ const pair: [i64, f32] = [1, 2.5];
 固定元组字面量必须精确匹配声明长度：
 
 ```ts
-const valid: [i32, string] = [1, "x"];
+const valid: [i32, string] = [1, 'x'];
 const missing: [i32, string] = [1]; // 编译错误
-const extra: [i32, string] = [1, "x", 2]; // 编译错误
+const extra: [i32, string] = [1, 'x', 2]; // 编译错误
 ```
 
 元组字面量禁止空位：
@@ -142,11 +142,11 @@ type Result = [value: string, error?: Error];
 因此以下值均合法，并保持不同的 JavaScript 可观察长度：
 
 ```ts
-const success: Result = ["ok"];
-const explicit: Result = ["ok", undefined];
+const success: Result = ['ok'];
+const explicit: Result = ['ok', undefined];
 
 function createFailure(error: Error): Result {
-  return ["failed", error];
+  return ['failed', error];
 }
 
 success.length; // 1
@@ -239,7 +239,7 @@ rest 元组的运行时长度沿用 T34 的 `i32` 范围和最大值。创建结
 固定位置的字面量索引返回该位置的精确类型：
 
 ```ts
-const entry: [string, i32] = ["count", 1];
+const entry: [string, i32] = ['count', 1];
 
 entry[0]; // string
 entry[1]; // i32
@@ -279,11 +279,11 @@ optional 和 rest 元组按所有当前可能成员合并位置类型。静态�
 字面量位置写入按该位置类型检查：
 
 ```ts
-let entry: [string, i32] = ["count", 1];
+let entry: [string, i32] = ['count', 1];
 
-entry[0] = "total";
+entry[0] = 'total';
 entry[1] = 2;
-entry[1] = "2"; // 编译错误
+entry[1] = '2'; // 编译错误
 ```
 
 动态索引写入值必须能被每个可能目标位置以相同、无操作且布局安全的方式接受：
@@ -333,7 +333,7 @@ point[0] = 3; // 合法，view 可以观察到
 标签不参与兼容。源元组的每一种可能长度和位置都必须被目标类型接受：
 
 ```ts
-const full: [i32, string] = [1, "x"];
+const full: [i32, string] = [1, 'x'];
 const optional: readonly [i32, string?] = full; // 合法
 
 function requireFull(maybe: [i32, string?]): void {
@@ -374,7 +374,7 @@ const values: readonly i32[] = point;
 异构元组通过 spread 显式创建普通数组：
 
 ```ts
-const entry: [string, i32] = ["count", 1];
+const entry: [string, i32] = ['count', 1];
 const values: (string | i32)[] = [...entry];
 ```
 
@@ -389,7 +389,7 @@ spread 语义上创建新的浅拷贝数组。优化器证明新身份、别名�
 元组解构按位置提供精确类型：
 
 ```ts
-const entry: [string, i32] = ["count", 1];
+const entry: [string, i32] = ['count', 1];
 const [key, value] = entry;
 // key: string
 // value: i32
@@ -410,7 +410,7 @@ function unpack(result: [string, Error?], defaultError: Error): void {
 固定元组的 rest 解构保留剩余位置的精确元组类型：
 
 ```ts
-const tuple: [string, i32, boolean] = ["x", 1, true];
+const tuple: [string, i32, boolean] = ['x', 1, true];
 const [first, ...rest] = tuple;
 // rest: [i32, boolean]
 ```
@@ -449,7 +449,7 @@ function write(...args: [name: string, count: i32]) {
   const [name, count] = args;
 }
 
-const args: [string, i32] = ["items", 2];
+const args: [string, i32] = ['items', 2];
 write(...args);
 ```
 
@@ -460,7 +460,7 @@ write(...args);
 元组遍历的元素静态类型为全部实际位置类型的规范联合，不因越界加入 `undefined`。optional 和 rest 元组按当前可能成员合并元素类型：
 
 ```ts
-const entry: [string, i32] = ["count", 1];
+const entry: [string, i32] = ['count', 1];
 
 entry.keys(); // Iterator<i32>
 entry.values(); // Iterator<string | i32>

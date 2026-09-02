@@ -1,6 +1,6 @@
-import type { SourceSnapshot } from "../snapshot";
-import type { Diagnostic } from "../types";
-import { createDiagnostic } from "./catalog";
+import type { SourceSnapshot } from '../snapshot';
+import type { Diagnostic } from '../types';
+import { createDiagnostic } from './catalog';
 
 export const FILE_ERROR_BUDGET = 100;
 export const FILE_OTHER_BUDGET = 100;
@@ -24,7 +24,7 @@ const diagnosticKey = (diagnostic: Diagnostic) => {
     span.end,
     diagnostic.messageId,
     argumentKey(diagnostic.arguments),
-  ].join("\0");
+  ].join('\0');
 };
 
 const dedupDiagnostics = (diagnostics: Diagnostic[]) => {
@@ -72,7 +72,7 @@ export function finalizeDiagnostics(
   const errors = [];
   const others = [];
   for (const diagnostic of sorted) {
-    if (diagnostic.severity === "error") {
+    if (diagnostic.severity === 'error') {
       errors.push(diagnostic);
     } else {
       others.push(diagnostic);
@@ -86,7 +86,7 @@ export function finalizeDiagnostics(
     next.push(...errors.slice(0, FILE_ERROR_BUDGET));
     next.push(
       createDiagnostic(
-        "parser.budget.error",
+        'parser.budget.error',
         {
           start: 0,
           end: 0,

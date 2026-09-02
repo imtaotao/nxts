@@ -1,1 +1,1 @@
-console.log("nxts-checker loaded");
+console.log('nxts-checker loaded');

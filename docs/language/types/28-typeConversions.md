@@ -67,7 +67,7 @@ const interfaceView: PointInterface = point;
 ### 品牌建立
 
 ```ts
-type UserId = Brand<i64, "UserId">;
+type UserId = Brand<i64, 'UserId'>;
 
 function brand(rawI64: i64) {
   const userId = rawI64 as UserId;

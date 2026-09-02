@@ -32,7 +32,7 @@ new Array(1, 2, 3); // 使用字面量或 Array.of
 按长度创建数组必须同时提供初始化规则：
 
 ```ts
-import { generate, repeat } from "std/array";
+import { generate, repeat } from 'std/array';
 
 const zeros = repeat(0, count);
 const indexes = generate(count, (index) => index);
@@ -75,7 +75,7 @@ const indexes = generate(count, (index) => index);
 容量提示 API：
 
 ```ts
-import { reserve, withCapacity } from "std/array";
+import { reserve, withCapacity } from 'std/array';
 
 const output = withCapacity<i32>(expected);
 reserve(output, additional);

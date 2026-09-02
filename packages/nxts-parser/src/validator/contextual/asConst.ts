@@ -5,51 +5,51 @@
 // no: const x = y as const
 // no: const x = foo() as const
 
-import type { Node } from "@babel/types";
-import type { Rule } from "../../types";
-import { rejectNode } from "../rejectNode";
+import type { Node } from '@babel/types';
+import type { Rule } from '../../types';
+import { rejectNode } from '../rejectNode';
 
 const isConstType = (node: Node) =>
-  node.type === "TSTypeReference" &&
-  node.typeName.type === "Identifier" &&
-  node.typeName.name === "const";
+  node.type === 'TSTypeReference' &&
+  node.typeName.type === 'Identifier' &&
+  node.typeName.name === 'const';
 
 const unwrap = (node: Node) => {
   let current = node;
-  while (current.type === "ParenthesizedExpression") {
+  while (current.type === 'ParenthesizedExpression') {
     current = current.expression;
   }
   return current;
 };
 
 const isNumericUnary = (node: Node) =>
-  node.type === "UnaryExpression" &&
-  (node.operator === "+" || node.operator === "-") &&
-  unwrap(node.argument).type === "NumericLiteral";
+  node.type === 'UnaryExpression' &&
+  (node.operator === '+' || node.operator === '-') &&
+  unwrap(node.argument).type === 'NumericLiteral';
 
 const isDirectLiteral = (node: Node) => {
   const value = unwrap(node);
   return (
-    value.type === "NumericLiteral" ||
-    value.type === "StringLiteral" ||
-    value.type === "BooleanLiteral" ||
-    value.type === "NullLiteral" ||
-    value.type === "TemplateLiteral" ||
-    value.type === "ArrayExpression" ||
-    value.type === "ObjectExpression" ||
+    value.type === 'NumericLiteral' ||
+    value.type === 'StringLiteral' ||
+    value.type === 'BooleanLiteral' ||
+    value.type === 'NullLiteral' ||
+    value.type === 'TemplateLiteral' ||
+    value.type === 'ArrayExpression' ||
+    value.type === 'ObjectExpression' ||
     isNumericUnary(value)
   );
 };
 
 export const asConstRule: Rule = {
-  name: "asConst",
+  name: 'asConst',
   check: (node, ctx) => {
     if (
-      node.type === "TSAsExpression" &&
+      node.type === 'TSAsExpression' &&
       isConstType(node.typeAnnotation) &&
       !isDirectLiteral(node.expression)
     ) {
-      return rejectNode(node, ctx, "parser.asConst");
+      return rejectNode(node, ctx, 'parser.asConst');
     }
     return null;
   },

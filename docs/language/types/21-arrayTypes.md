@@ -93,7 +93,7 @@ checker 按以下顺序确定元素类型：
 混合数组可以自动推导固定联合布局：
 
 ```ts
-const mixed = [1, "x"];
+const mixed = [1, 'x'];
 // (i32 | string)[]
 
 const numeric = [nativeI32, nativeF64];
@@ -122,15 +122,15 @@ const sparse = [1, , 3]; // 编译错误
 ```ts
 const values = [1, 2, 3]; // i32[]
 values.push(4); // 合法
-values.push("4"); // 编译错误
+values.push('4'); // 编译错误
 ```
 
 混合值需要数组元素联合：
 
 ```ts
-const values: (i32 | string)[] = [1, "x"];
+const values: (i32 | string)[] = [1, 'x'];
 values.push(2);
-values.push("y");
+values.push('y');
 ```
 
 对数组联合执行写入时，写入值必须被每个可能成员以相同、无失败且无隐藏动态成本的表示接受。常见异构数组联合必须先收窄：
@@ -144,7 +144,7 @@ const appendUnknownBatch = (batch: i32[] | string[]) => {
 数组标准库的 `isArrayOf<T>` 可以检查精确元素布局并收窄数组联合：
 
 ```ts
-import { isArrayOf } from "std/array";
+import { isArrayOf } from 'std/array';
 
 const appendI32 = (batch: i32[] | string[]) => {
   if (isArrayOf<i32>(batch)) {
@@ -163,7 +163,7 @@ const appendI32 = (batch: i32[] | string[]) => {
 
 ```ts
 values[0]; // 合法
-values["0"]; // 等价于 values[0]
+values['0']; // 等价于 values[0]
 values[key]; // key: string，编译错误
 ```
 
@@ -235,7 +235,7 @@ Nxts 不支持 `Object.freeze`、`Object.seal`、`Object.preventExtensions` 及�
 
 ```ts
 function isString(value: i32 | string) {
-  return typeof value === "string";
+  return typeof value === 'string';
 }
 
 values.filter(isString); // string[]

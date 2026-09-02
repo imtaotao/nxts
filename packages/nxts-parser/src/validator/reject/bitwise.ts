@@ -4,26 +4,26 @@
 // no: ~1
 // no: x |= 1
 
-import type { Rule } from "../../types";
-import { rejectNode } from "../rejectNode";
+import type { Rule } from '../../types';
+import { rejectNode } from '../rejectNode';
 
-const bitwiseOps = new Set(["&", "|", "^", "~", "<<", ">>", ">>>"]);
-const bitwiseAssigns = new Set(["&=", "|=", "^=", "<<=", ">>=", ">>>="]);
+const bitwiseOps = new Set(['&', '|', '^', '~', '<<', '>>', '>>>']);
+const bitwiseAssigns = new Set(['&=', '|=', '^=', '<<=', '>>=', '>>>=']);
 
 export const bitwiseRule: Rule = {
-  name: "bitwise",
+  name: 'bitwise',
   check: (node, ctx) => {
     if (
-      (node.type === "BinaryExpression" || node.type === "UnaryExpression") &&
+      (node.type === 'BinaryExpression' || node.type === 'UnaryExpression') &&
       bitwiseOps.has(node.operator)
     ) {
-      return rejectNode(node, ctx, "parser.bitwise");
+      return rejectNode(node, ctx, 'parser.bitwise');
     }
     if (
-      node.type === "AssignmentExpression" &&
+      node.type === 'AssignmentExpression' &&
       bitwiseAssigns.has(node.operator)
     ) {
-      return rejectNode(node, ctx, "parser.bitwise");
+      return rejectNode(node, ctx, 'parser.bitwise');
     }
     return null;
   },

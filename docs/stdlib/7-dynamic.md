@@ -14,7 +14,7 @@
 本文使用 `dynamic(value)` 作为概念名：
 
 ```ts
-import { dynamic } from "std/dynamic";
+import { dynamic } from 'std/dynamic';
 
 const input: unknown = dynamic(value);
 ```
@@ -34,7 +34,7 @@ const input: unknown = dynamic(value);
 本文使用 `isType<T>(value)` 作为概念名：
 
 ```ts
-import { isType } from "std/dynamic";
+import { isType } from 'std/dynamic';
 
 function handle(input: unknown) {
   if (isType<User>(input)) {

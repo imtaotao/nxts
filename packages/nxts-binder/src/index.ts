@@ -1,4 +1,4 @@
-export { bindFile } from "./bindFile";
+export { bindFile } from './bindFile';
 export type {
   BinderDiagnostic,
   BindFileResult,
@@ -7,4 +7,4 @@ export type {
   ScopeKind,
   ScopeRecord,
   SymbolRecord,
-} from "./types";
+} from './types';

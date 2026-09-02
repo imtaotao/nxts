@@ -2,14 +2,14 @@
 // 需要结构用精确对象/接口，需要先接未知值用 unknown。
 // no: const x: object = {}
 
-import type { Rule } from "../../types";
-import { rejectNode } from "../rejectNode";
+import type { Rule } from '../../types';
+import { rejectNode } from '../rejectNode';
 
 export const objectKeywordRule: Rule = {
-  name: "objectKeyword",
+  name: 'objectKeyword',
   check: (node, ctx) => {
-    if (node.type === "TSObjectKeyword") {
-      return rejectNode(node, ctx, "parser.objectKeyword");
+    if (node.type === 'TSObjectKeyword') {
+      return rejectNode(node, ctx, 'parser.objectKeyword');
     }
     return null;
   },

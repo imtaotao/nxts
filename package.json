@@ -2,10 +2,10 @@
   "name": "nxts-workspace",
   "version": "0.0.1",
   "private": true,
-  "type": "module",
+  "description": "nxts monorepo.",
   "license": "MIT",
   "author": "chentao.arthur",
-  "description": "nxts monorepo.",
+  "type": "module",
   "scripts": {
     "prepare": "husky",
     "dev": "auk dev --workspace",
@@ -18,25 +18,26 @@
     "publish:major": "auk publish --workspace --version major --token env:NPM_TOKEN",
     "test": "pnpm -r --if-present test",
     "typecheck": "tsc -p . --noEmit --skipLibCheck",
-    "format": "prettier --write --ignore-unknown --ignore-path .gitignore \"**/*.{js,mjs,cjs,ts,tsx,json,md,css,html}\""
-  },
-  "lint-staged": {
-    "*.{js,mjs,cjs,ts,tsx,json,md,yaml,yml,css}": [
-      "prettier --write --ignore-unknown"
-    ]
+    "lint": "oxlint",
+    "fmt": "oxfmt --write --ignore-path .gitignore \"**/*.{js,mjs,cjs,ts,tsx,json,md,css,html}\""
   },
   "devDependencies": {
+    "@stylistic/eslint-plugin": "catalog:",
     "@types/node": "catalog:",
-    "tsx": "catalog:",
-    "husky": "catalog:",
     "auklet": "catalog:",
-    "prettier": "catalog:",
+    "husky": "catalog:",
     "lint-staged": "catalog:",
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
+    "tsx": "catalog:",
     "typescript": "catalog:"
   },
-  "packageManager": "pnpm@10.27.0",
+  "lint-staged": {
+    "*.{js,mjs,cjs,ts,tsx,json,md,yaml,yml,css}": "oxfmt --write"
+  },
   "engines": {
     "node": ">=22",
     "pnpm": "=10.27.0"
-  }
+  },
+  "packageManager": "pnpm@10.27.0"
 }

@@ -117,14 +117,14 @@ function check(optional: Optional, required: RequiredUndefined): void {
 ```ts
 function save(id: i32, name: string): void {}
 
-save(1, "Ada"); // 合法
+save(1, 'Ada'); // 合法
 save(1); // 编译错误
 ```
 
 直接调用不接受多余实参：
 
 ```ts
-save(1, "Ada", true); // 编译错误
+save(1, 'Ada', true); // 编译错误
 ```
 
 该规则检查源码调用点。函数值兼容中允许较少形参的实现忽略目标回调提供的尾部参数，见“参数数量兼容”；两种规则不能混用。
@@ -135,7 +135,7 @@ save(1, "Ada", true); // 编译错误
 
 ```ts
 function lookup(id: i32, cacheKey?: string): string {
-  return "";
+  return '';
 }
 ```
 
@@ -146,7 +146,7 @@ function lookup(id: i32, cacheKey?: string): string {
 默认参数的外部类型允许调用方省略尾部位置或显式传入 `undefined`；传入 `null` 不属于省略：
 
 ```ts
-function connect(host = "localhost", port = 8080): void {}
+function connect(host = 'localhost', port = 8080): void {}
 
 connect();
 connect(undefined, 9000);
@@ -155,10 +155,10 @@ connect(undefined, 9000);
 默认参数可以位于必选参数之前，但调用方必须保留对应参数位置。该位置在规范函数类型中接受 `T | undefined`，而不是位于必选参数之前的可选标记：
 
 ```ts
-function open(mode = "read", path: string): void {}
+function open(mode = 'read', path: string): void {}
 
-open(undefined, "data.txt"); // 合法
-open("data.txt"); // 编译错误：缺少 path
+open(undefined, 'data.txt'); // 合法
+open('data.txt'); // 编译错误：缺少 path
 ```
 
 进入函数体后，默认参数的静态类型为 `T`，不包含因省略产生的 `undefined`。默认值检查和调用方补位使用普通分支，不生成动态参数对象。
@@ -231,7 +231,7 @@ const handleUser: (value: User) => void = handleEntity; // 合法
 返回值方向相反：
 
 ```ts
-const createUser = (): User => ({ id: 1, name: "Ada" });
+const createUser = (): User => ({ id: 1, name: 'Ada' });
 const createEntity: () => Entity = createUser; // 合法
 ```
 
@@ -331,7 +331,7 @@ interface ParserObject {
 function findUser(id: i32): User | undefined;
 function findUser(name: string): User[];
 function findUser(query: i32 | string): User | undefined | User[] {
-  if (typeof query === "number") {
+  if (typeof query === 'number') {
     return findById(query);
   }
 
@@ -343,7 +343,7 @@ function findUser(query: i32 | string): User | undefined | User[] {
 
 ```ts
 const user = findUser(1); // User | undefined
-const users = findUser("Ada"); // User[]
+const users = findUser('Ada'); // User[]
 findUser(true); // 编译错误：没有匹配重载
 ```
 
@@ -411,10 +411,10 @@ interface Parser {
 解析过程只使用实参、接收者和上下文参数类型，不根据运行时值选择候选。返回类型不能单独用于区分参数完全相同的调用签名。
 
 ```ts
-function read(value: "config"): Config;
+function read(value: 'config'): Config;
 function read(value: string): Config | Text;
 
-const exact = read("config"); // Config
+const exact = read('config'); // Config
 
 function readPath(path: string): Config | Text {
   return read(path);
@@ -428,10 +428,10 @@ TypeScript 对普通适用候选可能使用声明顺序，因此工具链应提
 候选中的函数参数可以为箭头函数和函数表达式提供上下文类型：
 
 ```ts
-function observe(kind: "number", callback: (value: i32) => void): void;
-function observe(kind: "text", callback: (value: string) => void): void;
+function observe(kind: 'number', callback: (value: i32) => void): void;
+function observe(kind: 'text', callback: (value: string) => void): void;
 
-observe("number", (value) => {
+observe('number', (value) => {
   // value: i32
 });
 ```
@@ -478,8 +478,8 @@ TypeScript 只检查各重载结果能够进入实现声明的宽返回类型，
 function find(value: i32): User;
 function find(value: string): User[];
 function find(value: i32 | string): User | User[] {
-  if (typeof value === "number") {
-    return findByName("wrong"); // 编译错误：i32 重载要求 User
+  if (typeof value === 'number') {
+    return findByName('wrong'); // 编译错误：i32 重载要求 User
   }
 
   return findById(1); // 编译错误：string 重载要求 User[]
@@ -495,7 +495,7 @@ function find(value: i32): User | undefined;
 function find(value: string): User[];
 function find(value: i32 | string): User | undefined | User[] {
   const result =
-    typeof value === "number" ? findById(value) : findByName(value);
+    typeof value === 'number' ? findById(value) : findByName(value);
 
   return result;
 }
@@ -510,7 +510,7 @@ function find(value: i32 | string): User | undefined | User[] {
 当一个重载的参数域包含于另一个重载时，更具体重载的返回类型必须兼容更宽重载的返回类型：
 
 ```ts
-function load(kind: "user"): User;
+function load(kind: 'user'): User;
 function load(kind: string): Entity;
 ```
 
@@ -519,7 +519,7 @@ function load(kind: string): Entity;
 正确表达不相交结果时，宽重载应返回所有可能结果的联合：
 
 ```ts
-function load(kind: "user"): User;
+function load(kind: 'user'): User;
 function load(kind: string): User | Config;
 ```
 
@@ -535,7 +535,7 @@ function load(kind: string): User | Config;
 const parser = parse;
 
 parser(1); // NumberNode
-parser("text"); // TextNode
+parser('text'); // TextNode
 ```
 
 赋给单一函数类型时，按 TypeScript 规则选择兼容签名，并按 T32 选择对应类型化入口：

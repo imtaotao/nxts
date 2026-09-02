@@ -16,9 +16,9 @@
 普通字符串字面量使用 JavaScript/TypeScript 的单引号、双引号和 cooked 转义语义：
 
 ```ts
-const single = "text";
-const double = "text";
-const escaped = "\n\t\x41\u4F60\u{1F600}";
+const single = 'text';
+const double = 'text';
+const escaped = '\n\t\x41\u4F60\u{1F600}';
 ```
 
 完整接受与拒绝矩阵由 [`1-syntaxSubset.md`](../syntax/1-syntaxSubset.md) 定义。类型级模板字符串类型由 [T41 高级类型](../types/27-advancedTypes.md) 定义。
@@ -33,7 +33,7 @@ const escaped = "\n\t\x41\u4F60\u{1F600}";
 - 相等和普通大小比较按 UTF-16 code unit 值定义。
 
 ```ts
-"😀".length === 2;
+'😀'.length === 2;
 ```
 
 ## 静态类型边界
@@ -71,14 +71,14 @@ UTF-16 代理对的两个位置分别返回两个单 code unit 字符串。索�
 | `<`、`<=`、`>`、`>=` | 按 code unit 值执行字典序比较。 |
 
 ```ts
-"abc" === "abc"; // true
-"10" < "2"; // true
+'abc' === 'abc'; // true
+'10' < '2'; // true
 ```
 
 规范等价但 code unit 序列不同的字符串仍不相等：
 
 ```ts
-"\u00E9" === "e\u0301"; // false
+'\u00E9' === 'e\u0301'; // false
 ```
 
 比较不执行跨类型转换、Unicode 规范化、大小写折叠或区域化排序。静态接受范围见 [`9-stringTypes.md`](../types/9-stringTypes.md)；动态比较和混合编码算法见 [`1-stringRuntime.md`](../../runtime/objects/1-stringRuntime.md)。
@@ -96,17 +96,17 @@ UTF-16 代理对的两个位置分别返回两个单 code unit 字符串。索�
 `+` 的静态运算分类和允许拼接的操作数由 [`9-stringTypes.md`](../types/9-stringTypes.md) 定义。字符串拼接不执行 JavaScript 式 `ToPrimitive`，也不读取 `Symbol.toPrimitive`、`valueOf` 或可变原型。
 
 ```ts
-const count = "count: " + 10;
-const enabled = "enabled: " + true;
-const missing = "value: " + undefined;
-const objectText = "value: " + objectValue;
+const count = 'count: ' + 10;
+const enabled = 'enabled: ' + true;
+const missing = 'value: ' + undefined;
+const objectText = 'value: ' + objectValue;
 ```
 
 `+` 保持从左到右求值和左结合。每个子表达式根据其静态操作数独立确定运算类别：
 
 ```ts
-1 + 2 + "3"; // "33"
-"1" + 2 + 3; // "123"
+1 + 2 + '3'; // "33"
+'1' + 2 + 3; // "123"
 ```
 
 ### 基础值格式
