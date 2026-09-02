@@ -6,7 +6,11 @@ import type {
   TSAsExpression,
   TSInterfaceDeclaration,
   TSSatisfiesExpression,
+  TSConditionalType,
+  TSInferType,
+  TSPropertySignature,
   TSTypeAliasDeclaration,
+  TSTypeLiteral,
   TSTypeQuery,
   TSTypeReference,
   VariableDeclaration,
@@ -168,6 +172,106 @@ describe('type', () => {
     const query = alias.typeAnnotation as TSTypeQuery;
 
     expect(sameSymbol(bound, file, n, query.exprName)).toBe(true);
+    expect(bound.diagnostics).toEqual([]);
+  });
+
+  it('binds infer names in the true branch only', async () => {
+    const { file, bound } = await bindSource(
+      'type Box<T> = { value: T }; type Value<T> = T extends Box<infer U> ? U : T;',
+    );
+    const alias = file.ast.program.body[1] as TSTypeAliasDeclaration;
+    const cond = alias.typeAnnotation as TSConditionalType;
+    const inferType = (cond.extendsType as TSTypeReference).typeArguments
+      ?.params[0] as TSInferType;
+
+    expect(scopeKindOf(bound, 'U')).toBe('infer');
+    expect(
+      sameSymbol(
+        bound,
+        file,
+        inferType.typeParameter.name,
+        (cond.trueType as TSTypeReference).typeName,
+      ),
+    ).toBe(true);
+    expect(
+      sameSymbol(
+        bound,
+        file,
+        alias.typeParameters?.params[0].name,
+        (cond.falseType as TSTypeReference).typeName,
+      ),
+    ).toBe(true);
+    expect(bound.diagnostics).toEqual([]);
+  });
+
+  it('does not see infer names in the false branch', async () => {
+    const { file, bound } = await bindSource(
+      'type Bad<T> = T extends infer U ? U : U;',
+    );
+    const cond = (file.ast.program.body[0] as TSTypeAliasDeclaration)
+      .typeAnnotation as TSConditionalType;
+
+    expect(
+      symbolOf(bound, file, (cond.falseType as TSTypeReference).typeName),
+    ).toBe(null);
+    expect(diagnosticIds(bound)).toEqual(['binder.unresolved']);
+    expect(bound.diagnostics[0]?.arguments).toEqual(['U']);
+  });
+
+  it('reuses the same infer name in one conditional', async () => {
+    const { file, bound } = await bindSource(
+      'type Values<T> = T extends { left: infer U; right: infer U } ? U : never;',
+    );
+    const cond = (file.ast.program.body[0] as TSTypeAliasDeclaration)
+      .typeAnnotation as TSConditionalType;
+    const members = (cond.extendsType as TSTypeLiteral).members;
+    const left = (
+      (members[0] as TSPropertySignature).typeAnnotation
+        ?.typeAnnotation as TSInferType
+    ).typeParameter.name;
+    const right = (
+      (members[1] as TSPropertySignature).typeAnnotation
+        ?.typeAnnotation as TSInferType
+    ).typeParameter.name;
+
+    expect(sameSymbol(bound, file, left, right)).toBe(true);
+    expect(
+      sameSymbol(
+        bound,
+        file,
+        left,
+        (cond.trueType as TSTypeReference).typeName,
+      ),
+    ).toBe(true);
+    expect(diagnosticIds(bound)).toEqual([]);
+  });
+
+  it('binds an infer constraint type name', async () => {
+    const { file, bound } = await bindSource(
+      'type Num = number; type Idx<T> = T extends `${infer N extends Num}` ? N : never;',
+    );
+    const num = file.ast.program.body[0] as TSTypeAliasDeclaration;
+    const cond = (file.ast.program.body[1] as TSTypeAliasDeclaration)
+      .typeAnnotation as TSConditionalType;
+    const inferType = (cond.extendsType as { types: TSInferType[] }).types[0];
+
+    expect(
+      sameSymbol(
+        bound,
+        file,
+        inferType.typeParameter.name,
+        (cond.trueType as TSTypeReference).typeName,
+      ),
+    ).toBe(true);
+    expect(
+      sameSymbol(
+        bound,
+        file,
+        num.id,
+        (inferType.typeParameter.constraint as TSTypeReference).typeName,
+      ),
+    ).toBe(true);
+    expect(scopeKindOf(bound, 'N')).toBe('infer');
     expect(bound.diagnostics).toEqual([]);
   });
 

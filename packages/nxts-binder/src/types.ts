@@ -11,6 +11,7 @@ export type ScopeKind =
   | 'block'
   | 'class'
   | 'typeParams'
+  | 'infer'
   | 'catch'
   | 'label'
   | 'enum';

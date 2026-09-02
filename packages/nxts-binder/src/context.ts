@@ -151,6 +151,18 @@ export class BinderContext {
     }
   }
 
+  declareOnce(space: NameSpace, node: Identifier) {
+    if (this.current == null) {
+      return;
+    }
+    const existing = this.names[this.current][space].get(node.name);
+    if (existing != null) {
+      this.bind(node, existing);
+      return;
+    }
+    this.declare(space, node);
+  }
+
   resolve(space: NameSpace, node: Identifier) {
     let scope = this.current;
     while (scope != null) {

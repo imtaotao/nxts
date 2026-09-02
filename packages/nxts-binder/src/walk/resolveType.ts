@@ -143,8 +143,10 @@ export function resolveType(binder: BinderContext, node?: Node | null) {
       return;
     case 'TSConditionalType':
       resolveType(binder, node.checkType);
+      binder.openScope('infer');
       resolveType(binder, node.extendsType);
       resolveType(binder, node.trueType);
+      binder.closeScope();
       resolveType(binder, node.falseType);
       return;
     case 'TSTemplateLiteralType':
@@ -171,6 +173,8 @@ export function resolveType(binder: BinderContext, node?: Node | null) {
       binder.closeScope();
       return;
     case 'TSInferType':
+      binder.declareOnce('type', node.typeParameter.name);
+      resolveType(binder, node.typeParameter.constraint);
       return;
     default:
       return;

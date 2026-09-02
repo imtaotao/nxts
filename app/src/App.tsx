@@ -10,72 +10,8 @@ import {
   Stack,
   TextArea,
 } from 'willa';
+import { defaultFiles } from './demos/index.ts';
 import { run, type PlaygroundFile } from './lib/index.ts';
-
-const DEFAULT_FILES: PlaygroundFile[] = [
-  {
-    path: 'main.ts',
-    source: `import { seed } from './seed';
-import type { Count } from './count';
-
-type OptionalCount = Partial<{ n: Count }>;
-type Later = Promise<Count>;
-
-type Array<T> = T;
-const Array = seed;
-
-export const n: Count = seed;
-export const Ctor = Array;
-export const empty: Array<Count> = [];
-
-export function f(items: Array<Count>): Count {
-  const add = (a: Count) => a + n;
-  const { head } = { head: n };
-
-  switch (n) {
-    case 1:
-      let m: Count = add(head);
-      return m;
-    default:
-      break;
-  }
-
-  try {
-    throw n;
-  } catch (e) {
-    loop: for (const item of items) {
-      if (item === n) {
-        break loop;
-      }
-    }
-    return e;
-  }
-}
-
-function usedBeforeDecl(): Count {
-  return later();
-  function later(): Count {
-    return n;
-  }
-}
-
-export enum Kind {
-  Ready,
-  Busy = Ready,
-}
-
-export const kind: Kind = Kind.Ready;
-`,
-  },
-  {
-    path: 'seed.ts',
-    source: 'export const seed = 1;\n',
-  },
-  {
-    path: 'count.ts',
-    source: 'export type Count = number;\n',
-  },
-];
 
 const FILES_STORAGE_KEY = 'nxts.playground.files';
 const SOURCE_STORAGE_KEY = 'nxts.playground.source';
@@ -125,13 +61,13 @@ const readStoredWorkspace = () => {
     }
   } catch {
     return {
-      files: DEFAULT_FILES,
-      activePath: DEFAULT_FILES[0].path,
+      files: defaultFiles,
+      activePath: defaultFiles[0].path,
     };
   }
   return {
-    files: DEFAULT_FILES,
-    activePath: DEFAULT_FILES[0].path,
+    files: defaultFiles,
+    activePath: defaultFiles[0].path,
   };
 };
 
@@ -217,9 +153,9 @@ export function App() {
   }, [execute]);
 
   const restoreDemo = () => {
-    setFiles(DEFAULT_FILES);
-    setActivePath(DEFAULT_FILES[0].path);
-    void execute(DEFAULT_FILES);
+    setFiles(defaultFiles);
+    setActivePath(defaultFiles[0].path);
+    void execute(defaultFiles);
   };
 
   const addFile = () => {
@@ -303,7 +239,7 @@ export function App() {
               <Kbd size='sm'>⌘↵</Kbd>
               <Button
                 size='sm'
-                disabled={sameFiles(files, DEFAULT_FILES)}
+                disabled={sameFiles(files, defaultFiles)}
                 onClick={restoreDemo}
               >
                 恢复默认

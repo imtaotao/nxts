@@ -6,7 +6,7 @@
 
 ## 已确认子规范
 
-- [`1-standardLibraryTypes.md`](./1-standardLibraryTypes.md)：T49 全局类型工具、内建身份和遮蔽规则；完整标准环境仍待定稿。
+- [`1-standardLibraryTypes.md`](./1-standardLibraryTypes.md)：T49 标准环境、模块路径和 intrinsic 身份；具体公开 API 待定。
 - [`2-array.md`](./2-array.md)：T34 已确认的数组 API；模块路径与 intrinsic 身份由 T49 定稿。
 - [`3-classBuiltins.md`](./3-classBuiltins.md)：T36 已确认的类内建能力；最终白名单和声明由 T49 定稿。
 - [`4-object.md`](./4-object.md)：T26–T27 已确认的对象 API；最终声明集合由 T49 定稿。
