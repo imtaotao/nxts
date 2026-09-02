@@ -291,14 +291,13 @@ export function collectModuleBindings(
     }
 
     if (statement.type === 'ExportAllDeclaration') {
-      pushExport(
-        exports,
-        '*',
-        statement.exportKind === 'type' ? 'type' : 'value',
-        null,
-        statement.source.value,
-        '*',
-      );
+      const source = statement.source.value;
+      if (statement.exportKind === 'type') {
+        pushExport(exports, '*', 'type', null, source, '*');
+      } else {
+        pushExport(exports, '*', 'value', null, source, '*');
+        pushExport(exports, '*', 'type', null, source, '*');
+      }
       continue;
     }
 
@@ -319,8 +318,14 @@ export function collectModuleBindings(
     for (const specifier of statement.specifiers) {
       if (specifier.type === 'ExportNamespaceSpecifier') {
         const name = exportedName(specifier.exported);
-        if (name) {
+        if (name == null) {
+          continue;
+        }
+        if (statement.exportKind === 'type') {
+          pushExport(exports, name, 'type', null, source, '*');
+        } else {
           pushExport(exports, name, 'value', null, source, '*');
+          pushExport(exports, name, 'type', null, source, '*');
         }
         continue;
       }

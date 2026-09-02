@@ -2,6 +2,7 @@ import type {
   ClassDeclaration,
   ExportDefaultDeclaration,
   ExportNamedDeclaration,
+  ExportSpecifier,
   ExpressionStatement,
   FunctionDeclaration,
   Identifier,
@@ -194,7 +195,7 @@ describe('export', () => {
       'export { n, type User }; const n = 1; type User = number;',
     );
     const specifiers = (file.ast.program.body[0] as ExportNamedDeclaration)
-      .specifiers;
+      .specifiers as ExportSpecifier[];
     const n = (file.ast.program.body[1] as VariableDeclaration).declarations[0]
       .id;
     const alias = file.ast.program.body[2] as TSTypeAliasDeclaration;
@@ -206,8 +207,10 @@ describe('export', () => {
 
   it('leaves a missing local export unbound', async () => {
     const { file, bound } = await bindSource('export { missing };');
-    const local = (file.ast.program.body[0] as ExportNamedDeclaration)
-      .specifiers[0]?.local;
+    const local = (
+      (file.ast.program.body[0] as ExportNamedDeclaration)
+        .specifiers[0] as ExportSpecifier
+    ).local;
 
     expect(symbolOf(bound, file, local)).toBe(null);
     expect(diagnosticIds(bound)).toEqual(['binder.unresolved']);
@@ -218,8 +221,10 @@ describe('export', () => {
     const { file, bound } = await bindSource(
       "export { missing } from './mod';",
     );
-    const local = (file.ast.program.body[0] as ExportNamedDeclaration)
-      .specifiers[0]?.local;
+    const local = (
+      (file.ast.program.body[0] as ExportNamedDeclaration)
+        .specifiers[0] as ExportSpecifier
+    ).local;
 
     expect(symbolOf(bound, file, local)).toBe(null);
     expect(bound.diagnostics).toEqual([]);
@@ -339,5 +344,58 @@ describe('export', () => {
         sameSymbol(bound, file, n, ret.argument),
     ).toBe(true);
     expect(bound.diagnostics).toEqual([]);
+  });
+
+  it('records export * in value and type space', async () => {
+    const { bound } = await bindSource("export * from './a';");
+    expect(bound.exports).toEqual([
+      {
+        name: '*',
+        space: 'value',
+        symbolId: null,
+        source: './a',
+        imported: '*',
+      },
+      {
+        name: '*',
+        space: 'type',
+        symbolId: null,
+        source: './a',
+        imported: '*',
+      },
+    ]);
+  });
+
+  it('records export type * in type space only', async () => {
+    const { bound } = await bindSource("export type * from './a';");
+    expect(bound.exports).toEqual([
+      {
+        name: '*',
+        space: 'type',
+        symbolId: null,
+        source: './a',
+        imported: '*',
+      },
+    ]);
+  });
+
+  it('records export * as in value and type space', async () => {
+    const { bound } = await bindSource("export * as ns from './a';");
+    expect(bound.exports).toEqual([
+      {
+        name: 'ns',
+        space: 'value',
+        symbolId: null,
+        source: './a',
+        imported: '*',
+      },
+      {
+        name: 'ns',
+        space: 'type',
+        symbolId: null,
+        source: './a',
+        imported: '*',
+      },
+    ]);
   });
 });

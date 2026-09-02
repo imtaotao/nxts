@@ -10,9 +10,12 @@ import {
   Stack,
   TextArea,
 } from 'willa';
-import { run } from './lib/index.ts';
+import { run, type PlaygroundFile } from './lib/index.ts';
 
-const DEFAULT_SOURCE = `import { seed } from './seed';
+const DEFAULT_FILES: PlaygroundFile[] = [
+  {
+    path: 'main.ts',
+    source: `import { seed } from './seed';
 import type { Count } from './count';
 
 export const n: Count = seed;
@@ -54,24 +57,107 @@ export enum Kind {
 }
 
 export const kind: Kind = Kind.Ready;
-`;
+`,
+  },
+  {
+    path: 'seed.ts',
+    source: 'export const seed = 1;\n',
+  },
+  {
+    path: 'count.ts',
+    source: 'export type Count = number;\n',
+  },
+];
 
+const FILES_STORAGE_KEY = 'nxts.playground.files';
 const SOURCE_STORAGE_KEY = 'nxts.playground.source';
 
-const readStoredSource = () => {
-  try {
-    return localStorage.getItem(SOURCE_STORAGE_KEY) ?? DEFAULT_SOURCE;
-  } catch {
-    return DEFAULT_SOURCE;
-  }
+type StoredWorkspace = {
+  files: PlaygroundFile[];
+  activePath: string;
 };
 
-const writeStoredSource = (source: string) => {
+const isWorkspace = (value: unknown): value is StoredWorkspace => {
+  if (value == null || typeof value !== 'object') {
+    return false;
+  }
+  const workspace = value as StoredWorkspace;
+  return (
+    Array.isArray(workspace.files) &&
+    workspace.files.every(
+      (file) =>
+        file != null &&
+        typeof file.path === 'string' &&
+        typeof file.source === 'string',
+    ) &&
+    typeof workspace.activePath === 'string'
+  );
+};
+
+const readStoredWorkspace = () => {
   try {
-    localStorage.setItem(SOURCE_STORAGE_KEY, source);
+    const raw = localStorage.getItem(FILES_STORAGE_KEY);
+    if (raw) {
+      const parsed: unknown = JSON.parse(raw);
+      if (isWorkspace(parsed) && parsed.files.length > 0) {
+        const activePath = parsed.files.some(
+          (file) => file.path === parsed.activePath,
+        )
+          ? parsed.activePath
+          : parsed.files[0].path;
+        return { files: parsed.files, activePath };
+      }
+    }
+    const source = localStorage.getItem(SOURCE_STORAGE_KEY);
+    if (source) {
+      return {
+        files: [{ path: 'main.ts', source }],
+        activePath: 'main.ts',
+      };
+    }
+  } catch {
+    return {
+      files: DEFAULT_FILES,
+      activePath: DEFAULT_FILES[0].path,
+    };
+  }
+  return {
+    files: DEFAULT_FILES,
+    activePath: DEFAULT_FILES[0].path,
+  };
+};
+
+const writeStoredWorkspace = (workspace: StoredWorkspace) => {
+  try {
+    localStorage.setItem(FILES_STORAGE_KEY, JSON.stringify(workspace));
   } catch {
     return;
   }
+};
+
+const nextUnusedPath = (files: readonly PlaygroundFile[]) => {
+  if (!files.some((file) => file.path === 'mod.ts')) {
+    return 'mod.ts';
+  }
+  let index = 2;
+  while (files.some((file) => file.path === `mod${index}.ts`)) {
+    index += 1;
+  }
+  return `mod${index}.ts`;
+};
+
+const sameFiles = (
+  left: readonly PlaygroundFile[],
+  right: readonly PlaygroundFile[],
+) => {
+  return (
+    left.length === right.length &&
+    left.every(
+      (file, index) =>
+        file.path === right[index]?.path &&
+        file.source === right[index]?.source,
+    )
+  );
 };
 
 type RunStatus = {
@@ -79,24 +165,30 @@ type RunStatus = {
   diagnosticCount: number;
 };
 
-const bindSource = async (source: string) => {
-  const result = await run(source);
+const bindWorkspace = async (files: readonly PlaygroundFile[]) => {
+  const result = await run(files);
   console.log(result);
+  const diagnosticCount =
+    result.diagnostics.length +
+    result.files.reduce((count, file) => count + file.diagnostics.length, 0);
   return {
-    complete: result.diagnostics.length === 0,
-    diagnosticCount: result.diagnostics.length,
+    complete: diagnosticCount === 0,
+    diagnosticCount,
   };
 };
 
 export function App() {
-  const [source, setSource] = useState(readStoredSource);
+  const initial = readStoredWorkspace();
+  const [files, setFiles] = useState(initial.files);
+  const [activePath, setActivePath] = useState(initial.activePath);
   const [status, setStatus] = useState<RunStatus | null>(null);
   const [running, setRunning] = useState(false);
+  const activeFile = files.find((file) => file.path === activePath) ?? files[0];
 
-  const execute = useCallback(async (text: string) => {
+  const execute = useCallback(async (workspace: readonly PlaygroundFile[]) => {
     setRunning(true);
     try {
-      setStatus(await bindSource(text));
+      setStatus(await bindWorkspace(workspace));
     } catch (error) {
       console.error(error);
       setStatus({
@@ -109,16 +201,62 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    writeStoredSource(source);
-  }, [source]);
+    writeStoredWorkspace({ files, activePath });
+  }, [files, activePath]);
 
   useEffect(() => {
-    void execute(readStoredSource());
+    void execute(readStoredWorkspace().files);
   }, [execute]);
 
   const restoreDemo = () => {
-    setSource(DEFAULT_SOURCE);
-    void execute(DEFAULT_SOURCE);
+    setFiles(DEFAULT_FILES);
+    setActivePath(DEFAULT_FILES[0].path);
+    void execute(DEFAULT_FILES);
+  };
+
+  const addFile = () => {
+    const path = nextUnusedPath(files);
+    const next = [...files, { path, source: '' }];
+    setFiles(next);
+    setActivePath(path);
+  };
+
+  const renameFile = (path: string) => {
+    const nextPath = window.prompt('文件路径', path)?.trim();
+    if (!nextPath || nextPath === path) {
+      return;
+    }
+    if (files.some((file) => file.path === nextPath)) {
+      return;
+    }
+    setFiles(
+      files.map((file) =>
+        file.path === path ? { ...file, path: nextPath } : file,
+      ),
+    );
+    if (activePath === path) {
+      setActivePath(nextPath);
+    }
+  };
+
+  const closeFile = (path: string) => {
+    if (files.length < 2) {
+      return;
+    }
+    const index = files.findIndex((file) => file.path === path);
+    const next = files.filter((file) => file.path !== path);
+    setFiles(next);
+    if (activePath === path) {
+      setActivePath(next[Math.max(0, index - 1)]?.path ?? next[0].path);
+    }
+  };
+
+  const updateSource = (source: string) => {
+    setFiles(
+      files.map((file) =>
+        file.path === activeFile.path ? { ...file, source } : file,
+      ),
+    );
   };
 
   return (
@@ -128,7 +266,7 @@ export function App() {
           divided
           eyebrow='Nxts Playground'
           title='源码'
-          description='改动会保存在浏览器里。绑定结果打到控制台。'
+          description='多文件会保存在浏览器里。绑定走 bindProgram，结果打到控制台。'
           meta={
             <Badge
               tone={
@@ -150,14 +288,14 @@ export function App() {
         />
 
         <Panel
-          title='test.ts'
+          title={activeFile.path}
           padding='sm'
           actions={
             <Group gap='sm' align='center'>
               <Kbd size='sm'>⌘↵</Kbd>
               <Button
                 size='sm'
-                disabled={source === DEFAULT_SOURCE}
+                disabled={sameFiles(files, DEFAULT_FILES)}
                 onClick={restoreDemo}
               >
                 恢复默认
@@ -166,7 +304,7 @@ export function App() {
                 size='sm'
                 loading={running}
                 onClick={() => {
-                  void execute(source);
+                  void execute(files);
                 }}
               >
                 绑定
@@ -174,23 +312,57 @@ export function App() {
             </Group>
           }
         >
-          <TextArea
-            className='app-source'
-            spellCheck={false}
-            resize='vertical'
-            rows={32}
-            width='100%'
-            value={source}
-            onChange={(event) => {
-              setSource(event.target.value);
-            }}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
-                event.preventDefault();
-                void execute(source);
-              }
-            }}
-          />
+          <Stack gap='sm'>
+            <Group gap='xs' align='center' className='app-tabs'>
+              {files.map((file) => (
+                <Button
+                  key={file.path}
+                  size='sm'
+                  variant={file.path === activeFile.path ? 'solid' : 'ghost'}
+                  className='app-tab'
+                  onClick={() => {
+                    setActivePath(file.path);
+                  }}
+                  onDoubleClick={() => {
+                    renameFile(file.path);
+                  }}
+                >
+                  {file.path}
+                  {files.length > 1 ? (
+                    <span
+                      className='app-tab-close'
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        closeFile(file.path);
+                      }}
+                    >
+                      ×
+                    </span>
+                  ) : null}
+                </Button>
+              ))}
+              <Button size='sm' variant='ghost' onClick={addFile}>
+                +
+              </Button>
+            </Group>
+            <TextArea
+              className='app-source'
+              spellCheck={false}
+              resize='vertical'
+              rows={32}
+              width='100%'
+              value={activeFile.source}
+              onChange={(event) => {
+                updateSource(event.target.value);
+              }}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' && (event.metaKey || event.ctrlKey)) {
+                  event.preventDefault();
+                  void execute(files);
+                }
+              }}
+            />
+          </Stack>
         </Panel>
       </Stack>
     </Container>

@@ -3,6 +3,8 @@ import type { BinderDiagnostic } from './types';
 export const messageCodes = {
   'binder.unresolved': 'NXT2101',
   'binder.duplicate': 'NXT2102',
+  'binder.unresolvedExport': 'NXT2103',
+  'binder.ambiguousExport': 'NXT2104',
 } as const;
 
 export type MessageId = keyof typeof messageCodes;

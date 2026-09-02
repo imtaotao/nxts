@@ -74,3 +74,29 @@ export type BindFileResult = {
   // 绑定诊断，如未声明、重复声明。
   diagnostics: BinderDiagnostic[];
 };
+
+export type ModuleEdge = {
+  fromFileId: number;
+  specifier: string;
+  toFileId: number;
+};
+
+export type ModuleLink = {
+  fromFileId: number;
+  importSymbolId: number;
+  toFileId: number;
+  // 命名空间绑定（import * / export * as）没有单一出口符号。
+  exportSymbolId: number | null;
+};
+
+export type ResolveExportResult =
+  | { kind: 'found'; fileId: number; symbolId: number }
+  | { kind: 'namespace'; fileId: number }
+  | { kind: 'missing' }
+  | { kind: 'ambiguous' };
+
+export type BindProgramResult = {
+  files: BindFileResult[];
+  links: ModuleLink[];
+  diagnostics: BinderDiagnostic[];
+};
