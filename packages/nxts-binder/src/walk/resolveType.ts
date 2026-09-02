@@ -79,7 +79,7 @@ const resolveTypeMember = (binder: BinderContext, node: Node) => {
 };
 
 export function resolveType(binder: BinderContext, node?: Node | null) {
-  if (node == null) {
+  if (node == null || binder.isInvalid(node)) {
     return;
   }
   switch (node.type) {

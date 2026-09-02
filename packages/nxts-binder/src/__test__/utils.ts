@@ -1,10 +1,15 @@
 import type { File, Node } from '@babel/types';
 import { createSnapshot, parseFile } from '@nxts/parser';
-import { bindFile, type BindFileResult, type ParseFileResult } from '../index';
+import {
+  bindFile,
+  type BindEnv,
+  type BindFileResult,
+  type ParseFileResult,
+} from '../index';
 
 type ParsedFile = ParseFileResult & { ast: File };
 
-export async function bindSource(code: string) {
+export async function bindSource(code: string, env?: BindEnv) {
   const file = parseFile(
     await createSnapshot({
       utf8: new TextEncoder().encode(code),
@@ -16,7 +21,7 @@ export async function bindSource(code: string) {
   }
   return {
     file: file as ParsedFile,
-    bound: bindFile(file),
+    bound: bindFile(file, env),
   };
 }
 

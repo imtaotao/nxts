@@ -32,6 +32,7 @@ export type ParseFileResult = {
 export type RuleContext = {
   parent: Node | null;
   parents: WeakMap<Node, Node>;
+  invalidNodes: Set<Node>;
   fileId: number;
   sourceVersion: number;
 };

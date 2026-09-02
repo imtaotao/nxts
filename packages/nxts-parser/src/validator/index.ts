@@ -5,6 +5,7 @@ import { rules } from './rules';
 export function validate(
   nodes: Node[],
   parents: WeakMap<Node, Node> = new WeakMap(),
+  invalidNodes: Set<Node> = new Set(),
   identity: { fileId: number; sourceVersion: number } = {
     fileId: 0,
     sourceVersion: 0,
@@ -14,6 +15,7 @@ export function validate(
   const ctx: RuleContext = {
     parent: null,
     parents,
+    invalidNodes,
     fileId: identity.fileId,
     sourceVersion: identity.sourceVersion,
   };

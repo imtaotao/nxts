@@ -4,6 +4,7 @@ import type {
   ModuleEdge,
   NameSpace,
   ResolveExportResult,
+  ResolvedExport,
 } from './types';
 
 const edgeKey = (fromFileId: number, specifier: string) => {
@@ -78,6 +79,72 @@ export class ExportResolver {
         .filter((item) => item.name === '*' && item.space === space)
         .map((item) => this.resolveStar(fileId, item, name, space, visited)),
     );
+  }
+
+  resolveAll(fileId: number) {
+    const resolved: ResolvedExport[] = [];
+    for (const item of this.collectNames(fileId, new Set(), new Map())) {
+      const result = this.resolve(fileId, item.name, item.space);
+      if (result.kind === 'missing') {
+        continue;
+      }
+      resolved.push({
+        name: item.name,
+        space: item.space,
+        ...result,
+      });
+    }
+    return resolved;
+  }
+
+  private collectNames(
+    fileId: number,
+    visited: Set<number>,
+    cache: Map<number, Array<{ name: string; space: NameSpace }>>,
+  ) {
+    const cached = cache.get(fileId);
+    if (cached != null) {
+      return cached;
+    }
+    if (visited.has(fileId)) {
+      return [];
+    }
+    visited.add(fileId);
+    const exports = this.exportsByFile.get(fileId);
+    if (exports == null) {
+      return [];
+    }
+    const names: Array<{ name: string; space: NameSpace }> = [];
+    const seen = new Set<string>();
+    const add = (name: string, space: NameSpace) => {
+      const key = `${space}\0${name}`;
+      if (seen.has(key)) {
+        return;
+      }
+      seen.add(key);
+      names.push({ name, space });
+    };
+    for (const item of exports) {
+      if (item.name !== '*') {
+        add(item.name, item.space);
+        continue;
+      }
+      if (item.source == null) {
+        continue;
+      }
+      const target = this.fileIdOf(fileId, item.source);
+      if (target == null) {
+        continue;
+      }
+      for (const inner of this.collectNames(target, visited, cache)) {
+        if (inner.name === 'default' || inner.space !== item.space) {
+          continue;
+        }
+        add(inner.name, inner.space);
+      }
+    }
+    cache.set(fileId, names);
+    return names;
   }
 
   private resolveExplicit(

@@ -51,7 +51,13 @@ export function declareImport(
   binder: BinderContext,
   statement: ImportDeclaration,
 ) {
+  if (binder.isInvalid(statement)) {
+    return;
+  }
   for (const specifier of statement.specifiers) {
+    if (binder.isInvalid(specifier)) {
+      continue;
+    }
     const space = importSpace(statement, specifier);
     if (!binder.isBoundIn(specifier.local, space)) {
       binder.declare(space, specifier.local);
@@ -91,11 +97,15 @@ export function bindLocalExportSpecifiers(
   statements: Array<ListStatement>,
 ) {
   for (const statement of statements) {
-    if (statement.type !== 'ExportNamedDeclaration' || statement.source) {
+    if (
+      statement.type !== 'ExportNamedDeclaration' ||
+      statement.source ||
+      binder.isInvalid(statement)
+    ) {
       continue;
     }
     for (const specifier of statement.specifiers) {
-      if (specifier.type !== 'ExportSpecifier') {
+      if (specifier.type !== 'ExportSpecifier' || binder.isInvalid(specifier)) {
         continue;
       }
       binder.resolve(exportSpace(statement, specifier), specifier.local);

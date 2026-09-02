@@ -11,7 +11,7 @@
 | 1    | [`1-frontendPipeline.md`](./1-frontendPipeline.md)         | 已定稿     | parser、validator、binder 和 checker 阶段 |
 | 2    | [`2-babelAstContract.md`](./2-babelAstContract.md)         | 已定稿     | Babel AST 输入、NodeId 和规范化           |
 | 3    | [`3-sourceAndDiagnostics.md`](./3-sourceAndDiagnostics.md) | 已定稿     | 源文件、位置、错误码和诊断恢复            |
-| 4    | `4-nameBinding.md`                                         | 文档待建立 | T57 名称、作用域与声明绑定                |
+| 4    | [`4-nameBinding.md`](./4-nameBinding.md)                   | 已定稿     | T57 名称、作用域与声明绑定                |
 | 5    | [`5-checkerSemanticModel.md`](./5-checkerSemanticModel.md) | 部分定稿   | TypeId、SymbolId、语义侧表和 checker 输出 |
 | 6    | [`6-constantEvaluation.md`](./6-constantEvaluation.md)     | 部分定稿   | 编译期常量值、运算和资源边界              |
 | 7    | `7-effectAnalysis.md`                                      | 文档待建立 | T58 捕获、别名副作用和收窄失效            |

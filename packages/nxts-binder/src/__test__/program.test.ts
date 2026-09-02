@@ -4,6 +4,7 @@ import {
   bindFile,
   bindProgram,
   ExportResolver,
+  type BindProgramResult,
   type ModuleEdge,
   type ParseFileResult,
 } from '../index';
@@ -26,6 +27,13 @@ const resolverOf = (files: ParseFileResult[], edges: ModuleEdge[]) => {
   return new ExportResolver(
     files.map((file) => bindFile(file)),
     edges,
+  );
+};
+
+const resolvedOf = (program: BindProgramResult, fileId: number) => {
+  return (
+    program.files.find((file) => file.snapshot.fileId === fileId)?.resolved ??
+    []
   );
 };
 
@@ -513,5 +521,125 @@ describe('bindProgram', () => {
     expect(program.diagnostics.map((item) => item.messageId)).toEqual([
       'binder.unresolvedExport',
     ]);
+  });
+});
+
+describe('resolved', () => {
+  it('records a local named export', async () => {
+    const a = await parseSource('export const foo = 1;', 1, 'a.ts');
+    const program = bindProgram([a], []);
+
+    expect(resolvedOf(program, 1)).toEqual([
+      {
+        name: 'foo',
+        space: 'value',
+        kind: 'found',
+        fileId: 1,
+        symbolId: exportId(a, 'foo'),
+      },
+    ]);
+  });
+
+  it('expands export * onto the re-exporting file', async () => {
+    const a = await parseSource('export const foo = 1;', 1, 'a.ts');
+    const b = await parseSource("export * from './a';", 2, 'b.ts');
+    const program = bindProgram(
+      [a, b],
+      [{ fromFileId: 2, specifier: './a', toFileId: 1 }],
+    );
+
+    expect(
+      resolvedOf(program, 2).find(
+        (item) => item.name === 'foo' && item.space === 'value',
+      ),
+    ).toEqual({
+      name: 'foo',
+      space: 'value',
+      kind: 'found',
+      fileId: 1,
+      symbolId: exportId(a, 'foo'),
+    });
+  });
+
+  it('expands a type export through export *', async () => {
+    const a = await parseSource('export type Count = number;', 1, 'a.ts');
+    const b = await parseSource("export * from './a';", 2, 'b.ts');
+    const program = bindProgram(
+      [a, b],
+      [{ fromFileId: 2, specifier: './a', toFileId: 1 }],
+    );
+
+    expect(
+      resolvedOf(program, 2).find(
+        (item) => item.name === 'Count' && item.space === 'type',
+      ),
+    ).toEqual({
+      name: 'Count',
+      space: 'type',
+      kind: 'found',
+      fileId: 1,
+      symbolId: exportId(a, 'Count', 'type'),
+    });
+  });
+
+  it('does not expand default through export *', async () => {
+    const a = await parseSource('export default function f() {}', 1, 'a.ts');
+    const b = await parseSource("export * from './a';", 2, 'b.ts');
+    const program = bindProgram(
+      [a, b],
+      [{ fromFileId: 2, specifier: './a', toFileId: 1 }],
+    );
+
+    expect(resolvedOf(program, 2).some((item) => item.name === 'default')).toBe(
+      false,
+    );
+    expect(
+      resolvedOf(program, 1).some(
+        (item) => item.name === 'default' && item.kind === 'found',
+      ),
+    ).toBe(true);
+  });
+
+  it('records an ambiguous star export', async () => {
+    const a = await parseSource('export const foo = 1;', 1, 'a.ts');
+    const b = await parseSource('export const foo = 2;', 2, 'b.ts');
+    const c = await parseSource(
+      "export * from './a'; export * from './b';",
+      3,
+      'c.ts',
+    );
+    const program = bindProgram(
+      [a, b, c],
+      [
+        { fromFileId: 3, specifier: './a', toFileId: 1 },
+        { fromFileId: 3, specifier: './b', toFileId: 2 },
+      ],
+    );
+
+    expect(
+      resolvedOf(program, 3).find(
+        (item) => item.name === 'foo' && item.space === 'value',
+      ),
+    ).toEqual({
+      name: 'foo',
+      space: 'value',
+      kind: 'ambiguous',
+    });
+  });
+
+  it('records export * as as a namespace', async () => {
+    const a = await parseSource('export const foo = 1;', 1, 'a.ts');
+    const b = await parseSource("export * as ns from './a';", 2, 'b.ts');
+    const program = bindProgram(
+      [a, b],
+      [{ fromFileId: 2, specifier: './a', toFileId: 1 }],
+    );
+
+    expect(resolvedOf(program, 2).filter((item) => item.name === 'ns')).toEqual(
+      [
+        { name: 'ns', space: 'value', kind: 'namespace', fileId: 1 },
+        { name: 'ns', space: 'type', kind: 'namespace', fileId: 1 },
+      ],
+    );
   });
 });

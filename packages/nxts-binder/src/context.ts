@@ -2,8 +2,10 @@ import type { Identifier } from '@babel/types';
 import { createDiagnostic, type MessageId } from './catalog';
 import { collectModuleBindings } from './collect';
 import type {
+  BindEnv,
   BindFileResult,
   BinderDiagnostic,
+  EnvSymbol,
   NameSpace,
   ParseFileResult,
   ScopeKind,
@@ -46,6 +48,10 @@ export class BinderContext {
     if (!bound.includes(symbolId)) {
       bound.push(symbolId);
     }
+  }
+
+  isInvalid(node: object) {
+    return this.file.invalidNodes.has(node as ParseFileResult['nodes'][number]);
   }
 
   isBound(node: object) {
@@ -91,6 +97,33 @@ export class BinderContext {
     this.current = this.scopes[this.current].parent;
   }
 
+  installEnv(env: BindEnv) {
+    this.openScope('global');
+    for (const item of env.symbols) {
+      this.declareEnv(item);
+    }
+  }
+
+  private declareEnv(item: EnvSymbol) {
+    if (this.current == null) {
+      return;
+    }
+    const table = this.names[this.current][item.space];
+    if (table.has(item.name)) {
+      return;
+    }
+    const id = this.symbols.length;
+    this.symbols.push({
+      id,
+      name: item.name,
+      space: item.space,
+      declNodeId: null,
+      scopeId: this.current,
+      builtinId: item.builtinId,
+    });
+    table.set(item.name, id);
+  }
+
   declare(space: NameSpace, node: Identifier) {
     const nodeId = this.nodeIdOf(node);
     if (nodeId == null || this.current == null) {
@@ -108,6 +141,7 @@ export class BinderContext {
       space,
       declNodeId: nodeId,
       scopeId: this.current,
+      builtinId: null,
     });
 
     this.bind(node, id);
@@ -141,6 +175,7 @@ export class BinderContext {
     return {
       ...bound,
       ...collectModuleBindings(this.file, bound),
+      resolved: [] as BindFileResult['resolved'],
     } satisfies BindFileResult;
   }
 }

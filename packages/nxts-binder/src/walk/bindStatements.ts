@@ -74,11 +74,25 @@ const bindForInOf = (
   });
 };
 
+const skipHoist = (
+  binder: BinderContext,
+  statement: Statement | ModuleDeclaration,
+) => {
+  if (binder.isInvalid(statement)) {
+    return true;
+  }
+  const target = declarationOf(statement);
+  return target != null && binder.isInvalid(target);
+};
+
 const hoistFunctions = (
   binder: BinderContext,
   statements: Array<Statement | ModuleDeclaration>,
 ) => {
   for (const statement of statements) {
+    if (skipHoist(binder, statement)) {
+      continue;
+    }
     const target = declarationOf(statement);
     if (target?.type === 'FunctionDeclaration' && target.id) {
       binder.declare('value', target.id);
@@ -91,6 +105,9 @@ const hoistTypes = (
   statements: Array<Statement | ModuleDeclaration>,
 ) => {
   for (const statement of statements) {
+    if (skipHoist(binder, statement)) {
+      continue;
+    }
     const target = declarationOf(statement);
     if (
       target &&
@@ -109,6 +126,9 @@ const hoistClasses = (
   statements: Array<Statement | ModuleDeclaration>,
 ) => {
   for (const statement of statements) {
+    if (skipHoist(binder, statement)) {
+      continue;
+    }
     const target = declarationOf(statement);
     if (target?.type === 'ClassDeclaration' && target.id) {
       binder.declare('value', target.id);
@@ -305,6 +325,9 @@ export function bindStatement(
   binder: BinderContext,
   statement: Statement | ModuleDeclaration,
 ) {
+  if (binder.isInvalid(statement)) {
+    return;
+  }
   const bind = binders[statement.type as keyof typeof binders];
   if (bind) {
     bind(binder, statement as never);

@@ -18,9 +18,17 @@ const DEFAULT_FILES: PlaygroundFile[] = [
     source: `import { seed } from './seed';
 import type { Count } from './count';
 
-export const n: Count = seed;
+type OptionalCount = Partial<{ n: Count }>;
+type Later = Promise<Count>;
 
-export function f(items: Count[]): Count {
+type Array<T> = T;
+const Array = seed;
+
+export const n: Count = seed;
+export const Ctor = Array;
+export const empty: Array<Count> = [];
+
+export function f(items: Array<Count>): Count {
   const add = (a: Count) => a + n;
   const { head } = { head: n };
 
@@ -266,7 +274,7 @@ export function App() {
           divided
           eyebrow='Nxts Playground'
           title='源码'
-          description='多文件会保存在浏览器里。绑定走 bindProgram，结果打到控制台。'
+          description='多文件会保存在浏览器里。bindProgram 会带上 playground 的标准环境，结果打到控制台。'
           meta={
             <Badge
               tone={

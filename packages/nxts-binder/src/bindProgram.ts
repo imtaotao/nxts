@@ -3,6 +3,7 @@ import { bindFile } from './bindFile';
 import { createDiagnostic } from './catalog';
 import { ExportResolver } from './exportResolver';
 import type {
+  BindEnv,
   BindFileResult,
   BindProgramResult,
   FileExport,
@@ -219,15 +220,19 @@ const diagnoseReexports = (
 export function bindProgram(
   files: readonly ParseFileResult[],
   edges: readonly ModuleEdge[],
+  env: BindEnv = { symbols: [] },
 ) {
-  const bound = files.map((file) => bindFile(file));
+  const bound = files.map((file) => bindFile(file, env));
   const resolver = new ExportResolver(bound, edges);
+
+  for (const file of bound) {
+    file.resolved = resolver.resolveAll(file.snapshot.fileId);
+  }
   const result: BindProgramResult = {
     files: bound,
     links: [],
     diagnostics: [],
   };
-
   for (let index = 0; index < bound.length; index++) {
     linkImports(result, resolver, bound[index], files[index]);
     diagnoseReexports(result, resolver, bound[index], files[index]);

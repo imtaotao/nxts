@@ -289,6 +289,7 @@ describe('export', () => {
         imported: 'missing',
       },
     ]);
+    expect(bound.resolved).toEqual([]);
   });
 
   it('leaves a file without imports or exports empty', async () => {

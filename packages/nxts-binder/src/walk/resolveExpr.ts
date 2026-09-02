@@ -27,6 +27,9 @@ const resolveObjectMember = (
 };
 
 export function resolveExpr(binder: BinderContext, node: Node) {
+  if (binder.isInvalid(node)) {
+    return;
+  }
   switch (node.type) {
     case 'Identifier':
       binder.resolve('value', node);

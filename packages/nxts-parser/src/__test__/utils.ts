@@ -23,8 +23,8 @@ export function snapshotFromText(
 export async function messageIds(code: string) {
   const snapshot = await snapshotFromText(code);
   const ast = babelParse(code, snapshot.displayPath);
-  const { nodes, parents } = assignNodeIds(ast, snapshot);
-  return validate(nodes, parents, snapshot).map(
+  const { nodes, parents, invalidNodes } = assignNodeIds(ast, snapshot);
+  return validate(nodes, parents, invalidNodes, snapshot).map(
     (diagnostic) => diagnostic.messageId,
   );
 }

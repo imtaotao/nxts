@@ -1,8 +1,20 @@
 import {
   bindProgram,
+  type BindEnv,
   type ModuleEdge,
   type ParseFileResult,
 } from '@nxts/binder';
+
+// playground 先塞一组常用根符号。完整名单归 T49。
+export const playgroundEnv: BindEnv = {
+  symbols: [
+    { name: 'Array', space: 'value', builtinId: 'Array' },
+    { name: 'Array', space: 'type', builtinId: 'Array' },
+    { name: 'Promise', space: 'value', builtinId: 'Promise' },
+    { name: 'Promise', space: 'type', builtinId: 'Promise' },
+    { name: 'Partial', space: 'type', builtinId: 'Partial' },
+  ],
+};
 import { createSnapshot, parseFile } from '@nxts/parser';
 
 export type PlaygroundFile = {
@@ -105,5 +117,5 @@ export async function run(files: readonly PlaygroundFile[]) {
       });
     }
   }
-  return bindProgram(parsed, edges);
+  return bindProgram(parsed, edges, playgroundEnv);
 }

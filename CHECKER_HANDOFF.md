@@ -1,27 +1,26 @@
 # Nxts Binder 与 Checker 设计交接
 
-- 交接日期：2026-07-29
-- 目标读者：继续讨论并定稿 Binder、Checker 规范的 AI
-- 当前工作重点：用户实现 Parser；接手 AI 继续 Binder 与 Checker 设计
+- 交接日期：2026-09-02
+- 目标读者：定稿 `4-nameBinding.md` 并开始 Checker 的 AI
+- 当前工作重点：`@nxts/binder` 实现已落地；规范正文 `4-nameBinding.md` 仍待建立；`@nxts/checker` 未开始
 
 ## 当前现状
 
-Parser 相关设计讨论已经完成，具备开始编码的条件。用户正在开始实现 `@nxts/parser`，接手 AI 不需要重新讨论或主动修改 Parser。
+| 包                      | 状态                                                                    |
+| ----------------------- | ----------------------------------------------------------------------- |
+| `packages/nxts-parser`  | 已实现。公开入口 `parseFile`，输出 AST、NodeId、`invalidNodes` 和诊断。 |
+| `packages/nxts-binder`  | 已实现。公开入口 `bindFile`、`bindProgram`、`ExportResolver`。          |
+| `packages/nxts-checker` | `src/index.ts` 仍为占位。                                               |
+| `packages/nxts-ir`      | 包骨架存在，IR 规范部分定稿，不是当前讨论重点。                         |
 
-当前实现状态：
-
-| 包                      | 状态                                                        |
-| ----------------------- | ----------------------------------------------------------- |
-| `packages/nxts-parser`  | `src/index.ts` 仍为占位代码，用户准备开始实现               |
-| `packages/nxts-checker` | `src/index.ts` 仍为占位代码，Binder 与 Checker 规范尚未补齐 |
-| `packages/nxts-ir`      | 已有包骨架，IR 规范部分定稿，不是当前讨论重点               |
-
-Parser 的详细一致性测试规范被明确拆为独立专项，状态为待讨论，但不阻塞 Parser 主体实现。质量目录已经规划：
+Parser 一致性测试规范仍规划为独立专项，不阻塞后续阶段：
 
 - `docs/quality/1-parserConformance.md`
 - `docs/quality/2-semanticConformance.md`
 
-如果 Parser 实现暴露规范矛盾，应记录源码示例、Babel AST 和冲突文档位置，再讨论是否修正规范。不得为了降低实现成本自行改变已定稿语言行为。
+如果实现暴露规范矛盾，应记录源码示例、Babel AST 和冲突文档位置，再讨论是否修正规范。不得为了降低实现成本自行改变已定稿语言行为。
+
+`docs/compiler/frontend/1-frontendPipeline.md` 的实现状态标记仍写「未实现」，与 parser / binder 代码不一致，更新状态待确认。
 
 ## 项目目标与决策优先级
 
@@ -50,7 +49,7 @@ Nxts 源码接受范围是 TypeScript 的严格静态子集。Nxts 可以拒绝 
 
 ## 文档职责
 
-同一规则只能有一个权威来源。接手 AI 在更新文档前应先阅读 `AGENTS.md` 和以下索引：
+同一规则只能有一个权威来源。更新文档前应先阅读 `AGENTS.md` 和以下索引：
 
 | 领域       | 权威内容                                     | 索引                               |
 | ---------- | -------------------------------------------- | ---------------------------------- |
@@ -64,6 +63,8 @@ Nxts 源码接受范围是 TypeScript 的严格静态子集。Nxts 可以拒绝 
 
 `compiler/frontend` 只能定义如何实现语言规则，不能重新定义 `language/types` 或 `language/semantics` 已经确定的结果。
 
+Binder 规范正文是 `docs/compiler/frontend/4-nameBinding.md`，当前文件不存在。实现以 `packages/nxts-binder/src` 为准，写规范时按代码收录，未决项标「待确认」。
+
 ## Parser 已定稿契约
 
 以下 Parser 规范已经定稿：
@@ -73,14 +74,14 @@ Nxts 源码接受范围是 TypeScript 的严格静态子集。Nxts 可以拒绝 
 - `docs/compiler/frontend/3-sourceAndDiagnostics.md`
 - `docs/language/syntax/1-syntaxSubset.md`
 
-Checker 必须消费这些既有契约：
+Checker 必须消费这些既有契约。
 
 ### Babel AST 与 NodeId
 
-- 使用 Babel 8.0.4 AST，不复制为第二套 Nxts AST。
+- 使用 Babel AST，不复制为第二套 Nxts AST。
 - Parser、Validator、Binder 和 Checker 不得原地替换、删除、重排或扩展 Babel Node。
 - Parser 通过固定 `VISITOR_KEYS` 前序遍历，为结构有效的节点分配每文件局部连续 NodeId。
-- AST 节点、NodeId、SourceSpan、tokens 和 comments 由 Parser 结果提供。
+- AST 节点、NodeId、SourceSpan、tokens 和 comments 由 Parser 结果提供。被拒绝的可恢复节点进入 `invalidNodes`。
 - 绑定、类型、常量、控制流和副作用事实必须存储在 NodeId 侧表。
 - SourceVersion 改变后不能继续复用旧 AST、NodeId 或语义侧表。
 
@@ -88,7 +89,7 @@ Checker 必须消费这些既有契约：
 
 - 用户源码错误通过不可变结果返回结构化诊断，公开 API 不因预期用户错误抛异常。
 - `NXT1xxx` 属于 Parser 与 Validator。
-- `NXT2xxx` 属于 Binder、模块和名称解析。
+- `NXT2xxx` 属于 Binder、模块和名称解析。当前 binder 使用 `NXT2101`–`NXT2104`。
 - `NXT3xxx` 属于类型检查与类型关系。
 - `NXT4xxx` 属于控制流、常量和副作用分析。
 - 内部契约损坏可以进入异常通道，但 CLI 和 language service 必须在最外层捕获。
@@ -100,18 +101,18 @@ Parser 不按标识符文本识别标准内建能力。`eval`、`Function`、`Pr
 
 以下语法可以由 Parser 接受，但当前需要 Binder 或 Checker 诊断：
 
-| 语法                                 | 后续处理                                          |
-| ------------------------------------ | ------------------------------------------------- |
-| `import()`、顶层 `await`             | T55/T59 能力未形成闭环时产生能力诊断              |
-| import attributes                    | T55 资源模块能力未形成闭环时产生能力诊断          |
-| `satisfies`                          | Checker 产生不支持诊断                            |
-| 普通 `as Type`                       | Checker 区分 `as const`、品牌候选与非法普通断言   |
-| `new String(...)`、`new Symbol(...)` | Binder/Checker 按标准符号身份产生不可构造诊断     |
-| 普通函数用于 `new`                   | Checker 根据静态类型产生不可构造诊断              |
-| `call`、`apply`、`bind`              | Parser 保留成员访问，Checker 根据函数类型能力诊断 |
-| `RegExpLiteral`、`debugger`          | 能力未定义时由后续阶段诊断                        |
+| 语法                                 | 后续处理                                            |
+| ------------------------------------ | --------------------------------------------------- |
+| `import()`、顶层 `await`             | T55/T59 能力未形成闭环时由 Checker 产生能力诊断     |
+| import attributes                    | T55 资源模块能力未形成闭环时由 Checker 产生能力诊断 |
+| `satisfies`                          | Checker 产生不支持诊断                              |
+| 普通 `as Type`                       | Checker 区分 `as const`、品牌候选与非法普通断言     |
+| `new String(...)`、`new Symbol(...)` | 按绑定后的标准符号身份产生不可构造诊断              |
+| 普通函数用于 `new`                   | Checker 根据静态类型产生不可构造诊断                |
+| `call`、`apply`、`bind`              | Parser 保留成员访问，Checker 根据函数类型能力诊断   |
+| `RegExpLiteral`、`debugger`          | 能力未定义时由后续阶段诊断                          |
 
-Parser 已拒绝的语法不能再次进入正常 Binder/Checker 路径，例如 `var`、`any`、bigint 字面量、宽 `object` 类型、`==`、`!=`、运行时位运算、非空断言、JS `#private`、装饰器和 CommonJS 语法。
+Parser 已拒绝的语法不能再次进入正常 Binder/Checker 路径。Binder 跳过 `invalidNodes` 子树：不为其声明符号、不解析内部引用、不收录对应 export。
 
 ## 类型系统现状
 
@@ -137,77 +138,97 @@ Checker 必须直接实现这些规范，不能在 `compiler/frontend` 中复制
 - 进入可执行 Checked HIR 前必须得到具体可信类型。
 - 复杂度预算耗尽必须产生确定诊断，不能删除类型成员或扩大为 `unknown`。
 
-## Binder 架构决定
+## Binder 当前方案
 
-Binder 阶段必须存在，但不建立独立的 `@nxts/binder` npm 包。现有包职责已经确定为：
+独立包 `@nxts/binder`。Checker 通过 `import` 消费其结果，不把 binder 做进 `@nxts/checker` 内部目录。
 
-```text
-@nxts/checker
-  src/binder/
-  src/types/
-  src/flow/
-  src/constants/
-  src/effects/
-```
+公开入口：
 
-Binder 是 `@nxts/checker` 内部独立阶段。它负责：
+| 入口             | 输入                                                            | 输出                                                             |
+| ---------------- | --------------------------------------------------------------- | ---------------------------------------------------------------- |
+| `bindFile`       | `ParseFileResult`，可选 `BindEnv`                               | 单文件作用域、符号、`imports` / `exports`、诊断；`resolved` 为空 |
+| `bindProgram`    | 各文件 parse 结果、host 提供的 `ModuleEdge[]`、同一份 `BindEnv` | 各文件绑定、`links`、填好的 `file.resolved`、程序级诊断          |
+| `ExportResolver` | 各文件 `exports` 与 `edges`                                     | `fileIdOf`、`resolve`、`resolveAll`                              |
 
-- 建立词法作用域和符号表。
-- 为声明分配 SymbolId。
-- 把标识符、类型引用和导入本地名称绑定到 SymbolId。
-- 区分类型空间、值空间和其他必要名称空间。
-- 处理遮蔽、重复声明、前向类型引用和递归声明。
-- 形成重载声明组。
-- 产生未声明名称、重复声明和非法绑定诊断。
-- 为闭包分析记录引用外层声明的候选事实。
+`BindEnv` 默认空。名单和 `builtinId` 编码由 T49 / 标准库 / host 传入，binder 不定白名单。
+
+### 职责
+
+Binder 负责：
+
+- 词法作用域和符号表。ScopeId、SymbolId 按文件从 0 分配，不跨文件合并。
+- 一节点多符号：`nodeToSymbols: SymbolId[]`，下标对齐 parser `nodes[]`。
+- 名称空间：`value`、`type`、`label`。class / enum 双空间；函数、`const` / `let` 只在 value；interface / type alias 只在 type。
+- 遮蔽、同空间重复声明、未解析名称。
+- 函数、类、接口、类型别名提升；`const` / `let` 不提升。
+- import 本地占坑；`import type` 进 type 空间。
+- 文件出口表 `file.exports`（语法边，含 `export *`）。
+- 导出名展开：`file.resolved` 物化 `ExportResolver.resolve`，供 checker 查表，不再每次走 `export *`。
+- import 到出口的 `ModuleLink`；命名再导出缺失或歧义时诊断。
+- 可选 `BindEnv`：先开 `global` 再开 `module`。环境符号 `declNodeId: null`，带 `builtinId`。checker 按 `builtinId` 认 intrinsic，不按 `declNodeId === null`，不按标识符文本。
 
 Binder 不负责：
 
-- 类型兼容、推导和重载适用性。
-- 模块路径解析、导出图和跨模块可见性规则。
-- 闭包逃逸、别名副作用和调用后收窄失效。
+- 类型兼容、推导、重载适用性。
+- 磁盘路径、`fileId` 分配、模块依赖图和初始化顺序（host / T55）。
+- 副作用 `import './x'` 的本地行（无绑定）；依赖边由 host 扫 AST specifier。
+- `typeof import()` / `import('./m').Foo` 的模块类型计算（无本地名；checker + `resolved`）。
+- 类/对象成员的词法符号（成员不是作用域名，归 T51）。
+- `this` / `super` 类型（T56）。
+- 闭包逃逸、别名副作用和调用后收窄失效（T58）。
 - 对象布局、GC、ABI、LLVM 或后端优化。
 
-建议的核心侧表形态是：
+### 侧表
 
 ```text
-NodeId   -> SymbolId
-ScopeId  -> declarations/references
-SymbolId -> declaration NodeId
+NodeId     -> SymbolId[]     // nodeToSymbols
+ScopeId    -> ScopeRecord    // parent / kind
+SymbolId   -> SymbolRecord   // name, space, scopeId, declNodeId, builtinId
 ```
 
-具体结构、ID 生命周期和公开查询 API 尚未定稿，应在 T57 中确定。
+环境符号没有用户 AST 声明节点。引用位置记在使用处的 `nodeToSymbols[NodeId]`。
+
+`file.exports` 与 `file.resolved` 不是同一张表：前者是本文件写出的出口边；后者是展开 `export *` 之后对外可见的名字。
+
+### 诊断
+
+| messageId                 | code    |
+| ------------------------- | ------- |
+| `binder.unresolved`       | NXT2101 |
+| `binder.duplicate`        | NXT2102 |
+| `binder.unresolvedExport` | NXT2103 |
+| `binder.ambiguousExport`  | NXT2104 |
 
 ## Checker 剩余能力
 
-Checker 不是只缺少四篇前端文档。当前还有 12 项语言能力需要讨论，可能同时写入类型、语义、模块和前端目录。
+Checker 不是只缺少四篇前端文档。当前还有 12 项语言能力需要讨论或实现，可能同时写入类型、语义、模块和前端目录。
 
-| 能力                       | 状态     | 主要目标文档                                                                                         |
-| -------------------------- | -------- | ---------------------------------------------------------------------------------------------------- |
-| T57 名称、作用域与声明绑定 | 待讨论   | `docs/compiler/frontend/4-nameBinding.md`                                                            |
-| Checker 语义模型           | 部分定稿 | `docs/compiler/frontend/5-checkerSemanticModel.md`                                                   |
-| 常量求值                   | 部分定稿 | `docs/compiler/frontend/6-constantEvaluation.md`                                                     |
-| T58 闭包、捕获与副作用     | 待讨论   | `docs/language/semantics/15-closureSemantics.md`、`docs/compiler/frontend/7-effectAnalysis.md`       |
-| T61 同步异常               | 待讨论   | `docs/language/semantics/16-exceptionSemantics.md`                                                   |
-| T59 异步与 Promise         | 待讨论   | `docs/language/types/35-asyncTypes.md`、`docs/language/semantics/17-asyncSemantics.md`               |
-| T60 迭代器与生成器         | 待讨论   | `docs/language/types/36-iteratorTypes.md`、`docs/language/semantics/18-iteratorSemantics.md`         |
-| T50 运算符                 | 待讨论   | `docs/language/types/29-expressionTypes.md`、`docs/language/semantics/19-expressionSemantics.md`     |
-| T51 成员与索引访问         | 待讨论   | `docs/language/types/30-accessTypes.md`、`docs/language/semantics/20-accessSemantics.md`             |
-| T52 赋值、解构与展开       | 待讨论   | `docs/language/types/31-assignmentTypes.md`、`docs/language/semantics/21-assignmentSemantics.md`     |
-| T53 调用与构造             | 待讨论   | `docs/language/types/32-callTypes.md`、`docs/language/semantics/22-callSemantics.md`                 |
-| T54 语句检查               | 待讨论   | `docs/language/types/33-statementTypes.md`、`docs/language/semantics/23-statementSemantics.md`       |
-| T55 模块边界               | 讨论中   | `docs/language/modules/1-moduleTypes.md`                                                             |
-| T56 `this` 与 `super`      | 待讨论   | `docs/language/types/34-thisAndSuperTypes.md`、`docs/language/semantics/24-thisAndSuperSemantics.md` |
+| 能力                       | 状态                                      | 主要目标文档                                                                                         |
+| -------------------------- | ----------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| T57 名称、作用域与声明绑定 | 实现已落地；`4-nameBinding.md` 文档待建立 | `docs/compiler/frontend/4-nameBinding.md`                                                            |
+| Checker 语义模型           | 部分定稿                                  | `docs/compiler/frontend/5-checkerSemanticModel.md`                                                   |
+| 常量求值                   | 部分定稿                                  | `docs/compiler/frontend/6-constantEvaluation.md`                                                     |
+| T58 闭包、捕获与副作用     | 待讨论                                    | `docs/language/semantics/15-closureSemantics.md`、`docs/compiler/frontend/7-effectAnalysis.md`       |
+| T61 同步异常               | 待讨论                                    | `docs/language/semantics/16-exceptionSemantics.md`                                                   |
+| T59 异步与 Promise         | 待讨论                                    | `docs/language/types/35-asyncTypes.md`、`docs/language/semantics/17-asyncSemantics.md`               |
+| T60 迭代器与生成器         | 待讨论                                    | `docs/language/types/36-iteratorTypes.md`、`docs/language/semantics/18-iteratorSemantics.md`         |
+| T50 运算符                 | 待讨论                                    | `docs/language/types/29-expressionTypes.md`、`docs/language/semantics/19-expressionSemantics.md`     |
+| T51 成员与索引访问         | 待讨论                                    | `docs/language/types/30-accessTypes.md`、`docs/language/semantics/20-accessSemantics.md`             |
+| T52 赋值、解构与展开       | 待讨论                                    | `docs/language/types/31-assignmentTypes.md`、`docs/language/semantics/21-assignmentSemantics.md`     |
+| T53 调用与构造             | 待讨论                                    | `docs/language/types/32-callTypes.md`、`docs/language/semantics/22-callSemantics.md`                 |
+| T54 语句检查               | 待讨论                                    | `docs/language/types/33-statementTypes.md`、`docs/language/semantics/23-statementSemantics.md`       |
+| T55 模块边界               | 讨论中                                    | `docs/language/modules/1-moduleTypes.md`                                                             |
+| T56 `this` 与 `super`      | 待讨论                                    | `docs/language/types/34-thisAndSuperTypes.md`、`docs/language/semantics/24-thisAndSuperSemantics.md` |
 
 表中“12 项语言能力”指 T50 至 T61。Checker 语义模型与常量求值是实现契约，不是额外语言能力编号。
 
+`docs/architecture/index.md` 中 T57 仍标「待讨论」，与 binder 实现不一致，状态更新待确认。
+
 ## 推荐讨论顺序
 
-依赖顺序已经记录在 `docs/architecture/index.md`。继续讨论时采用：
-
 ```text
-T57 名称绑定
-  -> Checker 核心语义模型
+按 packages/nxts-binder 实现写 4-nameBinding.md
+  -> Checker 核心语义模型（消费 bindProgram 结果）
   -> T58 闭包与副作用
   -> T61 同步异常
   -> T59 异步与 Promise
@@ -217,9 +238,9 @@ T57 名称绑定
   -> Binder/Checker 一致性测试
 ```
 
-T61 必须先于 T59，因为异步函数需要定义同步异常如何转为 Promise rejection。T60 的异步迭代部分依赖 T59。
+不要重新讨论 ScopeId / SymbolId 分配范围或名称空间模型。T61 必须先于 T59。T60 的异步迭代部分依赖 T59。
 
-如果目标只是先实现同步基础 Checker，可以让尚未形成闭环的异常、异步、生成器等语法返回明确能力诊断。但完整 Checker 必须最终覆盖 T50 至 T61，不能让未检查节点进入 HIR。
+如果目标只是先实现同步基础 Checker，可以让尚未形成闭环的异常、异步、生成器等语法返回明确能力诊断。完整 Checker 必须最终覆盖 T50 至 T61，不能让未检查节点进入 HIR。
 
 ## 已有部分定稿内容
 
@@ -239,7 +260,7 @@ T61 必须先于 T59，因为异步函数需要定义同步异常如何转为 Pr
 仍需纳入：
 
 - 规范类型节点定义。
-- TypeId、SymbolId、ScopeId 的数据结构和生命周期。
+- TypeId 数据结构；与 binder 已落地的每文件 SymbolId / ScopeId 如何对接。
 - 类型关系与查询 API。
 - NodeId 语义侧表。
 - ErrorType、错误符号和分析不完整状态。
@@ -281,49 +302,71 @@ T61 必须先于 T59，因为异步函数需要定义同步异常如何转为 Pr
 - import attributes 的资源加载语义。
 - `import()` 与顶层 `await` 的最终语义。
 
-T57 只负责导入声明在当前文件中的本地符号绑定。模块解析、导出图、重新导出和跨模块可见性归 T55。
+职责边界（按当前实现）：
 
-## T57 下一步讨论清单
+| 工作                                                      | 承担方                             |
+| --------------------------------------------------------- | ---------------------------------- |
+| 路径解析、`fileId`、`{ fromFileId, specifier, toFileId }` | host / compiler                    |
+| 本文件 import / export 语法表                             | `bindFile`                         |
+| 导出名解析、`export *` 展开、歧义                         | `ExportResolver` / `file.resolved` |
+| import 到对方出口的链接                                   | `bindProgram` 的 `links`           |
+| 模块初始化顺序、依赖图 DFS                                | T55 / compiler，尚未实现           |
+| 跨模块类型                                                | checker                            |
 
-接手 AI 应从 `docs/compiler/frontend/4-nameBinding.md` 开始，并逐项与用户确认：
+旧结论「T57 只做本文件 import 占坑，导出图全部归 T55」与实现不一致。导出名解析在 binder；路径和初始化仍归 T55。
 
-| 主题       | 必须确定的问题                                                        |
-| ---------- | --------------------------------------------------------------------- |
-| 身份       | ScopeId、SymbolId 是否每程序或每文件分配，如何与 NodeId 关联          |
-| 作用域种类 | 模块、函数、参数、代码块、类、类型参数、catch 和标签作用域            |
-| 名称空间   | 值空间、类型空间、标签空间以及类和枚举的双空间身份                    |
-| 声明时序   | 函数声明、类、接口、类型别名、`const`、`let` 和重载签名何时进入作用域 |
-| TDZ        | `const`、`let`、class 和模块 live binding 的读取边界                  |
-| 遮蔽       | 哪些内外层同名合法，哪些产生诊断或提示                                |
-| 重复声明   | 不支持 TypeScript 声明合并时的统一诊断和重载例外                      |
-| 递归       | 类型前向引用、互相递归、递归函数和类自引用的预声明方式                |
-| 泛型       | 类型参数作用域、约束、默认值和遮蔽                                    |
-| 类         | 实例侧、静态侧、成员名、构造器、`this` 与 `super` 的绑定入口          |
-| 模块       | import 本地绑定、type-only 绑定及与 T55 的职责边界                    |
-| 标准环境   | 内建类型和值如何进入根环境，如何按符号身份识别 intrinsic              |
-| 错误恢复   | 错误符号、未绑定引用、重复诊断抑制和无效声明隔离                      |
-| 捕获候选   | Binder 提供哪些跨函数引用事实给 T58                                   |
-| 性能       | 接近 O(AST 节点数)，使用紧凑 ID 和数组侧表，不在热路径构造文案        |
+## T57 已确认与待确认
 
-T57 不应提前决定类型兼容、闭包运行时表示、模块路径解析或 LLVM lowering。
+写 `4-nameBinding.md` 时按实现收录已确认项，不要重新表决。
+
+### 已确认
+
+| 主题         | 当前方案                                                                                 |
+| ------------ | ---------------------------------------------------------------------------------------- |
+| 身份         | ScopeId、SymbolId 每文件分配；`nodeToSymbols[NodeId] = SymbolId[]`                       |
+| 作用域       | `global`、`module`、`function`、`block`、`class`、`typeParams`、`catch`、`label`、`enum` |
+| 名称空间     | `value` / `type` / `label`；class、enum 双空间                                           |
+| 声明时序     | function / class / interface / type / enum 提升；`const` / `let` 不提升                  |
+| 遮蔽         | 内层同名合法，引用取最近作用域；同空间同作用域重复为 `binder.duplicate`                  |
+| 重复声明     | 不支持 TypeScript 声明合并                                                               |
+| 递归 / 前向  | 提升使类型名和函数名可被后面或前面的引用绑到                                             |
+| 泛型         | 类型参数在 `typeParams` 作用域，约束和默认值在该作用域内解析                             |
+| 类           | 只绑类名（双空间）、方法体内的词法名和类型参数；成员名不是词法符号                       |
+| 模块         | import 本地坑；跨文件用 `edges` + `resolve` / `links` / `resolved`                       |
+| 标准环境入口 | `BindEnv` + `builtinId`；checker 按 `builtinId` 认 intrinsic                             |
+| 错误隔离     | 跳过 `invalidNodes`，不为拒绝子树建符号                                                  |
+| 性能         | 侧表为数组和下标 ID，诊断不在热路径拼用户文案                                            |
+
+### 待确认
+
+| 主题               | 内容                                                                                      |
+| ------------------ | ----------------------------------------------------------------------------------------- |
+| 标准环境名单       | 有哪些根符号、`builtinId` 编码；等 T49 / 标准库。`undefined` 规范要求走标准环境           |
+| 错误符号           | 非法声明是否占位，以避免级联 `unresolved`                                                 |
+| 捕获候选           | binder 是否另出跨函数自由变量表给 T58                                                     |
+| TDZ                | `const` / `let` / class / live binding 的读取边界；属语义 / checker，不是再做一套词法查找 |
+| 重载组             | binder 是否把同名函数声明收成组，或留给 checker                                           |
+| `4-nameBinding.md` | 规范正文尚未创建                                                                          |
+
+T57 规范不应决定类型兼容、闭包运行时表示、模块路径解析或 LLVM lowering。
 
 ## 协作与文档要求
 
 - 每次从真实仓库、索引和已定稿文档核对事实，不凭记忆重述规则。
-- 有明显方案取舍时，向用户说明性能、使用负担、TS/JS 兼容性和实现复杂度。
+- 有明显方案取舍时，说明性能、使用负担、TS/JS 兼容性和实现复杂度。
 - 用户熟悉 JavaScript/TypeScript，但不了解 LLVM；涉及 LLVM 时增加一个简短解释点。
 - 一次讨论一个明确问题，获得结论后继续下一项。
 - 整份规范定稿后写入对应文件并更新同级 `index.md`。
 - 文档正文只保留规范、原因、影响和待确认项，不记录对话或协作过程。
 - 不在每次文档修改后运行格式化；用户会统一处理格式。
 - 修改后执行结构检查、链接或引用核对，并明确说明未验证项。
-- Parser 代码由用户当前实现，除非用户明确要求，否则接手 AI 不修改 `packages/nxts-parser`。
+- 除非明确要求，不修改 `packages/nxts-parser` 或为对齐文档改动已通过测试的 binder 行为。
 
 ## 接手后的第一步
 
 1. 阅读根目录 `AGENTS.md`。
-2. 阅读 `docs/architecture/index.md`。
-3. 阅读四份已定稿 Parser 规范。
-4. 阅读 `docs/language/types/index.md` 和 `docs/compiler/frontend/5-checkerSemanticModel.md`。
-5. 不重新讨论 Parser，直接开始 T57。
-6. T57 的第一个建议议题是 ScopeId、SymbolId 的分配范围及名称空间模型。
+2. 阅读 `docs/architecture/index.md` 和 `docs/compiler/frontend/index.md`。
+3. 阅读 `packages/nxts-binder/src/types.ts`、`bindFile.ts`、`bindProgram.ts`、`exportResolver.ts`。
+4. 按实现起草 `docs/compiler/frontend/4-nameBinding.md`，待确认项保持「待确认」。
+5. 阅读 `docs/language/types/index.md` 和 `docs/compiler/frontend/5-checkerSemanticModel.md`。
+6. 开始 Checker：消费 `bindProgram` 的 `files`、`links`、`file.resolved` 和 `builtinId`，不重新走 `export *`，不按标识符文本认 intrinsic。

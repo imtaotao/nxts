@@ -271,8 +271,14 @@ export function collectModuleBindings(
   }
 
   for (const statement of file.ast.program.body) {
+    if (file.invalidNodes.has(statement)) {
+      continue;
+    }
     if (statement.type === 'ImportDeclaration') {
       for (const specifier of statement.specifiers) {
+        if (file.invalidNodes.has(specifier)) {
+          continue;
+        }
         const space = importSpace(statement, specifier);
         const imported = importedName(specifier);
         const symbolId = symbolInSpace(file, bound, specifier.local, space);
@@ -302,7 +308,9 @@ export function collectModuleBindings(
     }
 
     if (statement.type === 'ExportDefaultDeclaration') {
-      collectDefaultExport(file, bound, statement.declaration, exports);
+      if (!file.invalidNodes.has(statement.declaration)) {
+        collectDefaultExport(file, bound, statement.declaration, exports);
+      }
       continue;
     }
 
@@ -310,12 +318,18 @@ export function collectModuleBindings(
       continue;
     }
 
-    if (statement.declaration) {
+    if (
+      statement.declaration &&
+      !file.invalidNodes.has(statement.declaration)
+    ) {
       collectDeclarationExports(file, bound, statement.declaration, exports);
     }
 
     const source = statement.source?.value ?? null;
     for (const specifier of statement.specifiers) {
+      if (file.invalidNodes.has(specifier)) {
+        continue;
+      }
       if (specifier.type === 'ExportNamespaceSpecifier') {
         const name = exportedName(specifier.exported);
         if (name == null) {

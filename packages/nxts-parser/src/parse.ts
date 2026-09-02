@@ -15,7 +15,12 @@ export function parseFile(snapshot: SourceSnapshot) {
           diagnosticFromBabel(error, snapshot),
         ),
         ...assigned.diagnostics,
-        ...validate(assigned.nodes, assigned.parents, snapshot),
+        ...validate(
+          assigned.nodes,
+          assigned.parents,
+          assigned.invalidNodes,
+          snapshot,
+        ),
       ],
       snapshot,
     );

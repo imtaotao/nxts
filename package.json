@@ -17,7 +17,7 @@
     "publish:minor": "auk publish --workspace --version minor --token env:NPM_TOKEN",
     "publish:major": "auk publish --workspace --version major --token env:NPM_TOKEN",
     "test": "pnpm -r --if-present test",
-    "typecheck": "tsc -p . --noEmit --skipLibCheck",
+    "typecheck": "tsc -p . --noEmit --skipLibCheck && tsc -p app --noEmit",
     "lint": "oxlint",
     "fmt": "oxfmt --write --ignore-path .gitignore \"**/*.{js,mjs,cjs,ts,tsx,json,md,css,html}\""
   },
