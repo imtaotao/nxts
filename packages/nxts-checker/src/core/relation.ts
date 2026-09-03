@@ -1,1 +1,5 @@
-// 相等、赋值兼容、子类型；带缓存与预算。
+import type { TypeId } from '../types';
+
+export function equal(left: TypeId, right: TypeId) {
+  return left === right;
+}

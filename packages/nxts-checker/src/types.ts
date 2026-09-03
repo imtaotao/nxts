@@ -1,7 +1,30 @@
 export type TypeId = number;
 
+export type AtomKind =
+  | 'boolean'
+  | 'number'
+  | 'string'
+  | 'symbol'
+  | 'null'
+  | 'undefined'
+  | 'i8'
+  | 'i16'
+  | 'i32'
+  | 'i64'
+  | 'u8'
+  | 'u16'
+  | 'u32'
+  | 'u64'
+  | 'f32'
+  | 'f64'
+  | 'usize'
+  | 'isize'
+  | 'void'
+  | 'never';
+
 export type TypeRecord = {
   id: TypeId;
+  kind: AtomKind;
 };
 
 export type CheckerDiagnostic = {
