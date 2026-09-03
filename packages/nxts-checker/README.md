@@ -11,7 +11,7 @@ src/
   context.ts            一次检查的工作区
 
   core/                 底座：只对 TypeId 干活
-    intern.ts           驻留、规范化
+    typeTable.ts        驻留、规范化
     relation.ts         相等、赋值兼容
     infer.ts            缺注解时推导
     error.ts            ErrorType
