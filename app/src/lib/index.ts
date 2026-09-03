@@ -4,6 +4,8 @@ import {
   type ModuleEdge,
   type ParseFileResult,
 } from '@nxts/binder';
+import { checkProgram } from '@nxts/checker';
+import { createSnapshot, parseFile } from '@nxts/parser';
 
 // playground 先塞一组常用根符号。完整名单归 T49。
 export const playgroundEnv: BindEnv = {
@@ -15,7 +17,6 @@ export const playgroundEnv: BindEnv = {
     { name: 'Partial', space: 'type', builtinId: 'Partial' },
   ],
 };
-import { createSnapshot, parseFile } from '@nxts/parser';
 
 export type PlaygroundFile = {
   path: string;
@@ -117,5 +118,9 @@ export async function run(files: readonly PlaygroundFile[]) {
       });
     }
   }
-  return bindProgram(parsed, edges, playgroundEnv);
+  const bind = bindProgram(parsed, edges, playgroundEnv);
+  return {
+    bind,
+    check: checkProgram(bind),
+  };
 }

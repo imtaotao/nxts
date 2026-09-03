@@ -109,12 +109,20 @@ type RunStatus = {
   diagnosticCount: number;
 };
 
-const bindWorkspace = async (files: readonly PlaygroundFile[]) => {
+const checkWorkspace = async (files: readonly PlaygroundFile[]) => {
   const result = await run(files);
   console.log(result);
   const diagnosticCount =
-    result.diagnostics.length +
-    result.files.reduce((count, file) => count + file.diagnostics.length, 0);
+    result.bind.diagnostics.length +
+    result.bind.files.reduce(
+      (count, file) => count + file.diagnostics.length,
+      0,
+    ) +
+    result.check.diagnostics.length +
+    result.check.files.reduce(
+      (count, file) => count + file.diagnostics.length,
+      0,
+    );
   return {
     complete: diagnosticCount === 0,
     diagnosticCount,
@@ -132,7 +140,7 @@ export function App() {
   const execute = useCallback(async (workspace: readonly PlaygroundFile[]) => {
     setRunning(true);
     try {
-      setStatus(await bindWorkspace(workspace));
+      setStatus(await checkWorkspace(workspace));
     } catch (error) {
       console.error(error);
       setStatus({
@@ -210,7 +218,7 @@ export function App() {
           divided
           eyebrow='Nxts Playground'
           title='源码'
-          description='多文件会保存在浏览器里。bindProgram 会带上 playground 的标准环境，结果打到控制台。'
+          description='多文件会保存在浏览器里。bindProgram 之后走 checkProgram，结果打到控制台。'
           meta={
             <Badge
               tone={
@@ -251,7 +259,7 @@ export function App() {
                   void execute(files);
                 }}
               >
-                绑定
+                检查
               </Button>
             </Group>
           }
