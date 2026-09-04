@@ -111,7 +111,8 @@ type RunStatus = {
 
 const checkWorkspace = async (files: readonly PlaygroundFile[]) => {
   const result = await run(files);
-  console.log(result);
+  console.log(result.bind);
+  console.log(result.check);
   const diagnosticCount =
     result.bind.diagnostics.length +
     result.bind.files.reduce(

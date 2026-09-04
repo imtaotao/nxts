@@ -8,8 +8,23 @@ import { checkProgram } from '@nxts/checker';
 import { createSnapshot, parseFile } from '@nxts/parser';
 
 // playground 先塞一组常用根符号。完整名单归 T49。
+const atomType = (name: string) =>
+  ({ name, space: 'type', builtinId: name }) as const;
+
 export const playgroundEnv: BindEnv = {
   symbols: [
+    atomType('i8'),
+    atomType('i16'),
+    atomType('i32'),
+    atomType('i64'),
+    atomType('u8'),
+    atomType('u16'),
+    atomType('u32'),
+    atomType('u64'),
+    atomType('f32'),
+    atomType('f64'),
+    atomType('usize'),
+    atomType('isize'),
     { name: 'Array', space: 'value', builtinId: 'Array' },
     { name: 'Array', space: 'type', builtinId: 'Array' },
     { name: 'Promise', space: 'value', builtinId: 'Promise' },

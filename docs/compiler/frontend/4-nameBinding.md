@@ -48,6 +48,8 @@ SymbolId   -> SymbolRecord
 | `ScopeRecord`   | `id`、`kind`、`parent`                                | `parent` 为外层 ScopeId；模块根在无环境时为 `null`，有环境时指向 `global` |
 | `SymbolRecord`  | `name`、`space`、`scopeId`、`declNodeId`、`builtinId` | 用户声明 `builtinId` 为 `null`；环境符号 `declNodeId` 为 `null`           |
 | `nodeToSymbols` | `SymbolId[]`                                          | 下标对齐 parser `nodes[]`；无绑定为空数组                                 |
+| `nodes`         | 与 parseFile 同一份节点                               | checker 走 AST，不重解析                                                  |
+| `nodeIds`       | Node → NodeId                                         | 与 parseFile 同一份                                                       |
 
 引用位置记在使用处 Identifier 的 `nodeToSymbols`。环境符号没有用户 AST 声明节点。
 

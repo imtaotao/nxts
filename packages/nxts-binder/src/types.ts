@@ -102,6 +102,10 @@ export type ResolvedExport =
 export type BindFileResult = {
   // 这次绑定用的源码快照，和 parseFile 是同一份。
   snapshot: SourceSnapshot;
+  // 与 parseFile 同一份节点。下标是 NodeId。checker 走 AST。
+  nodes: ParseFileResult['nodes'];
+  // Node → NodeId，与 parseFile 同一份。
+  nodeIds: ParseFileResult['nodeIds'];
   // 词法作用域树。下标是 ScopeId；parent 指向外层。有标准环境时模块根的 parent 是 global，否则为 null。
   scopes: ScopeRecord[];
   // 声明身份。下标是 SymbolId。标准环境符号带 builtinId，declNodeId 为 null。

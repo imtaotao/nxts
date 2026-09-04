@@ -1,11 +1,16 @@
 import type { BindFileResult, BindProgramResult } from '@nxts/binder';
+import { CheckContext } from './context';
+import { checkVariables } from './decl/variable';
 import type { CheckFileResult, CheckProgramResult } from './types';
 
-const emptyFile = (file: BindFileResult) => {
+const checkFile = (context: CheckContext, file: BindFileResult) => {
   const nodeCount = file.nodeToSymbols.length;
+  const symbolTypes = file.symbols.map(() => null);
+  const nodeTypes = Array.from({ length: nodeCount }, () => null);
+  checkVariables(context, file, symbolTypes, nodeTypes);
   return {
-    symbolTypes: file.symbols.map(() => null),
-    nodeTypes: Array.from({ length: nodeCount }, () => null),
+    symbolTypes,
+    nodeTypes,
     nodeReachable: Array.from({ length: nodeCount }, () => true),
     nodeConstants: Array.from({ length: nodeCount }, () => null),
     diagnostics: [],
@@ -14,9 +19,10 @@ const emptyFile = (file: BindFileResult) => {
 };
 
 export function checkProgram(program: BindProgramResult) {
+  const context = new CheckContext();
   return {
-    types: [],
-    files: program.files.map(emptyFile),
+    types: context.table.types,
+    files: program.files.map((file) => checkFile(context, file)),
     diagnostics: [],
     diagnosticsTruncated: false,
     complete: false,

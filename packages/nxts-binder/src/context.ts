@@ -181,6 +181,8 @@ export class BinderContext {
       scopes: this.scopes,
       symbols: this.symbols,
       snapshot: this.file.snapshot,
+      nodes: this.file.nodes,
+      nodeIds: this.file.nodeIds,
       diagnostics: this.diagnostics,
       nodeToSymbols: this.nodeToSymbols,
     };
