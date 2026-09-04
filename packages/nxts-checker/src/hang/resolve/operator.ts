@@ -26,7 +26,7 @@ const readonlyOf = (hang: Hang, typeId: TypeId) => {
 const keyofOf = (hang: Hang, typeId: TypeId) => {
   const record = hang.context.table.types[typeId] ?? null;
   if (record?.kind !== 'object' && record?.kind !== 'interface') {
-    // TODO: 数组/元组/类/联合的 keyof 键域还要对照 T40，等成员表和联合规则齐了再挂。
+    // TODO: 数组/元组/类/联合的 keyof。继续：T40 已定；数组/元组图鉴已有，可先做；类要等成员表；联合按分配即可。
     return null;
   }
   const string = hang.context.table.atom('string');
@@ -52,7 +52,7 @@ export function resolveOperator(
     return null;
   }
   if (type.operator === 'unique') {
-    // TODO: unique symbol 是声明身份，不是对任意内层类型的算子。等 T18。
+    // TODO: unique 不是对任意内层的算子。继续：T18 已定；等 const 声明挂上 uniqueSymbol 后再认注解位置。
     return null;
   }
   const inner = hang.resolveAtomType(type.typeAnnotation, subst);

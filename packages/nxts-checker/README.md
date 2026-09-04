@@ -15,7 +15,12 @@ src/
   core/                 底座：只对 TypeId 干活
     typeTable.ts        驻留、去重
     typeKey.ts          规范键
-    relation.ts         现：TypeId 相等
+    relation/           可赋值
+      index.ts          equal、assignable、按 kind 分派
+      object.ts         精确对象、对象→接口、接口互赋
+      collection.ts     数组、元组
+      dictionary.ts     对象/数组进字典、字典只读视图
+      function.ts       函数、构造
     infer.ts            缺注解推导（未接）
     error.ts            ErrorType（未接）
 

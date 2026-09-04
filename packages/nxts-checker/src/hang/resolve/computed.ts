@@ -10,7 +10,7 @@ export function resolveConditional(
   if (type.type !== 'TSConditionalType') {
     return null;
   }
-  // TODO: T extends U ? X : Y 要 relation 的可赋值判断，不能只展开 AST。
+  // TODO: T extends U ? X : Y。继续：T41 已定，assignable 已有；闭合后 intern 已有 kind，不新开条件条目。
   return null;
 }
 
@@ -22,7 +22,7 @@ export function resolveInfer(
   if (type.type !== 'TSInferType') {
     return null;
   }
-  // TODO: infer U 只在条件类型匹配里有意义，等 infer 模块收约束。
+  // TODO: infer U 只在条件匹配里收约束。继续：T41 已定；不要和 core/infer（值推导）混用。
   return null;
 }
 
@@ -34,7 +34,7 @@ export function resolveMapped(
   if (type.type !== 'TSMappedType') {
     return null;
   }
-  // TODO: { [K in T]: U } 要 keyof/索引和可选性修饰，等 T41。
+  // TODO: { [K in T]: U }。继续：T41 已定；等 keyof/索引 hang 覆盖操作数（对象/接口已能查）。
   return null;
 }
 
@@ -46,6 +46,6 @@ export function resolveTemplate(
   if (type.type !== 'TSTemplateLiteralType') {
     return null;
   }
-  // TODO: `${T}` 插值是类型运算，不是无插值字符串字面量。等 T41。
+  // TODO: `${T}` 插值是类型运算。继续：T41 已定；无插值字面量已在 literal，有插值按 T41 闭合。
   return null;
 }

@@ -61,15 +61,15 @@ export type LiteralValue =
   | { kind: 'numeric'; value: string };
 
 // 一次检查的规范类型条目。挂钩表只存 TypeId，问「这个号是什么」查 types[]。
-// TODO: 条件 / infer / 映射 / 模板字符串是类型运算，闭合后落到下面已有 kind，不另开条目。
-// TODO: `x is T` 是收窄谓词，不是返回值 kind。
-// TODO: ErrorType 只在 checker 内部抑制连锁，公开 types[] 不占条目。
+// TODO: 条件 / infer / 映射 / 模板是类型运算，闭合后落到下面已有 kind。继续：T41 已定；等 resolve/computed 能调用 assignable 并写出结果 TypeId。
+// TODO: `x is T` 是收窄谓词，不是返回值 kind。继续：T06 已定；谓词挂在 flow/narrow，不进 types[]。
+// TODO: ErrorType 只在 checker 内部抑制连锁，公开 types[] 不占条目。继续：等 catalog 诊断和第一次 check 出错再引入。
 export type TypeShape =
   | { kind: 'atom'; atom: AtomKind }
-  // TODO: 不能用来冒充 any；关键字 any/unknown 由诊断拒绝。
+  // TODO: 不能用来冒充 any；关键字 any/unknown 由诊断拒绝。继续：等 catalog 接上拒绝诊断。
   | { kind: 'unknown' }
   | { kind: 'literal'; base: TypeId; value: LiteralValue }
-  // TODO: unique symbol 是声明身份，等 T18。
+  // TODO: unique symbol 是声明身份。继续：T18 已定；等 hangValues 给 `const x = Symbol()` 挂 uniqueSymbol(decl)，typeof 能读到。
   | { kind: 'uniqueSymbol'; decl: DeclId }
   | {
       kind: 'object';
@@ -84,7 +84,7 @@ export type TypeShape =
       constructs: readonly TypeId[];
       args: readonly TypeId[];
     }
-  // hang：`[key: string | number]: V`。双索引、symbol 键见 intern TODO。
+  // hang：`[key: string | number]: V`。双索引继续：T30 已定，先扩展本行能存 string+number 两套索引；symbol 键 T18 不支持。
   | {
       kind: 'dictionary';
       key: TypeId;
@@ -102,7 +102,7 @@ export type TypeShape =
   | { kind: 'construct'; signatures: readonly FunctionSignature[] }
   | { kind: 'union'; members: readonly TypeId[] }
   | { kind: 'intersection'; members: readonly TypeId[] }
-  // TODO: 等品牌类型的声明规则。
+  // TODO: 品牌行。继续：T16 已定；等 T49 把 Brand 的 builtinId / 标准库身份定下来，hang 才能认 Brand<T, Tag>。
   | { kind: 'brand'; base: TypeId; tag: TypeId }
   // 成员不进这条，挂在字段节点上。
   | { kind: 'class'; decl: DeclId; args: readonly TypeId[] }
@@ -111,7 +111,7 @@ export type TypeShape =
   | { kind: 'enumMember'; enum: TypeId; value: LiteralValue }
   | { kind: 'generic'; decl: DeclId; args: readonly TypeId[] }
   | { kind: 'typeParam'; decl: DeclId }
-  // TODO: 等 check/this 绑到当前实例 TypeId。
+  // TODO: this 要绑到当前实例 TypeId。继续：等 T56 `this`/`super` 类型文档定稿，再由 check/this 写入 classType。
   | { kind: 'this'; classType: TypeId };
 
 export type TypeRecord = TypeShape & {

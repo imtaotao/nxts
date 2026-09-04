@@ -208,7 +208,7 @@ export function signatureBody(
         return null;
       }
       if (!isNil(index)) {
-        // TODO: 字符串与数值双索引要进同一条 dictionary，当前图鉴只有一个 key。
+        // TODO: 字符串与数值双索引要进同一条 dictionary。继续：T30 已定；先扩展 dictionary 形状能存两套索引。
         return null;
       }
       index = item;
@@ -323,7 +323,7 @@ const inheritOf = (
     return true;
   }
   if (record?.kind === 'dictionary') {
-    // TODO: extends 字典要合并 key/value，不能只摊固定成员。
+    // TODO: extends 字典要合并 key/value。继续：T30 已定；heritage 已能拿到 TypeId，这里补合并。
     return false;
   }
   return false;
@@ -341,7 +341,7 @@ const heritageTypeOf = (
     return null;
   }
   if (!isNil(node.typeArguments)) {
-    // TODO: extends Named<T> 要走 instantiateRef；intern 不能直接引 instantiate，避免成环。
+    // TODO: extends Named<T> 要走 instantiateRef。继续：T37 instantiate 已有；把入口挂到 Hang 上，intern 不要直接 import。
     return null;
   }
   const symbolId = hang.symbolIn(node.expression, 'type');
@@ -422,7 +422,7 @@ export function dictionaryOf(
   constructs: readonly TypeId[],
 ) {
   if (calls.length > 0 || constructs.length > 0) {
-    // TODO: 字典再带调用/构造签名还没有合在一条上的形状。
+    // TODO: 字典再带调用/构造还没有合在一条上的形状。继续：T29/T32 已定；先定图鉴是 interface 带 index 还是 dictionary 带 calls。
     return null;
   }
   return hang.context.table.intern({

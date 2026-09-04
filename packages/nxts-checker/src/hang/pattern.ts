@@ -85,7 +85,7 @@ const hangObjectPattern = (
   }
   for (const property of node.properties) {
     if (property.type === 'RestElement') {
-      // TODO: object rest 要减去已解构键，等剩余对象图鉴。
+      // TODO: object rest 要减去已解构键。继续：等 T52 赋值/解构类型定稿。
       continue;
     }
     const key = property.key;
@@ -107,7 +107,7 @@ const hangArrayPattern = (
 ) => {
   const elements = tupleOf(hang, typeId);
   if (isNil(elements)) {
-    // TODO: 数组模式对 array 的元素类型还没接到成员表上。
+    // TODO: 数组模式对 array 的元素类型。继续：T34 已定，图鉴已有 element，按元素类型挂每个槽即可。
     return;
   }
   for (const [index, element] of node.elements.entries()) {
@@ -115,7 +115,7 @@ const hangArrayPattern = (
       continue;
     }
     if (element.type === 'RestElement') {
-      // TODO: 数组 rest 要吃掉剩余 tuple 槽。
+      // TODO: 数组 rest 要吃掉剩余 tuple 槽。继续：T35 已定，可先做固定元组剩余槽；泛型/variadic 等 T37。
       continue;
     }
     const slot = elements[index] ?? null;
@@ -156,7 +156,7 @@ export function hangPattern(hang: Hang, node: Node, expected?: TypeId) {
       if (!isNil(annotated)) {
         return hangPattern(hang, node.argument, typeId);
       }
-      // TODO: 无注解的 rest 绑定的是剩余集合，不是当前 expected 本身。
+      // TODO: 无注解 rest 绑定的是剩余集合，不是当前 expected。继续：元组剩余见 T35；对象剩余等 T52。
       return null;
     default:
       return null;

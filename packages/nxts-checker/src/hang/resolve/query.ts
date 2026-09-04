@@ -10,6 +10,6 @@ export function resolveQuery(
   if (type.type !== 'TSTypeQuery') {
     return null;
   }
-  // TODO: typeof 要读值空间 TypeId。hangTypes 在 hangValues 之前，值还没挂上；等编排把值挂进类型不动点，或 check 后再回填。
+  // TODO: typeof 要读值空间 TypeId。继续：T40 已定；等 hang 编排改成类型/值不动点，或 hangValues 后再回填 typeof。
   return null;
 }

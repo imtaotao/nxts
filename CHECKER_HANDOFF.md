@@ -1,19 +1,18 @@
 # Checker 接手
 
 - 最后更新：2026-09-04
-- 当前提交：`69f8c32`
 - 目标读者：按已定稿模型继续实现 `@nxts/checker` 的人
-- 权威不在本文。Binder 看 [`docs/compiler/frontend/4-nameBinding.md`](docs/compiler/frontend/4-nameBinding.md)，Checker 看 [`docs/compiler/frontend/5-checkerSemanticModel.md`](docs/compiler/frontend/5-checkerSemanticModel.md)。语言规则看 [`docs/language/types/index.md`](docs/language/types/index.md)。类型身份看 [`docs/language/types/2-typeIdentity.md`](docs/language/types/2-typeIdentity.md)。
+- 权威不在本文。Binder 看 [`docs/compiler/frontend/4-nameBinding.md`](docs/compiler/frontend/4-nameBinding.md)，Checker 看 [`docs/compiler/frontend/5-checkerSemanticModel.md`](docs/compiler/frontend/5-checkerSemanticModel.md)。语言规则看 [`docs/language/types/index.md`](docs/language/types/index.md)。类型身份看 [`docs/language/types/2-typeIdentity.md`](docs/language/types/2-typeIdentity.md)。类型兼容看 [`docs/language/types/3-typeCompatibility.md`](docs/language/types/3-typeCompatibility.md)。
 
 ## 现状
 
-| 包 / 文档                 | 状态                                                                                                                             |
-| ------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `@nxts/parser`            | 已实现。`parseFile`                                                                                                              |
-| `@nxts/binder`            | 已实现。`bindFile`、`bindProgram`、`ExportResolver`。T57 规范已定稿                                                              |
-| `@nxts/checker`           | `checkProgram` 只 hang。有注解的声明和类型写法进入图鉴与挂钩表。`complete` 为 `false`。`check` / `flow` / `const` / `infer` 未接 |
-| `6-constantEvaluation.md` | 部分定稿。求值/折叠分层已写入第 5 篇；位数、深度、步数预算仍归第 6 篇                                                            |
-| `7-effectAnalysis.md`     | 文档待建立（T58）                                                                                                                |
+| 包 / 文档                 | 状态                                                                                                                                           |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@nxts/parser`            | 已实现。`parseFile`                                                                                                                            |
+| `@nxts/binder`            | 已实现。`bindFile`、`bindProgram`、`ExportResolver`。T57 规范已定稿                                                                            |
+| `@nxts/checker`           | `checkProgram` 只 hang。`core/relation/` 已有 `assignable`，还没接到初值检查。`complete` 为 `false`。`check` / `flow` / `const` / `infer` 未接 |
+| `6-constantEvaluation.md` | 部分定稿。求值/折叠分层已写入第 5 篇；位数、深度、步数预算仍归第 6 篇                                                                          |
+| `7-effectAnalysis.md`     | 文档待建立（T58）                                                                                                                              |
 
 不要重议 ScopeId / SymbolId 按文件分配、名称空间，或 checker 是否提供 `checkFile`。单文件检查 = 边为空的单模块 `checkProgram`。不要把 `TypeRecord` 再收成「只有原子」的过渡形状。不要把未确定的类型写法猜成一种接近的 `kind`。
 
@@ -40,11 +39,19 @@ table.intern({ kind: 'object', props: [...] });
 
 测试：`pnpm --filter @nxts/checker test`。空环境时 `i32` 未绑定，格子只能空着。测试 / playground 可传演示 `BindEnv`（例如 `{ name: 'i32', space: 'type', builtinId: 'i32' }`），不锁标准名单。
 
+Playground：`pnpm dev:app`。页面只编辑源码；hang 结果在控制台三份 log（挂上的 symbols/nodes、`bind`、`check`）。Badge 只表示有没有诊断。`assignable` 还不会在这里跑。
+
+## 已落地的 relation
+
+`core/relation/`：`equal` / `assignable`，按 kind 分派。只给 `true` / `false`，不标 NoOp / Pack。
+
+已能判：相等、`never`、字面量、`unique symbol`、品牌、联合/交叉、精确对象、对象→接口、接口互赋、`T[] → readonly T[]`、同构元组→只读数组、可选/rest 元组长度形状、对象/数组进字典、字典只读与 `NumberDict → StringDict`、单签名与重载函数（rest、`this` 接收者）。
+
+还空着：类→基类、类→接口（class 行没有 `extends` / 成员）、只读元素协变（要等 NoOp / Pack）。TODO 都写了 `继续：` 条件。
+
 ## 下一步
 
-`core/relation.ts` 的可赋值。现在只有 `left === right`（`TypeId` 身份）。初值检查、缺注解推导、收窄、常量先不做。
-
-公开入口仍只有 `checkProgram`。
+把 `assignable` 接到 `const n: i32 = 1` 这类有注解初值。缺注解推导、收窄、常量、表达式/语句检查先不做。公开入口仍只有 `checkProgram`。
 
 ## 实现入口
 
@@ -75,4 +82,5 @@ table.intern({ kind: 'object', props: [...] });
 4. `docs/language/types/2-typeIdentity.md`
 5. `packages/nxts-binder/src/types.ts`、`bindProgram.ts`
 6. `packages/nxts-checker/src/types.ts`、`core/typeTable.ts`、`hang/index.ts`
-7. `packages/nxts-checker/README.md`，下一步填 `core/relation.ts`
+7. `packages/nxts-checker/README.md`、`core/relation/`
+8. 下一步：`check/assign.ts` 用 `assignable` 查有注解初值
