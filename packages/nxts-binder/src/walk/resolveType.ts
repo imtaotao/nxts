@@ -91,7 +91,13 @@ export function resolveType(binder: BinderContext, node?: Node | null) {
       resolveType(binder, node.typeAnnotation);
       return;
     case 'Identifier':
+    case 'ObjectPattern':
+    case 'ArrayPattern':
       resolveType(binder, node.typeAnnotation);
+      return;
+    case 'RestElement':
+      resolveType(binder, node.typeAnnotation);
+      resolveType(binder, node.argument);
       return;
     case 'TSParameterProperty':
       resolveType(binder, node.parameter);

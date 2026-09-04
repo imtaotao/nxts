@@ -16,7 +16,9 @@ src/
     infer.ts            缺注解时推导
     error.ts            ErrorType
 
-  decl/                 给声明符号挂类型
+  hang/                 给符号和节点挂 TypeId
+
+  decl/                 扫声明，调用 hang
     variable.ts         const / let / 参数
     alias.ts            type 别名
     interface.ts        interface

@@ -9,6 +9,7 @@ import type {
   TSConditionalType,
   TSInferType,
   TSPropertySignature,
+  TSFunctionType,
   TSTypeAliasDeclaration,
   TSTypeLiteral,
   TSTypeQuery,
@@ -47,6 +48,48 @@ describe('type', () => {
 
     expect(scopeKindOf(bound, 'User')).toBe('module');
     expect(sameSymbol(bound, file, alias.id, typeRefOf(n))).toBe(true);
+    expect(bound.diagnostics).toEqual([]);
+  });
+
+  it('resolves type names inside function type rest parameters', async () => {
+    const { file, bound } = await bindSource(
+      'type User = number;\ntype Fn = (...values: User[]) => User;\n',
+    );
+    const alias = file.ast.program.body[0] as TSTypeAliasDeclaration;
+    const fn = (file.ast.program.body[1] as TSTypeAliasDeclaration)
+      .typeAnnotation as TSFunctionType;
+    const rest = fn.params[0];
+    const annotation =
+      rest?.type === 'RestElement' ? rest.typeAnnotation : null;
+    const array =
+      annotation?.type === 'TSTypeAnnotation'
+        ? annotation.typeAnnotation
+        : null;
+    const element = array?.type === 'TSArrayType' ? array.elementType : null;
+    const name = element?.type === 'TSTypeReference' ? element.typeName : null;
+
+    expect(sameSymbol(bound, file, alias.id, name)).toBe(true);
+    expect(bound.diagnostics).toEqual([]);
+  });
+
+  it('resolves env atoms inside function type rest parameters', async () => {
+    const { file, bound } = await bindSource(
+      'type Fn = (...values: i32[]) => i32;\n',
+      { symbols: [{ name: 'i32', space: 'type', builtinId: 'i32' }] },
+    );
+    const fn = (file.ast.program.body[0] as TSTypeAliasDeclaration)
+      .typeAnnotation as TSFunctionType;
+    const rest = fn.params[0];
+    const annotation =
+      rest?.type === 'RestElement' ? rest.typeAnnotation : null;
+    const array =
+      annotation?.type === 'TSTypeAnnotation'
+        ? annotation.typeAnnotation
+        : null;
+    const element = array?.type === 'TSArrayType' ? array.elementType : null;
+    const name = element?.type === 'TSTypeReference' ? element.typeName : null;
+
+    expect(symbolOf(bound, file, name)).not.toBe(null);
     expect(bound.diagnostics).toEqual([]);
   });
 

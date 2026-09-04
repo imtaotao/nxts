@@ -1,4 +1,5 @@
 import type { PlaygroundFile } from '../lib/index.ts';
+import { source as atoms } from './default/atoms.ts';
 import { source as count } from './default/count.ts';
 import { source as flow } from './default/flow.ts';
 import { source as kind } from './default/kind.ts';
@@ -7,6 +8,7 @@ import { source as seed } from './default/seed.ts';
 import { source as types } from './default/types.ts';
 
 export const defaultFiles: PlaygroundFile[] = [
+  { path: 'atoms.ts', source: atoms },
   { path: 'main.ts', source: main },
   { path: 'types.ts', source: types },
   { path: 'flow.ts', source: flow },

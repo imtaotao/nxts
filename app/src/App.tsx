@@ -109,8 +109,33 @@ type RunStatus = {
   diagnosticCount: number;
 };
 
+const hungOf = (result: Awaited<ReturnType<typeof run>>) =>
+  result.bind.files.map((file, index) => {
+    const checked = result.check.files[index];
+    const typeOf = (id: number | null) =>
+      id == null ? null : (result.check.types[id] ?? null);
+    return {
+      path: file.snapshot.canonicalPath,
+      symbols: file.symbols.flatMap((symbol) => {
+        const type = typeOf(checked?.symbolTypes[symbol.id] ?? null);
+        if (type == null) {
+          return [];
+        }
+        return [{ name: symbol.name, space: symbol.space, type }];
+      }),
+      nodes: file.nodes.flatMap((node, nodeId) => {
+        const type = typeOf(checked?.nodeTypes[nodeId] ?? null);
+        if (type == null) {
+          return [];
+        }
+        return [{ node: node.type, type }];
+      }),
+    };
+  });
+
 const checkWorkspace = async (files: readonly PlaygroundFile[]) => {
   const result = await run(files);
+  console.log(hungOf(result));
   console.log(result.bind);
   console.log(result.check);
   const diagnosticCount =
