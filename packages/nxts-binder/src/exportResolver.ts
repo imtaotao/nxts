@@ -1,3 +1,4 @@
+import { isNil } from 'aidly';
 import type {
   BindFileResult,
   FileExport,
@@ -55,7 +56,7 @@ export class ExportResolver {
     visited.add(key);
 
     const exports = this.exportsByFile.get(fileId);
-    if (exports == null) {
+    if (isNil(exports)) {
       return { kind: 'missing' };
     }
 
@@ -103,7 +104,7 @@ export class ExportResolver {
     cache: Map<number, Array<{ name: string; space: NameSpace }>>,
   ) {
     const cached = cache.get(fileId);
-    if (cached != null) {
+    if (!isNil(cached)) {
       return cached;
     }
     if (visited.has(fileId)) {
@@ -111,7 +112,7 @@ export class ExportResolver {
     }
     visited.add(fileId);
     const exports = this.exportsByFile.get(fileId);
-    if (exports == null) {
+    if (isNil(exports)) {
       return [];
     }
     const names: Array<{ name: string; space: NameSpace }> = [];
@@ -129,11 +130,11 @@ export class ExportResolver {
         add(item.name, item.space);
         continue;
       }
-      if (item.source == null) {
+      if (isNil(item.source)) {
         continue;
       }
       const target = this.fileIdOf(fileId, item.source);
-      if (target == null) {
+      if (isNil(target)) {
         continue;
       }
       for (const inner of this.collectNames(target, visited, cache)) {
@@ -153,20 +154,20 @@ export class ExportResolver {
     space: NameSpace,
     visited: Set<string>,
   ): ResolveExportResult {
-    if (item.source == null) {
-      if (item.symbolId == null) {
+    if (isNil(item.source)) {
+      if (isNil(item.symbolId)) {
         return { kind: 'missing' };
       }
       return { kind: 'found', fileId, symbolId: item.symbolId };
     }
     const target = this.fileIdOf(fileId, item.source);
-    if (target == null) {
+    if (isNil(target)) {
       return { kind: 'missing' };
     }
     if (item.imported === '*') {
       return { kind: 'namespace', fileId: target };
     }
-    if (item.imported == null) {
+    if (isNil(item.imported)) {
       return { kind: 'missing' };
     }
     return this.resolve(target, item.imported, space, visited);
@@ -179,11 +180,11 @@ export class ExportResolver {
     space: NameSpace,
     visited: Set<string>,
   ): ResolveExportResult {
-    if (item.source == null) {
+    if (isNil(item.source)) {
       return { kind: 'missing' };
     }
     const target = this.fileIdOf(fileId, item.source);
-    if (target == null) {
+    if (isNil(target)) {
       return { kind: 'missing' };
     }
     return this.resolve(target, name, space, visited);

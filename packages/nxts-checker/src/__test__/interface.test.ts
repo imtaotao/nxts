@@ -1,3 +1,4 @@
+import { isNil } from 'aidly';
 import { describe, expect, it } from 'vitest';
 import { checkSource, typeSymbol, valueSymbol } from './utils';
 
@@ -34,9 +35,9 @@ describe('checkInterfaces', () => {
       check.types[
         checked.symbolTypes[typeSymbol(file, 'Mixed')?.id ?? -1] ?? -1
       ];
-    const boxProps = box != null && 'props' in box ? box.props : [];
+    const boxProps = !isNil(box) && 'props' in box ? box.props : [];
     const size = boxProps.find((prop) => prop.key === 'size') ?? null;
-    const mixedCalls = mixed != null && 'calls' in mixed ? mixed.calls : [];
+    const mixedCalls = !isNil(mixed) && 'calls' in mixed ? mixed.calls : [];
 
     expect(box).toMatchObject({ kind: 'interface' });
     expect(size).toMatchObject({ role: 'method' });
@@ -46,6 +47,31 @@ describe('checkInterfaces', () => {
     expect(mixedCalls).toHaveLength(1);
     expect(check.types[mixedCalls[0] ?? -1]).toMatchObject({
       kind: 'function',
+    });
+  });
+
+  it('hangs construct signatures', async () => {
+    const { bind, check } = await checkSource(
+      'interface Factory { new (n: number): string }\ninterface Built { n: number; new (n: number): string }\n',
+    );
+    const file = bind.files[0];
+    const checked = check.files[0];
+    const factory =
+      check.types[
+        checked.symbolTypes[typeSymbol(file, 'Factory')?.id ?? -1] ?? -1
+      ];
+    const built =
+      check.types[
+        checked.symbolTypes[typeSymbol(file, 'Built')?.id ?? -1] ?? -1
+      ];
+    const constructs =
+      !isNil(built) && 'constructs' in built ? built.constructs : [];
+
+    expect(factory).toMatchObject({ kind: 'construct' });
+    expect(built).toMatchObject({ kind: 'interface' });
+    expect(constructs).toHaveLength(1);
+    expect(check.types[constructs[0] ?? -1]).toMatchObject({
+      kind: 'construct',
     });
   });
 
@@ -61,9 +87,9 @@ describe('checkInterfaces', () => {
       check.types[
         checked.symbolTypes[typeSymbol(file, 'Child')?.id ?? -1] ?? -1
       ];
-    const rowProps = row != null && 'props' in row ? row.props : [];
+    const rowProps = !isNil(row) && 'props' in row ? row.props : [];
     const childTitle = (
-      child != null && 'props' in child ? child.props : []
+      !isNil(child) && 'props' in child ? child.props : []
     ).find((prop) => prop.key === 'title');
 
     expect(row).toMatchObject({ kind: 'interface' });

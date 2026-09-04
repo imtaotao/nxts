@@ -1,16 +1,17 @@
+import { isNil } from 'aidly';
 import type { BindProgramResult } from '@nxts/binder';
-import { TypeTable } from './core/typeTable';
 import type { Hang } from './hang';
+import { TypeTable } from './core/typeTable';
 
 export class CheckContext {
-  readonly table = new TypeTable();
-  program: BindProgramResult | null = null;
   hangs: Hang[] = [];
+  program: BindProgramResult | null = null;
+  readonly table = new TypeTable();
   private readonly builtinDecls = new Map<string, number>();
 
   builtinDecl(builtinId: string) {
     const existing = this.builtinDecls.get(builtinId);
-    if (existing != null) {
+    if (!isNil(existing)) {
       return { fileId: -1, symbolId: existing };
     }
     const symbolId = this.builtinDecls.size;
@@ -32,16 +33,16 @@ export class CheckContext {
         (item) =>
           item.fromFileId === hang.file.snapshot.fileId &&
           item.importSymbolId === id &&
-          item.exportSymbolId != null,
+          !isNil(item.exportSymbolId),
       );
-      if (link?.exportSymbolId == null) {
+      if (isNil(link?.exportSymbolId)) {
         return { hang, symbolId: id };
       }
       const next =
         this.hangs.find(
           (item) => item.file.snapshot.fileId === link.toFileId,
         ) ?? null;
-      if (next == null) {
+      if (isNil(next)) {
         return { hang, symbolId: id };
       }
       hang = next;

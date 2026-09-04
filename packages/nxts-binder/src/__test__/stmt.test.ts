@@ -1,3 +1,5 @@
+import { isNil } from 'aidly';
+import { describe, expect, it } from 'vitest';
 import type {
   BinaryExpression,
   BlockStatement,
@@ -16,7 +18,6 @@ import type {
   TryStatement,
   VariableDeclaration,
 } from '@babel/types';
-import { describe, expect, it } from 'vitest';
 import {
   bindSource,
   diagnosticIds,
@@ -89,7 +90,7 @@ describe('throw and try', () => {
     const tryStmt = fn.body.body[0] as TryStatement;
     const thrown = (tryStmt.block.body[0] as ThrowStatement).argument;
     const handler = tryStmt.handler;
-    if (handler == null) {
+    if (isNil(handler)) {
       throw new Error('expected catch handler');
     }
     const e = handler.param;
@@ -123,7 +124,7 @@ describe('throw and try', () => {
     const tryStmt = fn.body.body[0] as TryStatement;
     const handler = tryStmt.handler;
     const finalizer = tryStmt.finalizer;
-    if (handler == null || finalizer == null) {
+    if (isNil(handler) || isNil(finalizer)) {
       throw new Error('expected catch and finally');
     }
     const e = ((handler.param as ObjectPattern).properties[0] as ObjectProperty)

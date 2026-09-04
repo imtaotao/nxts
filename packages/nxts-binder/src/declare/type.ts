@@ -1,3 +1,4 @@
+import { isNil } from 'aidly';
 import type {
   Node,
   TSInterfaceDeclaration,
@@ -12,7 +13,7 @@ export function withTypeParams(
   rest: () => void,
 ) {
   if (
-    params == null ||
+    isNil(params) ||
     params.type !== 'TSTypeParameterDeclaration' ||
     params.params.length === 0
   ) {

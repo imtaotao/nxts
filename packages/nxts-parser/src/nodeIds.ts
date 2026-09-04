@@ -1,8 +1,8 @@
-import { isArray } from 'aidly';
+import { isArray, isNil } from 'aidly';
 import { VISITOR_KEYS, isNode, type Node } from '@babel/types';
-import { createDiagnostic, type MessageId } from './diagnostics/catalog';
-import type { SourceSnapshot } from './snapshot';
 import type { Diagnostic } from './types';
+import type { SourceSnapshot } from './snapshot';
+import { createDiagnostic, type MessageId } from './diagnostics/catalog';
 
 const isFiniteNumber = (value: unknown): value is number => {
   return typeof value === 'number' && Number.isFinite(value);
@@ -27,7 +27,7 @@ const spanMessageId = (
   if (span.start < 0 || span.end > textLength || span.start > span.end) {
     return 'parser.ast.invalidSpan';
   }
-  if (node.range != null) {
+  if (!isNil(node.range)) {
     if (
       !isArray(node.range) ||
       node.range.length !== 2 ||
@@ -73,7 +73,7 @@ export function assignNodeIds(root: Node | null, snapshot: SourceSnapshot) {
 
   const walkChildren = (node: Node) => {
     const keys = VISITOR_KEYS[node.type];
-    if (keys == null) {
+    if (isNil(keys)) {
       return;
     }
     for (const key of keys) {
@@ -96,7 +96,7 @@ export function assignNodeIds(root: Node | null, snapshot: SourceSnapshot) {
     }
     seen.add(node);
 
-    if (VISITOR_KEYS[node.type] == null) {
+    if (isNil(VISITOR_KEYS[node.type])) {
       invalidNodes.add(node);
       diagnostics.push(
         contractDiagnostic(node, 'parser.ast.unknownNode', false),

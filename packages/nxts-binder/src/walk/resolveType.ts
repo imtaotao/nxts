@@ -1,3 +1,4 @@
+import { isNil } from 'aidly';
 import type { Node } from '@babel/types';
 import type { BinderContext } from '../context';
 import { resolveExpr } from './resolveExpr';
@@ -18,7 +19,7 @@ const resolveName = (
 };
 
 const resolveTypeArgs = (binder: BinderContext, node?: Node | null) => {
-  if (node == null || node.type !== 'TSTypeParameterInstantiation') {
+  if (isNil(node) || node.type !== 'TSTypeParameterInstantiation') {
     return;
   }
   for (const param of node.params) {
@@ -79,7 +80,7 @@ const resolveTypeMember = (binder: BinderContext, node: Node) => {
 };
 
 export function resolveType(binder: BinderContext, node?: Node | null) {
-  if (node == null || binder.isInvalid(node)) {
+  if (isNil(node) || binder.isInvalid(node)) {
     return;
   }
   switch (node.type) {

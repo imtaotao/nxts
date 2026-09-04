@@ -1,9 +1,10 @@
+import { isNil } from 'aidly';
 import type { Node } from '@babel/types';
 
 export function hasTypeParams(node: {
   typeParameters?: { params: readonly unknown[] } | null;
 }) {
-  return node.typeParameters != null && node.typeParameters.params.length > 0;
+  return !isNil(node.typeParameters) && node.typeParameters.params.length > 0;
 }
 
 export function unwrapType(node: Node): Node {
@@ -18,14 +19,14 @@ export function typeArgsOf(type: Node) {
     return null;
   }
   const node = type.typeArguments ?? null;
-  if (node == null || node.type !== 'TSTypeParameterInstantiation') {
+  if (isNil(node) || node.type !== 'TSTypeParameterInstantiation') {
     return null;
   }
   return node.params;
 }
 
 export function typeParamsOf(node: Node | null | undefined) {
-  if (node == null || node.type !== 'TSTypeParameterDeclaration') {
+  if (isNil(node) || node.type !== 'TSTypeParameterDeclaration') {
     return null;
   }
   return node;

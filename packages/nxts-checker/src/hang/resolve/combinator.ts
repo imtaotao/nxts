@@ -1,6 +1,7 @@
+import { isNil } from 'aidly';
 import type { Node } from '@babel/types';
-import type { TypeId } from '../../types';
 import type { Hang } from '../index';
+import type { TypeId } from '../../types';
 import { finish } from './shared';
 
 const resolveMembers = (
@@ -16,7 +17,7 @@ const resolveMembers = (
   const members: TypeId[] = [];
   for (const item of type.types) {
     const member = hang.resolveAtomType(item, subst);
-    if (member == null) {
+    if (isNil(member)) {
       return null;
     }
     members.push(member);

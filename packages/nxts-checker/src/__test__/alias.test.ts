@@ -1,3 +1,4 @@
+import { isNil } from 'aidly';
 import { describe, expect, it } from 'vitest';
 import { checkSource, typeSymbol, valueSymbol } from './utils';
 
@@ -54,7 +55,7 @@ describe('checkAliases', () => {
     expect(check.types[literalType ?? -1]).toMatchObject({ kind: 'object' });
     const literalRecord = check.types[literalType ?? -1];
     expect(
-      literalRecord != null && 'props' in literalRecord
+      !isNil(literalRecord) && 'props' in literalRecord
         ? literalRecord.props
         : [],
     ).toHaveLength(1);
@@ -77,7 +78,7 @@ describe('checkAliases', () => {
     });
     const record = check.types[bothType ?? -1];
     expect(
-      record != null && 'members' in record ? record.members : [],
+      !isNil(record) && 'members' in record ? record.members : [],
     ).toHaveLength(2);
   });
 
@@ -92,7 +93,7 @@ describe('checkAliases', () => {
 
     expect(check.types[cellType ?? -1]).toMatchObject({ kind: 'object' });
     const record = check.types[cellType ?? -1];
-    const value = record != null && 'props' in record ? record.props[0] : null;
+    const value = !isNil(record) && 'props' in record ? record.props[0] : null;
     expect(value).toMatchObject({ key: 'value' });
     expect(check.types[value?.type ?? -1]).toMatchObject({
       kind: 'atom',

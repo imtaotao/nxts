@@ -12,6 +12,13 @@ const field = (key: string, type: number, extra?: Partial<ObjectMember>) => ({
   ...extra,
 });
 
+const objectOf = (props: ObjectMember[]) => ({
+  kind: 'object' as const,
+  props,
+  calls: [],
+  constructs: [],
+});
+
 describe('TypeTable.atom', () => {
   it('reuses TypeId for the same atom', () => {
     const table = new TypeTable();
@@ -41,14 +48,8 @@ describe('TypeTable.intern', () => {
     const table = new TypeTable();
     const i32 = table.atom('i32');
     const text = table.atom('string');
-    const first = table.intern({
-      kind: 'object',
-      props: [field('x', i32), field('y', text)],
-    });
-    const second = table.intern({
-      kind: 'object',
-      props: [field('y', text), field('x', i32)],
-    });
+    const first = table.intern(objectOf([field('x', i32), field('y', text)]));
+    const second = table.intern(objectOf([field('y', text), field('x', i32)]));
     expect(second).toBe(first);
     expect(table.types[first]?.kind).toBe('object');
   });
@@ -56,22 +57,18 @@ describe('TypeTable.intern', () => {
   it('keeps optional, readonly, and object/interface distinct', () => {
     const table = new TypeTable();
     const text = table.atom('string');
-    const required = table.intern({
-      kind: 'object',
-      props: [field('value', text)],
-    });
-    const optional = table.intern({
-      kind: 'object',
-      props: [field('value', text, { optional: true })],
-    });
-    const readonlyField = table.intern({
-      kind: 'object',
-      props: [field('value', text, { readonly: true })],
-    });
+    const required = table.intern(objectOf([field('value', text)]));
+    const optional = table.intern(
+      objectOf([field('value', text, { optional: true })]),
+    );
+    const readonlyField = table.intern(
+      objectOf([field('value', text, { readonly: true })]),
+    );
     const contract = table.intern({
       kind: 'interface',
       props: [field('value', text)],
       calls: [],
+      constructs: [],
       args: [],
     });
     expect(new Set([required, optional, readonlyField, contract]).size).toBe(4);
@@ -80,15 +77,38 @@ describe('TypeTable.intern', () => {
       kind: 'interface',
       props: [],
       calls: [i32, text],
+      constructs: [],
       args: [],
     });
     const callThenArg = table.intern({
       kind: 'interface',
       props: [],
       calls: [i32],
+      constructs: [],
       args: [text],
     });
     expect(callsThenEmpty).not.toBe(callThenArg);
+    const fn = table.intern({
+      kind: 'function',
+      signatures: [
+        {
+          receiver: null,
+          params: [{ type: i32, optional: false, rest: false }],
+          returnType: text,
+        },
+      ],
+    });
+    const ctor = table.intern({
+      kind: 'construct',
+      signatures: [
+        {
+          receiver: null,
+          params: [{ type: i32, optional: false, rest: false }],
+          returnType: text,
+        },
+      ],
+    });
+    expect(ctor).not.toBe(fn);
   });
 
   it('sorts union members and drops never', () => {

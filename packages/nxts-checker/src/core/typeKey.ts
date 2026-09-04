@@ -64,17 +64,6 @@ const fields = (shape: TypeShape) => {
       out.push(shape.decl.fileId, shape.decl.symbolId);
       break;
     case 'object':
-      out.push(shape.props.length);
-      for (const prop of shape.props) {
-        out.push(
-          prop.key,
-          prop.type,
-          flag(prop.optional),
-          flag(prop.readonly),
-          prop.role,
-        );
-      }
-      break;
     case 'interface':
       out.push(shape.props.length);
       for (const prop of shape.props) {
@@ -89,9 +78,12 @@ const fields = (shape: TypeShape) => {
       out.push(
         shape.calls.length,
         ...shape.calls,
-        shape.args.length,
-        ...shape.args,
+        shape.constructs.length,
+        ...shape.constructs,
       );
+      if (shape.kind === 'interface') {
+        out.push(shape.args.length, ...shape.args);
+      }
       break;
     case 'dictionary':
       out.push(
@@ -120,6 +112,7 @@ const fields = (shape: TypeShape) => {
       }
       break;
     case 'function':
+    case 'construct':
       out.push(shape.signatures.length);
       for (const signature of shape.signatures) {
         out.push(

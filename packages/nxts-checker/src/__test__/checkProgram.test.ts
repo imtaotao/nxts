@@ -1,3 +1,4 @@
+import { isNil } from 'aidly';
 import { describe, expect, it } from 'vitest';
 import { checkSource } from './utils';
 
@@ -14,7 +15,7 @@ describe('checkProgram', () => {
     expect(checked.nodeTypes).toHaveLength(file.nodeToSymbols.length);
     expect(checked.nodeReachable).toHaveLength(file.nodeToSymbols.length);
     expect(checked.nodeConstants).toHaveLength(file.nodeToSymbols.length);
-    expect(checked.symbolTypes.every((id) => id == null)).toBe(true);
+    expect(checked.symbolTypes.every((id) => isNil(id))).toBe(true);
     expect(checked.complete).toBe(false);
   });
 });

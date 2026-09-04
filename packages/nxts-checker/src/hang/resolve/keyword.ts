@@ -1,8 +1,9 @@
+import { isNil } from 'aidly';
 import type { Node } from '@babel/types';
-import { atomKindOfKeyword } from '../../link/builtin';
 import type { Hang } from '../index';
+import { atomKindOfKeyword } from '../../link/builtin';
 
 export function resolveKeyword(hang: Hang, type: Node) {
   const keyword = atomKindOfKeyword(type.type);
-  return keyword == null ? null : hang.context.table.atom(keyword);
+  return isNil(keyword) ? null : hang.context.table.atom(keyword);
 }

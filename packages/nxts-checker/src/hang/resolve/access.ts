@@ -1,6 +1,7 @@
+import { isNil } from 'aidly';
 import type { Node } from '@babel/types';
-import type { TypeId } from '../../types';
 import type { Hang } from '../index';
+import type { TypeId } from '../../types';
 import { finish } from './shared';
 
 const indexKeyOf = (hang: Hang, typeId: TypeId) => {
@@ -18,12 +19,12 @@ const indexOf = (hang: Hang, object: TypeId, index: TypeId) => {
     return null;
   }
   const key = indexKeyOf(hang, index);
-  if (key == null) {
+  if (isNil(key)) {
     // TODO: 键联合、keyof 结果、数值下标还要按 T40 逐键查询再规范化联合。
     return null;
   }
   const prop = record.props.find((item) => item.key === key) ?? null;
-  if (prop == null) {
+  if (isNil(prop)) {
     // TODO: 不存在的固定键应报错，现在先空着等诊断。
     return null;
   }
@@ -41,7 +42,7 @@ export function resolveAccess(
   }
   const object = hang.resolveAtomType(type.objectType, subst);
   const index = hang.resolveAtomType(type.indexType, subst);
-  if (object == null || index == null) {
+  if (isNil(object) || isNil(index)) {
     return null;
   }
   return finish(hang, type, indexOf(hang, object, index), subst);

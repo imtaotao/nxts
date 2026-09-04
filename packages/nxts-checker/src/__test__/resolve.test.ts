@@ -1,6 +1,7 @@
+import { isNil } from 'aidly';
+import { describe, expect, it } from 'vitest';
 import type { Node } from '@babel/types';
 import type { BindFileResult } from '@nxts/binder';
-import { describe, expect, it } from 'vitest';
 import { atomEnv, checkSource, typeSymbol, valueSymbol } from './utils';
 
 const aliasOf = (nodes: readonly Node[], name: string) => {
@@ -17,7 +18,7 @@ const hungOn = (
   nodeTypes: readonly (number | null)[],
   node: Node | null,
 ) => {
-  if (node == null) {
+  if (isNil(node)) {
     return null;
   }
   return nodeTypes[file.nodeIds.get(node) ?? -1] ?? null;
@@ -72,7 +73,7 @@ describe('resolveByType', () => {
     const itemsRecord = check.types[items ?? -1];
     expect(
       check.types[
-        itemsRecord != null && 'element' in itemsRecord
+        !isNil(itemsRecord) && 'element' in itemsRecord
           ? itemsRecord.element
           : -1
       ],
@@ -80,7 +81,7 @@ describe('resolveByType', () => {
     expect(check.types[point ?? -1]).toMatchObject({ kind: 'object' });
     const pointRecord = check.types[point ?? -1];
     const field =
-      pointRecord != null && 'props' in pointRecord
+      !isNil(pointRecord) && 'props' in pointRecord
         ? pointRecord.props[0]
         : null;
     expect(field).toMatchObject({ key: 'x' });
@@ -104,12 +105,12 @@ describe('resolveByType', () => {
     const eitherRecord = check.types[either ?? -1];
     const bothRecord = check.types[both ?? -1];
     expect(
-      eitherRecord != null && 'members' in eitherRecord
+      !isNil(eitherRecord) && 'members' in eitherRecord
         ? eitherRecord.members
         : [],
     ).toHaveLength(2);
     expect(
-      bothRecord != null && 'members' in bothRecord ? bothRecord.members : [],
+      !isNil(bothRecord) && 'members' in bothRecord ? bothRecord.members : [],
     ).toHaveLength(2);
   });
 
@@ -121,8 +122,9 @@ describe('resolveByType', () => {
     const checked = check.files[0];
     const count = checked.symbolTypes[typeSymbol(file, 'Count')?.id ?? -1];
     const n = valueSymbol(file, 'n');
-    const ident =
-      n?.declNodeId == null ? null : (file.nodes[n.declNodeId] ?? null);
+    const ident = isNil(n?.declNodeId)
+      ? null
+      : (file.nodes[n.declNodeId] ?? null);
     const ref =
       ident?.type === 'Identifier' &&
       ident.typeAnnotation?.type === 'TSTypeAnnotation'
@@ -164,25 +166,25 @@ describe('resolveByType', () => {
       readonly: false,
     });
     expect(
-      pairRecord != null && 'elements' in pairRecord ? pairRecord.elements : [],
+      !isNil(pairRecord) && 'elements' in pairRecord ? pairRecord.elements : [],
     ).toHaveLength(2);
     expect(
       check.types[
-        pairRecord != null && 'elements' in pairRecord
+        !isNil(pairRecord) && 'elements' in pairRecord
           ? (pairRecord.elements[0]?.type ?? -1)
           : -1
       ],
     ).toMatchObject({ kind: 'atom', atom: 'i32' });
     expect(
       check.types[
-        pairRecord != null && 'elements' in pairRecord
+        !isNil(pairRecord) && 'elements' in pairRecord
           ? (pairRecord.elements[1]?.type ?? -1)
           : -1
       ],
     ).toMatchObject({ kind: 'atom', atom: 'string' });
     expect(check.types[empty ?? -1]).toMatchObject({ kind: 'tuple' });
     expect(
-      emptyRecord != null && 'elements' in emptyRecord
+      !isNil(emptyRecord) && 'elements' in emptyRecord
         ? emptyRecord.elements
         : null,
     ).toEqual([]);
@@ -204,9 +206,9 @@ describe('resolveByType', () => {
         checked.symbolTypes[typeSymbol(file, 'Args')?.id ?? -1] ?? -1
       ];
     const optionElements =
-      option != null && 'elements' in option ? option.elements : [];
+      !isNil(option) && 'elements' in option ? option.elements : [];
     const argsElements =
-      args != null && 'elements' in args ? args.elements : [];
+      !isNil(args) && 'elements' in args ? args.elements : [];
 
     expect(optionElements).toMatchObject([
       { optional: false, rest: false },
@@ -236,7 +238,7 @@ describe('resolveByType', () => {
     const pair = checked.symbolTypes[valueSymbol(file, 'pair')?.id ?? -1];
     const record = check.types[pair ?? -1];
     const elements =
-      record != null && 'elements' in record ? record.elements : [];
+      !isNil(record) && 'elements' in record ? record.elements : [];
 
     expect(check.types[pair ?? -1]).toMatchObject({ kind: 'tuple' });
     expect(elements).toHaveLength(2);
@@ -261,7 +263,7 @@ describe('resolveByType', () => {
     const binaryAnn = aliasOf(file.nodes, 'Binary')?.typeAnnotation ?? null;
     const record = check.types[binary ?? -1];
     const signature =
-      record != null && 'signatures' in record ? record.signatures[0] : null;
+      !isNil(record) && 'signatures' in record ? record.signatures[0] : null;
 
     expect(same).toBe(binary);
     expect(add).toBe(binary);
@@ -296,11 +298,11 @@ describe('resolveByType', () => {
         checked.symbolTypes[typeSymbol(file, 'Format')?.id ?? -1] ?? -1
       ];
     const optionSig =
-      option != null && 'signatures' in option ? option.signatures[0] : null;
+      !isNil(option) && 'signatures' in option ? option.signatures[0] : null;
     const restSig =
-      rest != null && 'signatures' in rest ? rest.signatures[0] : null;
+      !isNil(rest) && 'signatures' in rest ? rest.signatures[0] : null;
     const formatSig =
-      format != null && 'signatures' in format ? format.signatures[0] : null;
+      !isNil(format) && 'signatures' in format ? format.signatures[0] : null;
 
     expect(optionSig?.params).toMatchObject([
       { optional: false, rest: false },
@@ -331,7 +333,7 @@ describe('resolveByType', () => {
     const map = checked.symbolTypes[valueSymbol(file, 'map')?.id ?? -1];
     const record = check.types[map ?? -1];
     const signature =
-      record != null && 'signatures' in record ? record.signatures[0] : null;
+      !isNil(record) && 'signatures' in record ? record.signatures[0] : null;
 
     expect(check.types[map ?? -1]).toMatchObject({ kind: 'function' });
     expect(check.types[signature?.params[0]?.type ?? -1]).toMatchObject({
@@ -371,7 +373,7 @@ describe('resolveByType', () => {
     const codeRecord = check.types[code ?? -1];
     expect(
       check.types[
-        codeRecord != null && 'base' in codeRecord ? codeRecord.base : -1
+        !isNil(codeRecord) && 'base' in codeRecord ? codeRecord.base : -1
       ],
     ).toMatchObject({ kind: 'atom', atom: 'i32' });
     expect(check.types[negative ?? -1]).toMatchObject({
@@ -407,11 +409,11 @@ describe('resolveByType', () => {
       readonly: true,
     });
     expect(
-      itemsRecord != null && 'element' in itemsRecord
+      !isNil(itemsRecord) && 'element' in itemsRecord
         ? itemsRecord.element
         : null,
     ).toBe(
-      frozenRecord != null && 'element' in frozenRecord
+      !isNil(frozenRecord) && 'element' in frozenRecord
         ? frozenRecord.element
         : undefined,
     );
@@ -489,6 +491,62 @@ describe('resolveByType', () => {
       atom: 'string',
     });
     expect(missing).toBeNull();
+    expect(both).toBeNull();
+  });
+
+  it('resolves construct types and callable objects', async () => {
+    const { bind, check } = await checkSource(
+      'type Make = new (n: i32) => i32;\ntype Same = new (value: i32) => i32;\ntype OnlyNew = { new (n: i32): i32 };\ntype CallObj = { (value: i32): i32; n: i32 };\n',
+      atomEnv,
+    );
+    const file = bind.files[0];
+    const checked = check.files[0];
+    const make = checked.symbolTypes[typeSymbol(file, 'Make')?.id ?? -1];
+    const same = checked.symbolTypes[typeSymbol(file, 'Same')?.id ?? -1];
+    const onlyNew = checked.symbolTypes[typeSymbol(file, 'OnlyNew')?.id ?? -1];
+    const callObj = checked.symbolTypes[typeSymbol(file, 'CallObj')?.id ?? -1];
+    const makeAnn = aliasOf(file.nodes, 'Make')?.typeAnnotation ?? null;
+    const record = check.types[callObj ?? -1];
+    const calls = !isNil(record) && 'calls' in record ? record.calls : [];
+
+    expect(hungOn(file, checked.nodeTypes, makeAnn)).toBe(make);
+    expect(same).toBe(make);
+    expect(onlyNew).toBe(make);
+    expect(check.types[make ?? -1]).toMatchObject({ kind: 'construct' });
+    expect(check.types[callObj ?? -1]).toMatchObject({ kind: 'object' });
+    expect(calls).toHaveLength(1);
+    expect(check.types[calls[0] ?? -1]).toMatchObject({ kind: 'function' });
+  });
+
+  it('resolves dictionary index signatures', async () => {
+    const { bind, check } = await checkSource(
+      'type Table = { [key: string]: number };\ntype Frozen = { readonly [key: string]: number };\ntype Mixed = { n: number; [key: string]: number };\ntype Both = { [key: string]: number; [index: number]: number };\ninterface Dict { [key: string]: number }\n',
+    );
+    const file = bind.files[0];
+    const checked = check.files[0];
+    const table = checked.symbolTypes[typeSymbol(file, 'Table')?.id ?? -1];
+    const frozen = checked.symbolTypes[typeSymbol(file, 'Frozen')?.id ?? -1];
+    const mixed = checked.symbolTypes[typeSymbol(file, 'Mixed')?.id ?? -1];
+    const both = checked.symbolTypes[typeSymbol(file, 'Both')?.id ?? -1];
+    const dict = checked.symbolTypes[typeSymbol(file, 'Dict')?.id ?? -1];
+    const tableAnn = aliasOf(file.nodes, 'Table')?.typeAnnotation ?? null;
+    const mixedRecord = check.types[mixed ?? -1];
+
+    expect(hungOn(file, checked.nodeTypes, tableAnn)).toBe(table);
+    expect(dict).toBe(table);
+    expect(frozen).not.toBe(table);
+    expect(check.types[table ?? -1]).toMatchObject({
+      kind: 'dictionary',
+      readonly: false,
+    });
+    expect(check.types[frozen ?? -1]).toMatchObject({
+      kind: 'dictionary',
+      readonly: true,
+    });
+    expect(check.types[mixed ?? -1]).toMatchObject({ kind: 'dictionary' });
+    expect(
+      !isNil(mixedRecord) && 'props' in mixedRecord ? mixedRecord.props : [],
+    ).toHaveLength(1);
     expect(both).toBeNull();
   });
 

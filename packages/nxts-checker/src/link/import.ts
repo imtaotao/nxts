@@ -1,3 +1,4 @@
+import { isNil } from 'aidly';
 import type { BindProgramResult } from '@nxts/binder';
 import type { Hang } from '../hang';
 
@@ -7,25 +8,25 @@ export function checkImports(program: BindProgramResult, hangs: Hang[]) {
   );
   let copied = 0;
   for (const link of program.links) {
-    if (link.exportSymbolId == null) {
+    if (isNil(link.exportSymbolId)) {
       continue;
     }
     const from = indexOf.get(link.fromFileId);
     const to = indexOf.get(link.toFileId);
-    if (from == null || to == null) {
+    if (isNil(from) || isNil(to)) {
       continue;
     }
     const typeId = hangs[to]?.symbolTypes[link.exportSymbolId] ?? null;
-    if (typeId == null) {
+    if (isNil(typeId)) {
       continue;
     }
     const hang = hangs[from];
-    if (hang == null || hang.symbolTypes[link.importSymbolId] != null) {
+    if (isNil(hang) || !isNil(hang.symbolTypes[link.importSymbolId])) {
       continue;
     }
     hang.symbolTypes[link.importSymbolId] = typeId;
     const symbol = hang.file.symbols[link.importSymbolId];
-    if (symbol?.declNodeId != null) {
+    if (!isNil(symbol?.declNodeId)) {
       hang.nodeTypes[symbol.declNodeId] = typeId;
     }
     copied += 1;

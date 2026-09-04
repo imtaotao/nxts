@@ -1,5 +1,6 @@
-import type { File, Node } from '@babel/types';
+import { isNil } from 'aidly';
 import { createSnapshot, parseFile } from '@nxts/parser';
+import type { File, Node } from '@babel/types';
 import {
   bindFile,
   type BindEnv,
@@ -16,7 +17,7 @@ export async function bindSource(code: string, env?: BindEnv) {
       canonicalPath: 'test.ts',
     }),
   );
-  if (file.ast == null) {
+  if (isNil(file.ast)) {
     throw new Error('parse failed');
   }
   return {
@@ -30,7 +31,7 @@ export function symbolOf(
   file: ParseFileResult,
   node?: Node | null,
 ) {
-  if (node == null) {
+  if (isNil(node)) {
     return null;
   }
   const ids = symbolsOf(bound, file, node);
@@ -42,11 +43,11 @@ export function symbolsOf(
   file: ParseFileResult,
   node?: Node | null,
 ) {
-  if (node == null) {
+  if (isNil(node)) {
     return [];
   }
   const nodeId = file.nodeIds.get(node);
-  if (nodeId == null) {
+  if (isNil(nodeId)) {
     return [];
   }
   return bound.nodeToSymbols[nodeId] ?? [];
@@ -64,7 +65,7 @@ export function sameSymbol(
 
 export function scopeKindOf(bound: BindFileResult, name: string) {
   const symbol = bound.symbols.find((item) => item.name === name);
-  if (symbol == null) {
+  if (isNil(symbol)) {
     return null;
   }
   return bound.scopes[symbol.scopeId]?.kind ?? null;

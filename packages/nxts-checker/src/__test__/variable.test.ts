@@ -1,3 +1,4 @@
+import { isNil } from 'aidly';
 import { describe, expect, it } from 'vitest';
 import { atomEnv, checkSource, valueSymbol } from './utils';
 
@@ -31,7 +32,7 @@ describe('checkVariables', () => {
     expect(checked.nodeTypes[k?.declNodeId ?? -1]).toBe(kType);
 
     const typeNodeOf = (symbol: typeof n) => {
-      if (symbol?.declNodeId == null) {
+      if (isNil(symbol?.declNodeId)) {
         return null;
       }
       const name = file.nodes[symbol.declNodeId];

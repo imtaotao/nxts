@@ -60,18 +60,31 @@ export type LiteralValue =
   | { kind: 'string'; value: string }
   | { kind: 'numeric'; value: string };
 
+// 一次检查的规范类型条目。挂钩表只存 TypeId，问「这个号是什么」查 types[]。
+// TODO: 条件 / infer / 映射 / 模板字符串是类型运算，闭合后落到下面已有 kind，不另开条目。
+// TODO: `x is T` 是收窄谓词，不是返回值 kind。
+// TODO: ErrorType 只在 checker 内部抑制连锁，公开 types[] 不占条目。
 export type TypeShape =
   | { kind: 'atom'; atom: AtomKind }
+  // TODO: 不能用来冒充 any；关键字 any/unknown 由诊断拒绝。
   | { kind: 'unknown' }
   | { kind: 'literal'; base: TypeId; value: LiteralValue }
+  // TODO: unique symbol 是声明身份，等 T18。
   | { kind: 'uniqueSymbol'; decl: DeclId }
-  | { kind: 'object'; props: readonly ObjectMember[] }
+  | {
+      kind: 'object';
+      props: readonly ObjectMember[];
+      calls: readonly TypeId[];
+      constructs: readonly TypeId[];
+    }
   | {
       kind: 'interface';
       props: readonly ObjectMember[];
       calls: readonly TypeId[];
+      constructs: readonly TypeId[];
       args: readonly TypeId[];
     }
+  // hang：`[key: string | number]: V`。双索引、symbol 键见 intern TODO。
   | {
       kind: 'dictionary';
       key: TypeId;
@@ -86,15 +99,19 @@ export type TypeShape =
       readonly: boolean;
     }
   | { kind: 'function'; signatures: readonly FunctionSignature[] }
+  | { kind: 'construct'; signatures: readonly FunctionSignature[] }
   | { kind: 'union'; members: readonly TypeId[] }
   | { kind: 'intersection'; members: readonly TypeId[] }
+  // TODO: 等品牌类型的声明规则。
   | { kind: 'brand'; base: TypeId; tag: TypeId }
+  // 成员不进这条，挂在字段节点上。
   | { kind: 'class'; decl: DeclId; args: readonly TypeId[] }
   | { kind: 'classCtor'; decl: DeclId; args: readonly TypeId[] }
   | { kind: 'enum'; decl: DeclId }
   | { kind: 'enumMember'; enum: TypeId; value: LiteralValue }
   | { kind: 'generic'; decl: DeclId; args: readonly TypeId[] }
   | { kind: 'typeParam'; decl: DeclId }
+  // TODO: 等 check/this 绑到当前实例 TypeId。
   | { kind: 'this'; classType: TypeId };
 
 export type TypeRecord = TypeShape & {
@@ -116,9 +133,9 @@ export type CheckerDiagnostic = {
 };
 
 export type CheckFileResult = {
-  // 声明类型。下标是该文件 binder 的 SymbolId；收窄不改写。没有类型为空。
+  // 这个名字(符号)是什么类型。下标是该文件 binder 的 SymbolId。收窄不改这格。
   symbolTypes: readonly (TypeId | null)[];
-  // 这个位置上的类型。下标对齐 parser 的 nodes[]；可来自注解、推导、上下文或收窄。
+  // 源码 ast 节点这个位置是什么类型。下标对齐 parser 的 nodes[]。
   nodeTypes: readonly (TypeId | null)[];
   // 该节点是否顺序可达。下标对齐 parser 的 nodes[]。
   nodeReachable: readonly boolean[];

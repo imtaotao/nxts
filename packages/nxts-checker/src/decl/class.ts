@@ -1,3 +1,4 @@
+import { isNil } from 'aidly';
 import type { Hang } from '../hang';
 
 export function checkClasses(hang: Hang) {
@@ -5,9 +6,9 @@ export function checkClasses(hang: Hang) {
     if (node.type !== 'ClassDeclaration' && node.type !== 'ClassExpression') {
       continue;
     }
-    if (node.id != null) {
+    if (!isNil(node.id)) {
       const symbolId = hang.symbolIn(node.id, 'type');
-      if (symbolId != null) {
+      if (!isNil(symbolId)) {
         hang.typeOfTypeSymbol(symbolId);
       }
     }
@@ -18,11 +19,11 @@ export function checkClasses(hang: Hang) {
       ) {
         continue;
       }
-      if (member.typeAnnotation == null || member.key.type !== 'Identifier') {
+      if (isNil(member.typeAnnotation) || member.key.type !== 'Identifier') {
         continue;
       }
       const typeId = hang.resolveAtomType(member.typeAnnotation);
-      if (typeId == null) {
+      if (isNil(typeId)) {
         continue;
       }
       hang.hangNode(member.key, typeId);

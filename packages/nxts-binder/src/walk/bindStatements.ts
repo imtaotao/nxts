@@ -1,3 +1,4 @@
+import { isNil } from 'aidly';
 import type {
   BlockStatement,
   BreakStatement,
@@ -82,7 +83,7 @@ const skipHoist = (
     return true;
   }
   const target = declarationOf(statement);
-  return target != null && binder.isInvalid(target);
+  return !isNil(target) && binder.isInvalid(target);
 };
 
 const hoistFunctions = (

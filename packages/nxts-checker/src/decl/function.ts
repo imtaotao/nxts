@@ -1,7 +1,8 @@
+import { isNil } from 'aidly';
 import type { Identifier, Node } from '@babel/types';
+import type { Hang } from '../hang';
 import { unwrapType } from '../hang/ast';
 import { functionTypeOf } from '../hang/resolve/function';
-import type { Hang } from '../hang';
 
 const hangFunctionLike = (
   hang: Hang,
@@ -11,22 +12,22 @@ const hangFunctionLike = (
   for (const param of node.params) {
     hang.hangPattern(param);
   }
-  if (node.returnType != null) {
+  if (!isNil(node.returnType)) {
     const returnType = hang.resolveAtomType(node.returnType);
-    if (returnType != null) {
+    if (!isNil(returnType)) {
       hang.hangNode(unwrapType(node.returnType), returnType);
     }
   }
   const fnType = functionTypeOf(hang, node.params, node.returnType);
-  if (fnType == null) {
+  if (isNil(fnType)) {
     return;
   }
   hang.hangNode(node, fnType);
-  if (name == null) {
+  if (isNil(name)) {
     return;
   }
   const symbolId = hang.symbolIn(name, 'value');
-  if (symbolId != null) {
+  if (!isNil(symbolId)) {
     hang.symbolTypes[symbolId] = fnType;
   }
   hang.hangNode(name, fnType);

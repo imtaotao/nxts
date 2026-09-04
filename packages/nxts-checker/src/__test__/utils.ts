@@ -1,3 +1,4 @@
+import { isNil } from 'aidly';
 import { createSnapshot, parseFile } from '@nxts/parser';
 import {
   bindProgram,
@@ -59,7 +60,7 @@ export async function checkSources(
         pathToId.get(raw) ??
         pathToId.get(`${raw}.ts`) ??
         pathToId.get(`${raw}.ntx`);
-      if (toFileId == null) {
+      if (isNil(toFileId)) {
         continue;
       }
       edges.push({

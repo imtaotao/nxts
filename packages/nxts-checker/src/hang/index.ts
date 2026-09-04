@@ -1,8 +1,9 @@
-import type { Identifier, Node } from '@babel/types';
+import { isNil } from 'aidly';
 import type { BindFileResult } from '@nxts/binder';
+import type { Identifier, Node } from '@babel/types';
+import type { TypeId } from '../types';
 import type { CheckContext } from '../context';
 import { internBuiltin } from '../link/builtin';
-import type { TypeId } from '../types';
 import { hasTypeParams, unwrapType } from './ast';
 import { aliasDeclOf, internNominal, internTypeParam } from './intern';
 import { hangPattern as applyPattern } from './pattern';
@@ -33,7 +34,7 @@ export class Hang {
 
   symbolIn(node: object, space: 'value' | 'type') {
     const nodeId = this.nodeIdOf(node);
-    if (nodeId == null) {
+    if (isNil(nodeId)) {
       return null;
     }
     for (const id of this.file.nodeToSymbols[nodeId] ?? []) {
@@ -46,23 +47,23 @@ export class Hang {
 
   hangNode(node: object, typeId: TypeId) {
     const nodeId = this.nodeIdOf(node);
-    if (nodeId != null) {
+    if (!isNil(nodeId)) {
       this.nodeTypes[nodeId] = typeId;
     }
   }
 
   typeOfTypeSymbol(symbolId: number): TypeId | null {
     const cached = this.symbolTypes[symbolId] ?? null;
-    if (cached != null) {
+    if (!isNil(cached)) {
       return cached;
     }
     const symbol = this.file.symbols[symbolId] ?? null;
-    if (symbol == null || symbol.space !== 'type') {
+    if (isNil(symbol) || symbol.space !== 'type') {
       return null;
     }
-    if (symbol.builtinId != null) {
+    if (!isNil(symbol.builtinId)) {
       const typeId = internBuiltin(this.context.table, symbol.builtinId);
-      if (typeId != null) {
+      if (!isNil(typeId)) {
         this.symbolTypes[symbolId] = typeId;
       }
       return typeId;
@@ -70,15 +71,16 @@ export class Hang {
     if (this.resolving.has(symbolId)) {
       return null;
     }
+
     const alias = aliasDeclOf(this, symbolId);
-    if (alias != null) {
+    if (!isNil(alias)) {
       if (hasTypeParams(alias)) {
         return null;
       }
       this.resolving.add(symbolId);
       const typeId = this.resolveAtomType(alias.typeAnnotation);
       this.resolving.delete(symbolId);
-      if (typeId == null) {
+      if (isNil(typeId)) {
         return null;
       }
       this.symbolTypes[symbolId] = typeId;
@@ -86,8 +88,9 @@ export class Hang {
       this.hangNode(alias.typeAnnotation, typeId);
       return typeId;
     }
+
     const nominal = internNominal(this, symbolId);
-    if (nominal != null) {
+    if (!isNil(nominal)) {
       return nominal;
     }
     return internTypeParam(this, symbolId);

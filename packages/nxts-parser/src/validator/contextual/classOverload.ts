@@ -4,7 +4,7 @@
 // ok: class A { m(a: number): void; m(a: string): void; m(a: number | string) {} }
 // no: class A { m(a: number): void; n() {} m(a: number) {} }
 
-import { isArray } from 'aidly';
+import { isArray, isNil } from 'aidly';
 import type { Node } from '@babel/types';
 import type { Rule } from '../../types';
 import { rejectNode } from '../rejectNode';
@@ -48,7 +48,7 @@ const readMember = (node: Node) => {
     return null;
   }
   const name = memberName(node);
-  if (name == null) {
+  if (isNil(name)) {
     return null;
   }
   return {
@@ -86,7 +86,7 @@ export const classOverloadRule: Rule = {
       return rejectNode(node, ctx, 'parser.classOverload');
     }
     const current = readMember(node);
-    if (current == null) {
+    if (isNil(current)) {
       return rejectNode(node, ctx, 'parser.classOverload');
     }
     const body = parent.body as Node[];
@@ -96,7 +96,7 @@ export const classOverloadRule: Rule = {
     }
     for (let i = index + 1; i < body.length; i++) {
       const next = readMember(body[i]);
-      if (next == null || !sameGroup(current, next)) {
+      if (isNil(next) || !sameGroup(current, next)) {
         return rejectNode(node, ctx, 'parser.classOverload');
       }
       if (next.impl) {

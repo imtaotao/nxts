@@ -1,25 +1,26 @@
+import { isNil } from 'aidly';
 import type { Hang } from '../hang';
 
 export function checkEnums(hang: Hang) {
   for (const node of hang.file.nodes) {
-    if (node.type !== 'TSEnumDeclaration' || node.id == null) {
+    if (node.type !== 'TSEnumDeclaration' || isNil(node.id)) {
       continue;
     }
     const symbolId = hang.symbolIn(node.id, 'type');
-    if (symbolId == null) {
+    if (isNil(symbolId)) {
       continue;
     }
     const enumType = hang.typeOfTypeSymbol(symbolId);
-    if (enumType == null) {
+    if (isNil(enumType)) {
       continue;
     }
     let next = 0;
     for (const member of node.body.members) {
-      if (member.id.type !== 'Identifier' || member.initializer != null) {
+      if (member.id.type !== 'Identifier' || !isNil(member.initializer)) {
         continue;
       }
       const memberId = hang.symbolIn(member.id, 'value');
-      if (memberId == null) {
+      if (isNil(memberId)) {
         next += 1;
         continue;
       }

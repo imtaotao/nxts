@@ -1,7 +1,5 @@
+import { isNil } from 'aidly';
 import type { Identifier, StringLiteral } from '@babel/types';
-import { bindFile } from './bindFile';
-import { createDiagnostic } from './catalog';
-import { ExportResolver } from './exportResolver';
 import type {
   BindEnv,
   BindFileResult,
@@ -11,6 +9,9 @@ import type {
   ModuleEdge,
   ParseFileResult,
 } from './types';
+import { bindFile } from './bindFile';
+import { createDiagnostic } from './catalog';
+import { ExportResolver } from './exportResolver';
 
 const exportedName = (node: Identifier | StringLiteral) => {
   if (node.type === 'Identifier') {
@@ -105,7 +106,7 @@ const linkImports = (
   for (const item of file.imports) {
     const target = resolver.fileIdOf(fromFileId, item.source);
     const span = importSpan(parsed, item);
-    if (target == null) {
+    if (isNil(target)) {
       diagnose(
         result,
         file,
@@ -165,7 +166,7 @@ const diagnoseReexports = (
 ) => {
   const fromFileId = file.snapshot.fileId;
   for (const item of file.exports) {
-    if (item.source == null || item.name === '*') {
+    if (isNil(item.source) || item.name === '*') {
       continue;
     }
     if (
@@ -183,7 +184,7 @@ const diagnoseReexports = (
     }
     const target = resolver.fileIdOf(fromFileId, item.source);
     const span = reexportSpan(parsed, item);
-    if (target == null) {
+    if (isNil(target)) {
       diagnose(
         result,
         file,
@@ -197,7 +198,7 @@ const diagnoseReexports = (
     if (item.imported === '*') {
       continue;
     }
-    if (item.imported == null) {
+    if (isNil(item.imported)) {
       continue;
     }
     const resolved = resolver.resolve(target, item.imported, item.space);

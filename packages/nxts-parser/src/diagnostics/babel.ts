@@ -1,6 +1,6 @@
 import { isObject } from 'aidly';
-import { createDiagnostic } from './catalog';
 import type { SourceSnapshot } from '../snapshot';
+import { createDiagnostic } from './catalog';
 
 type BabelErrorLike = {
   message?: string;

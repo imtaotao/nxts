@@ -7,7 +7,7 @@
 // no: type T = [...number[], string, ...boolean[]]
 // no: type T = [...number[], string?]
 
-import { isArray } from 'aidly';
+import { isArray, isNil } from 'aidly';
 import type { Node } from '@babel/types';
 import type { Rule } from '../../types';
 import { rejectNode } from '../rejectNode';
@@ -36,7 +36,7 @@ const restInner = (node: Node) => {
 
 const isConcreteArrayRest = (node: Node) => {
   const inner = restInner(node);
-  if (inner == null) {
+  if (isNil(inner)) {
     return false;
   }
   if (inner.type === 'TSArrayType') {

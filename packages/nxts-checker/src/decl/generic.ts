@@ -1,3 +1,4 @@
+import { isNil } from 'aidly';
 import type { Hang } from '../hang';
 
 export function checkGenerics(hang: Hang) {
@@ -6,7 +7,7 @@ export function checkGenerics(hang: Hang) {
       continue;
     }
     const symbolId = hang.symbolIn(node.name, 'type');
-    if (symbolId == null) {
+    if (isNil(symbolId)) {
       continue;
     }
     hang.typeOfTypeSymbol(symbolId);

@@ -1,7 +1,8 @@
+import { isNil } from 'aidly';
 import type { Node } from '@babel/types';
-import type { TupleElement, TypeId } from '../../types';
 import type { Hang } from '../index';
-import { signatureProps } from '../intern';
+import type { TupleElement, TypeId } from '../../types';
+import { collapseCallable, dictionaryOf, signatureBody } from '../intern';
 import { finish } from './shared';
 
 export function resolveArray(
@@ -13,7 +14,7 @@ export function resolveArray(
     return null;
   }
   const element = hang.resolveAtomType(type.elementType, subst);
-  if (element == null) {
+  if (isNil(element)) {
     return null;
   }
   return finish(
@@ -53,7 +54,7 @@ const tupleElementOf = (
     inner = inner.typeAnnotation;
   }
   const typeId = hang.resolveAtomType(inner, subst);
-  if (typeId == null) {
+  if (isNil(typeId)) {
     return null;
   }
   return { type: typeId, optional, rest };
@@ -70,7 +71,7 @@ export function resolveTuple(
   const elements: TupleElement[] = [];
   for (const element of type.elementTypes) {
     const item = tupleElementOf(hang, element, subst);
-    if (item == null) {
+    if (isNil(item)) {
       return null;
     }
     elements.push(item);
@@ -95,17 +96,35 @@ export function resolveObject(
   if (type.type !== 'TSTypeLiteral') {
     return null;
   }
-  const props = signatureProps(hang, type.members, subst);
-  if (props == null) {
-    // TODO: 对象字面量带调用签名还没有 callable object 图鉴，不能收成 function。
+  const body = signatureBody(hang, type.members, subst);
+  if (isNil(body)) {
     return null;
+  }
+  if (!isNil(body.index)) {
+    return finish(
+      hang,
+      type,
+      dictionaryOf(hang, body.props, body.index, body.calls, body.constructs),
+      subst,
+    );
+  }
+  const collapsed = collapseCallable(
+    hang,
+    body.props,
+    body.calls,
+    body.constructs,
+  );
+  if (!isNil(collapsed)) {
+    return finish(hang, type, collapsed, subst);
   }
   return finish(
     hang,
     type,
     hang.context.table.intern({
       kind: 'object',
-      props,
+      props: body.props,
+      calls: body.calls,
+      constructs: body.constructs,
     }),
     subst,
   );

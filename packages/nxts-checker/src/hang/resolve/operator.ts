@@ -1,6 +1,7 @@
+import { isNil } from 'aidly';
 import type { Node } from '@babel/types';
-import type { TypeId } from '../../types';
 import type { Hang } from '../index';
+import type { TypeId } from '../../types';
 import { finish } from './shared';
 
 const readonlyOf = (hang: Hang, typeId: TypeId) => {
@@ -55,7 +56,7 @@ export function resolveOperator(
     return null;
   }
   const inner = hang.resolveAtomType(type.typeAnnotation, subst);
-  if (inner == null) {
+  if (isNil(inner)) {
     return null;
   }
   if (type.operator === 'keyof') {

@@ -1,3 +1,4 @@
+import { isNil } from 'aidly';
 import { describe, expect, it } from 'vitest';
 import {
   atomEnv,
@@ -49,7 +50,7 @@ describe('checkGenerics', () => {
     });
     const leftRecord = check.types[leftType ?? -1];
     const leftArg =
-      leftRecord != null && 'args' in leftRecord ? leftRecord.args[0] : null;
+      !isNil(leftRecord) && 'args' in leftRecord ? leftRecord.args[0] : null;
     expect(check.types[leftArg ?? -1]).toMatchObject({
       kind: 'atom',
       atom: 'i32',
@@ -80,7 +81,7 @@ describe('checkGenerics', () => {
     });
     const itemsRecord = check.types[itemsType ?? -1];
     const element =
-      itemsRecord != null && 'element' in itemsRecord
+      !isNil(itemsRecord) && 'element' in itemsRecord
         ? itemsRecord.element
         : null;
     expect(check.types[element ?? -1]).toMatchObject({
@@ -141,7 +142,7 @@ describe('checkGenerics', () => {
     expect(check.types[boxType ?? -1]).toMatchObject({ kind: 'class' });
     const boxRecord = check.types[boxType ?? -1];
     const boxArg =
-      boxRecord != null && 'args' in boxRecord ? boxRecord.args[0] : null;
+      !isNil(boxRecord) && 'args' in boxRecord ? boxRecord.args[0] : null;
     expect(check.types[boxArg ?? -1]).toMatchObject({
       kind: 'atom',
       atom: 'i32',
@@ -151,7 +152,7 @@ describe('checkGenerics', () => {
     });
     const namedRecord = check.types[namedType ?? -1];
     const title =
-      namedRecord != null && 'props' in namedRecord
+      !isNil(namedRecord) && 'props' in namedRecord
         ? namedRecord.props[0]
         : null;
     expect(title).toMatchObject({ key: 'title' });

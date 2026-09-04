@@ -1,11 +1,12 @@
+import { isNil } from 'aidly';
 import type { Node } from '@babel/types';
-import type { LiteralValue, TypeId } from '../../types';
 import type { Hang } from '../index';
+import type { LiteralValue, TypeId } from '../../types';
 import { finish } from './shared';
 
 const numericRaw = (node: Extract<Node, { type: 'NumericLiteral' }>) => {
   const extra = node.extra;
-  if (extra != null && typeof extra.raw === 'string') {
+  if (!isNil(extra) && typeof extra.raw === 'string') {
     return extra.raw;
   }
   return String(node.value);
@@ -47,7 +48,7 @@ const literalValueOf = (node: Node) => {
   }
   if (node.type === 'TemplateLiteral') {
     const text = templateText(node);
-    if (text == null) {
+    if (isNil(text)) {
       return null;
     }
     return {
@@ -93,7 +94,7 @@ export function resolveLiteral(
     return null;
   }
   const literal = literalValueOf(type.literal);
-  if (literal == null) {
+  if (isNil(literal)) {
     return null;
   }
   return finish(

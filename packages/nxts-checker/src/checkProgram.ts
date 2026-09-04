@@ -1,4 +1,6 @@
+import { isNil } from 'aidly';
 import type { BindProgramResult } from '@nxts/binder';
+import type { CheckFileResult, CheckProgramResult } from './types';
 import { CheckContext } from './context';
 import { checkAliases } from './decl/alias';
 import { checkClasses } from './decl/class';
@@ -9,13 +11,12 @@ import { Hang } from './hang';
 import { checkInterfaces } from './decl/interface';
 import { checkVariables } from './decl/variable';
 import { checkImports } from './link/import';
-import type { CheckFileResult, CheckProgramResult } from './types';
 
 const filledCount = (hangs: readonly Hang[]) => {
   let count = 0;
   for (const hang of hangs) {
     for (const id of hang.symbolTypes) {
-      if (id != null) {
+      if (!isNil(id)) {
         count += 1;
       }
     }
@@ -23,6 +24,7 @@ const filledCount = (hangs: readonly Hang[]) => {
   return count;
 };
 
+// 给类型空间的名字挂上 TypeId：type / interface / class / enum / 类型参数。互相引用就多转几圈。
 const hangTypes = (program: BindProgramResult, hangs: Hang[]) => {
   let before = -1;
   let after = 0;
@@ -40,6 +42,7 @@ const hangTypes = (program: BindProgramResult, hangs: Hang[]) => {
   }
 };
 
+// 给值空间的名字挂上 TypeId：const / let / function。要等类型空间先挂完，注解才能查到名字。
 const hangValues = (program: BindProgramResult, hangs: Hang[]) => {
   for (const hang of hangs) {
     checkVariables(hang);

@@ -5,7 +5,7 @@
 // no: function f(a: number): void;
 // no: function f(a: number): void; const x = 1; function f(a: number) {}
 
-import { isArray } from 'aidly';
+import { isArray, isNil } from 'aidly';
 import type { Node } from '@babel/types';
 import type { Rule, RuleContext } from '../../types';
 import { rejectNode } from '../rejectNode';
@@ -23,7 +23,7 @@ const unwrapExport = (stmt: Node) => {
 const readMember = (stmt: Node) => {
   const { wrap, fn } = unwrapExport(stmt);
   if (
-    fn == null ||
+    isNil(fn) ||
     (fn.type !== 'TSDeclareFunction' && fn.type !== 'FunctionDeclaration') ||
     fn.declare === true
   ) {
@@ -57,7 +57,7 @@ const statementList = (node: Node, ctx: RuleContext) => {
     stmt = parent;
     parent = ctx.parents.get(parent) ?? null;
   }
-  if (parent == null || parent.type === 'ClassBody' || !('body' in parent)) {
+  if (isNil(parent) || parent.type === 'ClassBody' || !('body' in parent)) {
     return null;
   }
   const body = parent.body;
@@ -74,11 +74,11 @@ export const overloadDeclareRule: Rule = {
       return null;
     }
     const list = statementList(node, ctx);
-    if (list == null) {
+    if (isNil(list)) {
       return rejectNode(node, ctx, 'parser.overloadDeclare');
     }
     const current = readMember(list.stmt);
-    if (current == null) {
+    if (isNil(current)) {
       return rejectNode(node, ctx, 'parser.overloadDeclare');
     }
     const index = list.body.indexOf(list.stmt);
@@ -87,7 +87,7 @@ export const overloadDeclareRule: Rule = {
     }
     for (let i = index + 1; i < list.body.length; i++) {
       const next = readMember(list.body[i]);
-      if (next == null || !sameGroup(current, next)) {
+      if (isNil(next) || !sameGroup(current, next)) {
         return rejectNode(node, ctx, 'parser.overloadDeclare');
       }
       if (next.impl) {

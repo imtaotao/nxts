@@ -1,10 +1,11 @@
+import { isNil } from 'aidly';
 import type { Node } from '@babel/types';
-import type { FunctionParam, TypeId } from '../../types';
 import type { Hang } from '../index';
+import type { FunctionParam, TypeId } from '../../types';
 import { finish } from './shared';
 
 const annotationOf = (node: Node) => {
-  if ('typeAnnotation' in node && node.typeAnnotation != null) {
+  if ('typeAnnotation' in node && !isNil(node.typeAnnotation)) {
     return node.typeAnnotation;
   }
   if (node.type === 'RestElement') {
@@ -28,11 +29,11 @@ const paramOf = (
   }
   if (node.type === 'RestElement') {
     const annotation = annotationOf(node);
-    if (annotation == null) {
+    if (isNil(annotation)) {
       return null;
     }
     const typeId = hang.resolveAtomType(annotation, subst);
-    if (typeId == null) {
+    if (isNil(typeId)) {
       return null;
     }
     return { type: typeId, optional: false, rest: true };
@@ -45,11 +46,11 @@ const paramOf = (
     return null;
   }
   const annotation = annotationOf(node);
-  if (annotation == null) {
+  if (isNil(annotation)) {
     return null;
   }
   const typeId = hang.resolveAtomType(annotation, subst);
-  if (typeId == null) {
+  if (isNil(typeId)) {
     return null;
   }
   return { type: typeId, optional: optionalOf(node), rest: false };
@@ -64,10 +65,43 @@ const receiverOf = (
     return null;
   }
   const annotation = annotationOf(node);
-  if (annotation == null) {
+  if (isNil(annotation)) {
     return null;
   }
   return hang.resolveAtomType(annotation, subst);
+};
+
+const signatureOf = (
+  hang: Hang,
+  params: readonly Node[],
+  returnType?: Node | null,
+  subst?: ReadonlyMap<number, TypeId>,
+) => {
+  if (isNil(returnType)) {
+    return null;
+  }
+  const collected: FunctionParam[] = [];
+  let receiver: TypeId | null = null;
+  for (const [index, param] of params.entries()) {
+    const thisType = receiverOf(hang, param, subst);
+    if (param.type === 'Identifier' && param.name === 'this') {
+      if (index !== 0 || isNil(thisType)) {
+        return null;
+      }
+      receiver = thisType;
+      continue;
+    }
+    const item = paramOf(hang, param, subst);
+    if (isNil(item)) {
+      return null;
+    }
+    collected.push(item);
+  }
+  const resolvedReturn = hang.resolveAtomType(returnType, subst);
+  if (isNil(resolvedReturn)) {
+    return null;
+  }
+  return { receiver, params: collected, returnType: resolvedReturn };
 };
 
 export function functionTypeOf(
@@ -76,39 +110,29 @@ export function functionTypeOf(
   returnType?: Node | null,
   subst?: ReadonlyMap<number, TypeId>,
 ) {
-  if (returnType == null) {
-    return null;
-  }
-  const collected: FunctionParam[] = [];
-  let receiver: TypeId | null = null;
-  for (const [index, param] of params.entries()) {
-    const thisType = receiverOf(hang, param, subst);
-    if (param.type === 'Identifier' && param.name === 'this') {
-      if (index !== 0 || thisType == null) {
-        return null;
-      }
-      receiver = thisType;
-      continue;
-    }
-    const item = paramOf(hang, param, subst);
-    if (item == null) {
-      return null;
-    }
-    collected.push(item);
-  }
-  const resolvedReturn = hang.resolveAtomType(returnType, subst);
-  if (resolvedReturn == null) {
+  const signature = signatureOf(hang, params, returnType, subst);
+  if (isNil(signature)) {
     return null;
   }
   return hang.context.table.intern({
     kind: 'function',
-    signatures: [
-      {
-        receiver,
-        params: collected,
-        returnType: resolvedReturn,
-      },
-    ],
+    signatures: [signature],
+  });
+}
+
+export function constructTypeOf(
+  hang: Hang,
+  params: readonly Node[],
+  returnType?: Node | null,
+  subst?: ReadonlyMap<number, TypeId>,
+) {
+  const signature = signatureOf(hang, params, returnType, subst);
+  if (isNil(signature)) {
+    return null;
+  }
+  return hang.context.table.intern({
+    kind: 'construct',
+    signatures: [signature],
   });
 }
 

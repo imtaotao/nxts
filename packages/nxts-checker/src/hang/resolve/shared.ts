@@ -1,6 +1,7 @@
+import { isNil } from 'aidly';
 import type { Node } from '@babel/types';
-import type { TypeId } from '../../types';
 import type { Hang } from '../index';
+import type { TypeId } from '../../types';
 
 export type TypeResolver = (
   hang: Hang,
@@ -14,7 +15,7 @@ export function finish(
   typeId: TypeId | null,
   subst?: ReadonlyMap<number, TypeId>,
 ) {
-  if (typeId != null && subst == null) {
+  if (!isNil(typeId) && isNil(subst)) {
     hang.hangNode(type, typeId);
   }
   return typeId;

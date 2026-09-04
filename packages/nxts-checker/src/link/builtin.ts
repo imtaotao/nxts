@@ -1,3 +1,4 @@
+import { isNil } from 'aidly';
 import type { TypeTable } from '../core/typeTable';
 
 export function atomKindOf(builtinId: string) {
@@ -30,7 +31,7 @@ export function atomKindOf(builtinId: string) {
 
 export function internBuiltin(table: TypeTable, builtinId: string) {
   const atom = atomKindOf(builtinId);
-  if (atom == null) {
+  if (isNil(atom)) {
     return null;
   }
   return table.atom(atom);

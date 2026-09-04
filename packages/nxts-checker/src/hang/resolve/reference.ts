@@ -1,6 +1,7 @@
+import { isNil } from 'aidly';
 import type { Node } from '@babel/types';
-import type { TypeId } from '../../types';
 import type { Hang } from '../index';
+import type { TypeId } from '../../types';
 import { typeArgsOf } from '../ast';
 import { instantiateDefaults, instantiateRef } from '../instantiate';
 import { finish } from './shared';
@@ -15,16 +16,16 @@ export function resolveReference(
   }
 
   const symbolId = hang.symbolIn(type.typeName, 'type');
-  if (symbolId == null) {
+  if (isNil(symbolId)) {
     return null;
   }
 
   const args = typeArgsOf(type);
-  if (args != null) {
+  if (!isNil(args)) {
     const argIds: TypeId[] = [];
     for (const arg of args) {
       const typeId = hang.resolveAtomType(arg, subst);
-      if (typeId == null) {
+      if (isNil(typeId)) {
         return null;
       }
       argIds.push(typeId);
@@ -33,13 +34,13 @@ export function resolveReference(
   }
 
   const substituted = subst?.get(symbolId) ?? null;
-  if (substituted != null) {
+  if (!isNil(substituted)) {
     return substituted;
   }
   const typeId = hang.typeOfTypeSymbol(symbolId);
 
-  if (typeId != null) {
-    if (subst == null) {
+  if (!isNil(typeId)) {
+    if (isNil(subst)) {
       hang.hangNode(type, typeId);
       hang.hangNode(type.typeName, typeId);
     }

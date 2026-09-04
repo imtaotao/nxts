@@ -1,11 +1,12 @@
+import { isNil } from 'aidly';
+import { checkProgram } from '@nxts/checker';
+import { createSnapshot, parseFile } from '@nxts/parser';
 import {
   bindProgram,
   type BindEnv,
   type ModuleEdge,
   type ParseFileResult,
 } from '@nxts/binder';
-import { checkProgram } from '@nxts/checker';
-import { createSnapshot, parseFile } from '@nxts/parser';
 
 // playground 先塞一组常用根符号。完整名单归 T49。
 const atomType = (name: string) =>
@@ -40,7 +41,7 @@ export type PlaygroundFile = {
 
 const collectSpecifiers = (file: ParseFileResult) => {
   const sources = new Set<string>();
-  if (file.ast == null) {
+  if (isNil(file.ast)) {
     return sources;
   }
   for (const statement of file.ast.program.body) {
@@ -119,11 +120,11 @@ export async function run(files: readonly PlaygroundFile[]) {
         specifier,
         files,
       );
-      if (target == null) {
+      if (isNil(target)) {
         continue;
       }
       const toFileId = pathToId.get(target.path);
-      if (toFileId == null) {
+      if (isNil(toFileId)) {
         continue;
       }
       edges.push({

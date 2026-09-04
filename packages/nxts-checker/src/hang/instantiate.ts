@@ -1,8 +1,9 @@
+import { isNil } from 'aidly';
 import type { Node } from '@babel/types';
-import { internBuiltin } from '../link/builtin';
-import type { TypeId } from '../types';
-import { hasTypeParams, typeParamsOf } from './ast';
 import type { Hang } from './index';
+import type { TypeId } from '../types';
+import { internBuiltin } from '../link/builtin';
+import { hasTypeParams, typeParamsOf } from './ast';
 import { aliasDeclOf, interfaceShape, typeDeclOf } from './intern';
 
 const genericOf = (hang: Hang, symbolId: number, args: TypeId[]) => {
@@ -15,15 +16,15 @@ const genericOf = (hang: Hang, symbolId: number, args: TypeId[]) => {
 
 const allDefaults = (params: Node | null) => {
   return (
-    params != null &&
+    !isNil(params) &&
     params.type === 'TSTypeParameterDeclaration' &&
     params.params.length > 0 &&
-    params.params.every((param) => param.default != null)
+    params.params.every((param) => !isNil(param.default))
   );
 };
 
 const substOf = (hang: Hang, params: Node | null, args: TypeId[]) => {
-  if (params == null || params.type !== 'TSTypeParameterDeclaration') {
+  if (isNil(params) || params.type !== 'TSTypeParameterDeclaration') {
     return null;
   }
   if (args.length > params.params.length) {
@@ -33,17 +34,17 @@ const substOf = (hang: Hang, params: Node | null, args: TypeId[]) => {
   for (let index = 0; index < params.params.length; index += 1) {
     const param = params.params[index];
     const symbolId = hang.symbolIn(param.name, 'type');
-    if (symbolId == null) {
+    if (isNil(symbolId)) {
       return null;
     }
     let typeId: TypeId | null = index < args.length ? args[index] : null;
-    if (typeId == null) {
-      if (param.default == null) {
+    if (isNil(typeId)) {
+      if (isNil(param.default)) {
         return null;
       }
       typeId = hang.resolveAtomType(param.default, subst);
     }
-    if (typeId == null) {
+    if (isNil(typeId)) {
       return null;
     }
     subst.set(symbolId, typeId);
@@ -56,14 +57,14 @@ const filledArgs = (
   params: Node | null,
   subst: ReadonlyMap<number, TypeId>,
 ) => {
-  if (params == null || params.type !== 'TSTypeParameterDeclaration') {
+  if (isNil(params) || params.type !== 'TSTypeParameterDeclaration') {
     return null;
   }
   const out: TypeId[] = [];
   for (const param of params.params) {
     const symbolId = hang.symbolIn(param.name, 'type');
-    const typeId = symbolId == null ? null : (subst.get(symbolId) ?? null);
-    if (typeId == null) {
+    const typeId = isNil(symbolId) ? null : (subst.get(symbolId) ?? null);
+    if (isNil(typeId)) {
       return null;
     }
     out.push(typeId);
@@ -73,7 +74,7 @@ const filledArgs = (
 
 const instantiateArgs = (hang: Hang, params: Node | null, args: TypeId[]) => {
   const subst = substOf(hang, params, args);
-  if (subst == null) {
+  if (isNil(subst)) {
     return null;
   }
   return filledArgs(hang, params, subst);
@@ -86,11 +87,11 @@ const instantiateAlias = (
   args: TypeId[],
 ): TypeId | null => {
   const subst = substOf(hang, typeParamsOf(alias.typeParameters), args);
-  if (subst == null) {
+  if (isNil(subst)) {
     return null;
   }
   const filled = filledArgs(hang, typeParamsOf(alias.typeParameters), subst);
-  if (filled == null) {
+  if (isNil(filled)) {
     return null;
   }
   if (hang.resolving.has(symbolId)) {
@@ -99,7 +100,7 @@ const instantiateAlias = (
   hang.resolving.add(symbolId);
   const expanded = hang.resolveAtomType(alias.typeAnnotation, subst);
   hang.resolving.delete(symbolId);
-  if (expanded != null) {
+  if (!isNil(expanded)) {
     return expanded;
   }
   return genericOf(hang, symbolId, filled);
@@ -112,8 +113,8 @@ const instantiate = (
 ): TypeId | null => {
   const symbol = hang.file.symbols[symbolId] ?? null;
   if (
-    symbol?.builtinId != null &&
-    internBuiltin(hang.context.table, symbol.builtinId) == null
+    !isNil(symbol?.builtinId) &&
+    isNil(internBuiltin(hang.context.table, symbol.builtinId))
   ) {
     return hang.context.table.intern({
       kind: 'generic',
@@ -122,11 +123,11 @@ const instantiate = (
     });
   }
   const alias = aliasDeclOf(hang, symbolId);
-  if (alias != null && hasTypeParams(alias)) {
+  if (!isNil(alias) && hasTypeParams(alias)) {
     return instantiateAlias(hang, symbolId, alias, args);
   }
   const decl = typeDeclOf(hang, symbolId);
-  if (decl == null) {
+  if (isNil(decl)) {
     return genericOf(hang, symbolId, args);
   }
   if (decl.type === 'ClassDeclaration' || decl.type === 'ClassExpression') {
@@ -135,7 +136,7 @@ const instantiate = (
       typeParamsOf(decl.typeParameters),
       args,
     );
-    if (filled == null) {
+    if (isNil(filled)) {
       return null;
     }
     return hang.context.table.intern({
@@ -146,15 +147,15 @@ const instantiate = (
   }
   if (decl.type === 'TSInterfaceDeclaration') {
     const subst = substOf(hang, typeParamsOf(decl.typeParameters), args);
-    if (subst == null) {
+    if (isNil(subst)) {
       return null;
     }
     const filled = filledArgs(hang, typeParamsOf(decl.typeParameters), subst);
-    if (filled == null) {
+    if (isNil(filled)) {
       return null;
     }
     const shape = interfaceShape(hang, decl, subst);
-    if (shape != null) {
+    if (!isNil(shape)) {
       return shape;
     }
     return genericOf(hang, symbolId, filled);
@@ -164,12 +165,12 @@ const instantiate = (
 
 const instantiateIfDefaults = (hang: Hang, symbolId: number) => {
   const alias = aliasDeclOf(hang, symbolId);
-  if (alias != null && allDefaults(typeParamsOf(alias.typeParameters))) {
+  if (!isNil(alias) && allDefaults(typeParamsOf(alias.typeParameters))) {
     return instantiate(hang, symbolId, []);
   }
   const decl = typeDeclOf(hang, symbolId);
   if (
-    decl != null &&
+    !isNil(decl) &&
     (decl.type === 'ClassDeclaration' ||
       decl.type === 'ClassExpression' ||
       decl.type === 'TSInterfaceDeclaration') &&

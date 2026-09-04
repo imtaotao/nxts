@@ -1,5 +1,6 @@
-import type { VariableDeclaration } from '@babel/types';
+import { isNil } from 'aidly';
 import { describe, expect, it } from 'vitest';
+import type { VariableDeclaration } from '@babel/types';
 import { diagnosticIds, bindSource, symbolOf } from './utils';
 
 describe('invalid subtree', () => {
@@ -28,7 +29,7 @@ describe('invalid subtree', () => {
     const ok = (file.ast.program.body[1] as VariableDeclaration)
       .declarations[0];
 
-    expect(first.init != null && file.invalidNodes.has(first.init)).toBe(true);
+    expect(!isNil(first.init) && file.invalidNodes.has(first.init)).toBe(true);
     expect(symbolOf(bound, file, first.id)).not.toBe(null);
     expect(symbolOf(bound, file, ok.id)).not.toBe(null);
     expect(diagnosticIds(bound)).toEqual([]);

@@ -1,6 +1,5 @@
+import { isNil } from 'aidly';
 import type { Identifier } from '@babel/types';
-import { createDiagnostic, type MessageId } from './catalog';
-import { collectModuleBindings } from './collect';
 import type {
   BindEnv,
   BindFileResult,
@@ -12,6 +11,8 @@ import type {
   ScopeRecord,
   SymbolRecord,
 } from './types';
+import { createDiagnostic, type MessageId } from './catalog';
+import { collectModuleBindings } from './collect';
 
 type ScopeNames = Record<NameSpace, Map<string, number>>;
 
@@ -43,7 +44,7 @@ export class BinderContext {
 
   private bind(node: object, symbolId: number) {
     const nodeId = this.nodeIdOf(node);
-    if (nodeId == null) return;
+    if (isNil(nodeId)) return;
     const bound = this.nodeToSymbols[nodeId];
     if (!bound.includes(symbolId)) {
       bound.push(symbolId);
@@ -56,12 +57,12 @@ export class BinderContext {
 
   isBound(node: object) {
     const nodeId = this.nodeIdOf(node);
-    return nodeId != null && this.nodeToSymbols[nodeId].length > 0;
+    return !isNil(nodeId) && this.nodeToSymbols[nodeId].length > 0;
   }
 
   isBoundIn(node: object, space: NameSpace) {
     const nodeId = this.nodeIdOf(node);
-    if (nodeId == null) {
+    if (isNil(nodeId)) {
       return false;
     }
     return this.nodeToSymbols[nodeId].some(
@@ -93,7 +94,7 @@ export class BinderContext {
   }
 
   closeScope() {
-    if (this.current == null) return;
+    if (isNil(this.current)) return;
     this.current = this.scopes[this.current].parent;
   }
 
@@ -105,7 +106,7 @@ export class BinderContext {
   }
 
   private declareEnv(item: EnvSymbol) {
-    if (this.current == null) {
+    if (isNil(this.current)) {
       return;
     }
     const table = this.names[this.current][item.space];
@@ -126,7 +127,7 @@ export class BinderContext {
 
   declare(space: NameSpace, node: Identifier) {
     const nodeId = this.nodeIdOf(node);
-    if (nodeId == null || this.current == null) {
+    if (isNil(nodeId) || isNil(this.current)) {
       return;
     }
     const table = this.names[this.current][space];
@@ -152,11 +153,11 @@ export class BinderContext {
   }
 
   declareOnce(space: NameSpace, node: Identifier) {
-    if (this.current == null) {
+    if (isNil(this.current)) {
       return;
     }
     const existing = this.names[this.current][space].get(node.name);
-    if (existing != null) {
+    if (!isNil(existing)) {
       this.bind(node, existing);
       return;
     }
@@ -165,9 +166,9 @@ export class BinderContext {
 
   resolve(space: NameSpace, node: Identifier) {
     let scope = this.current;
-    while (scope != null) {
+    while (!isNil(scope)) {
       const id = this.names[scope][space].get(node.name);
-      if (id != null) {
+      if (!isNil(id)) {
         this.bind(node, id);
         return;
       }

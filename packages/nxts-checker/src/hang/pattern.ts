@@ -1,6 +1,7 @@
+import { isNil } from 'aidly';
 import type { Identifier, Node } from '@babel/types';
-import type { TypeId } from '../types';
 import type { Hang } from './index';
+import type { TypeId } from '../types';
 import { unwrapType } from './ast';
 
 export function walkPatternIdents(
@@ -40,7 +41,7 @@ export function walkPatternIdents(
 }
 
 const annotationOf = (node: Node) => {
-  if ('typeAnnotation' in node && node.typeAnnotation != null) {
+  if ('typeAnnotation' in node && !isNil(node.typeAnnotation)) {
     return node.typeAnnotation;
   }
   if (node.type === 'RestElement') {
@@ -51,7 +52,7 @@ const annotationOf = (node: Node) => {
 
 const hangIdent = (hang: Hang, node: Identifier, typeId: TypeId) => {
   const symbolId = hang.symbolIn(node, 'value');
-  if (symbolId != null) {
+  if (!isNil(symbolId)) {
     hang.symbolTypes[symbolId] = typeId;
   }
   hang.hangNode(node, typeId);
@@ -79,7 +80,7 @@ const hangObjectPattern = (
   typeId: TypeId,
 ) => {
   const props = propsOf(hang, typeId);
-  if (props == null) {
+  if (isNil(props)) {
     return;
   }
   for (const property of node.properties) {
@@ -92,7 +93,7 @@ const hangObjectPattern = (
       continue;
     }
     const member = props.find((prop) => prop.key === key.name) ?? null;
-    if (member == null) {
+    if (isNil(member)) {
       continue;
     }
     hangPattern(hang, property.value, member.type);
@@ -105,12 +106,12 @@ const hangArrayPattern = (
   typeId: TypeId,
 ) => {
   const elements = tupleOf(hang, typeId);
-  if (elements == null) {
+  if (isNil(elements)) {
     // TODO: 数组模式对 array 的元素类型还没接到成员表上。
     return;
   }
   for (const [index, element] of node.elements.entries()) {
-    if (element == null) {
+    if (isNil(element)) {
       continue;
     }
     if (element.type === 'RestElement') {
@@ -118,7 +119,7 @@ const hangArrayPattern = (
       continue;
     }
     const slot = elements[index] ?? null;
-    if (slot == null || slot.rest) {
+    if (isNil(slot) || slot.rest) {
       continue;
     }
     hangPattern(hang, element, slot.type);
@@ -127,13 +128,12 @@ const hangArrayPattern = (
 
 export function hangPattern(hang: Hang, node: Node, expected?: TypeId) {
   const annotation = annotationOf(node);
-  const annotated =
-    annotation == null ? null : hang.resolveAtomType(annotation);
-  if (annotation != null && annotated != null) {
+  const annotated = isNil(annotation) ? null : hang.resolveAtomType(annotation);
+  if (!isNil(annotation) && !isNil(annotated)) {
     hang.hangNode(unwrapType(annotation), annotated);
   }
   const typeId = annotated ?? expected ?? null;
-  if (typeId == null) {
+  if (isNil(typeId)) {
     return null;
   }
   switch (node.type) {
@@ -153,7 +153,7 @@ export function hangPattern(hang: Hang, node: Node, expected?: TypeId) {
       hangArrayPattern(hang, node, typeId);
       return typeId;
     case 'RestElement':
-      if (annotated != null) {
+      if (!isNil(annotated)) {
         return hangPattern(hang, node.argument, typeId);
       }
       // TODO: 无注解的 rest 绑定的是剩余集合，不是当前 expected 本身。

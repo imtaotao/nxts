@@ -1,3 +1,4 @@
+import { isNil } from 'aidly';
 import { useCallback, useEffect, useState } from 'react';
 import {
   Badge,
@@ -22,7 +23,7 @@ type StoredWorkspace = {
 };
 
 const isWorkspace = (value: unknown): value is StoredWorkspace => {
-  if (value == null || typeof value !== 'object') {
+  if (isNil(value) || typeof value !== 'object') {
     return false;
   }
   const workspace = value as StoredWorkspace;
@@ -30,7 +31,7 @@ const isWorkspace = (value: unknown): value is StoredWorkspace => {
     Array.isArray(workspace.files) &&
     workspace.files.every(
       (file) =>
-        file != null &&
+        !isNil(file) &&
         typeof file.path === 'string' &&
         typeof file.source === 'string',
     ) &&
@@ -113,19 +114,19 @@ const hungOf = (result: Awaited<ReturnType<typeof run>>) =>
   result.bind.files.map((file, index) => {
     const checked = result.check.files[index];
     const typeOf = (id: number | null) =>
-      id == null ? null : (result.check.types[id] ?? null);
+      isNil(id) ? null : (result.check.types[id] ?? null);
     return {
       path: file.snapshot.canonicalPath,
       symbols: file.symbols.flatMap((symbol) => {
         const type = typeOf(checked?.symbolTypes[symbol.id] ?? null);
-        if (type == null) {
+        if (isNil(type)) {
           return [];
         }
         return [{ name: symbol.name, space: symbol.space, type }];
       }),
       nodes: file.nodes.flatMap((node, nodeId) => {
         const type = typeOf(checked?.nodeTypes[nodeId] ?? null);
-        if (type == null) {
+        if (isNil(type)) {
           return [];
         }
         return [{ node: node.type, type }];
@@ -248,7 +249,7 @@ export function App() {
           meta={
             <Badge
               tone={
-                status == null
+                isNil(status)
                   ? 'neutral'
                   : status.complete
                     ? 'success'
@@ -256,7 +257,7 @@ export function App() {
               }
               variant='soft'
             >
-              {status == null
+              {isNil(status)
                 ? '未运行'
                 : status.complete
                   ? 'complete'

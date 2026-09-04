@@ -1,3 +1,4 @@
+import { isNil } from 'aidly';
 import type { AtomKind, TypeId, TypeRecord, TypeShape } from '../types';
 import { canonicalize, equalShape, hashShape } from './typeKey';
 
@@ -9,7 +10,7 @@ export class TypeTable {
 
   atom(atom: AtomKind) {
     const existing = this.atoms.get(atom) ?? null;
-    if (existing != null) {
+    if (!isNil(existing)) {
       return existing;
     }
     const id = this.push({ kind: 'atom', atom });
@@ -31,7 +32,7 @@ export class TypeTable {
       }
       if (members.length === 1) {
         const [only] = members;
-        if (only != null) {
+        if (!isNil(only)) {
           return only;
         }
       }
@@ -47,7 +48,7 @@ export class TypeTable {
       }
       if (members.length === 1) {
         const [only] = members;
-        if (only != null) {
+        if (!isNil(only)) {
           return only;
         }
       }
@@ -57,7 +58,7 @@ export class TypeTable {
   }
 
   private internUnknown() {
-    if (this.unknownId != null) {
+    if (!isNil(this.unknownId)) {
       return this.unknownId;
     }
     const id = this.push({ kind: 'unknown' });
@@ -69,16 +70,16 @@ export class TypeTable {
     const canonical = canonicalize(shape);
     const hash = hashShape(canonical);
     const bucket = this.byHash.get(hash) ?? null;
-    if (bucket != null) {
+    if (!isNil(bucket)) {
       for (const id of bucket) {
         const record = this.types[id] ?? null;
-        if (record != null && equalShape(record, canonical)) {
+        if (!isNil(record) && equalShape(record, canonical)) {
           return id;
         }
       }
     }
     const id = this.push(canonical);
-    if (bucket != null) {
+    if (!isNil(bucket)) {
       bucket.push(id);
       return id;
     }

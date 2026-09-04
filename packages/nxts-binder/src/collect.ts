@@ -1,10 +1,10 @@
+import { isNil } from 'aidly';
 import type {
   Identifier,
   Node,
   StringLiteral,
   VariableDeclaration,
 } from '@babel/types';
-import { exportSpace, importSpace } from './declare/module';
 import type {
   BindFileResult,
   FileExport,
@@ -12,6 +12,7 @@ import type {
   NameSpace,
   ParseFileResult,
 } from './types';
+import { exportSpace, importSpace } from './declare/module';
 
 const exportedName = (node: Identifier | StringLiteral) => {
   if (node.type === 'Identifier') {
@@ -73,11 +74,11 @@ const symbolInSpace = (
   node: Node | null | undefined,
   space: NameSpace,
 ) => {
-  if (node == null) {
+  if (isNil(node)) {
     return null;
   }
   const nodeId = file.nodeIds.get(node);
-  if (nodeId == null) {
+  if (isNil(nodeId)) {
     return null;
   }
   for (const id of bound.nodeToSymbols[nodeId] ?? []) {
@@ -246,13 +247,13 @@ const collectDefaultExport = (
   if (declaration.type === 'Identifier') {
     const valueId = symbolInSpace(file, bound, declaration, 'value');
     const typeId = symbolInSpace(file, bound, declaration, 'type');
-    if (valueId != null) {
+    if (!isNil(valueId)) {
       pushExport(exports, 'default', 'value', valueId, null, null);
     }
-    if (typeId != null) {
+    if (!isNil(typeId)) {
       pushExport(exports, 'default', 'type', typeId, null, null);
     }
-    if (valueId == null && typeId == null) {
+    if (isNil(valueId) && isNil(typeId)) {
       pushExport(exports, 'default', 'value', null, null, null);
     }
     return;
@@ -266,7 +267,7 @@ export function collectModuleBindings(
 ) {
   const exports: FileExport[] = [];
   const imports: FileImport[] = [];
-  if (file.ast == null) {
+  if (isNil(file.ast)) {
     return { exports, imports };
   }
 
@@ -282,7 +283,7 @@ export function collectModuleBindings(
         const space = importSpace(statement, specifier);
         const imported = importedName(specifier);
         const symbolId = symbolInSpace(file, bound, specifier.local, space);
-        if (imported == null || symbolId == null) {
+        if (isNil(imported) || isNil(symbolId)) {
           continue;
         }
         imports.push({
@@ -332,7 +333,7 @@ export function collectModuleBindings(
       }
       if (specifier.type === 'ExportNamespaceSpecifier') {
         const name = exportedName(specifier.exported);
-        if (name == null) {
+        if (isNil(name)) {
           continue;
         }
         if (statement.exportKind === 'type') {
@@ -347,7 +348,7 @@ export function collectModuleBindings(
         continue;
       }
       const name = exportedName(specifier.exported);
-      if (name == null) {
+      if (isNil(name)) {
         continue;
       }
       const space = exportSpace(statement, specifier);
@@ -356,11 +357,11 @@ export function collectModuleBindings(
         exports,
         name,
         space,
-        source == null
+        isNil(source)
           ? symbolInSpace(file, bound, specifier.local, space)
           : null,
         source,
-        source == null ? null : imported,
+        isNil(source) ? null : imported,
       );
     }
   }
