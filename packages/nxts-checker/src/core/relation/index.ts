@@ -14,8 +14,15 @@ import {
   objectToInterface,
   objectToObject,
 } from './object';
-import { equal, isAtom, pending, recordOf } from './shared';
-import type { Of, PairRule, Relate } from './shared';
+import {
+  equal,
+  isAtom,
+  pending,
+  recordOf,
+  type Of,
+  type PairRule,
+  type Relate,
+} from './shared';
 
 export { equal } from './shared';
 

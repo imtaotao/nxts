@@ -85,6 +85,9 @@ const propsOf = (hang: Hang, record: TypeRecord) => {
   if (record.kind === 'class') {
     return hang.context.table.classBodies.get(record.id)?.props ?? null;
   }
+  if (record.kind === 'enumNamespace') {
+    return hang.context.table.enumNamespaces.get(record.id) ?? [];
+  }
   return null;
 };
 
@@ -399,8 +402,16 @@ export function keyofOf(hang: Hang, typeId: TypeId) {
     }
     return unionOf(hang, parts);
   }
-  if (record.kind === 'object' || record.kind === 'interface') {
-    return keysOfProps(hang, record.props);
+  if (
+    record.kind === 'object' ||
+    record.kind === 'interface' ||
+    record.kind === 'enumNamespace'
+  ) {
+    const props =
+      record.kind === 'enumNamespace'
+        ? (hang.context.table.enumNamespaces.get(record.id) ?? [])
+        : record.props;
+    return keysOfProps(hang, props);
   }
   if (record.kind === 'class') {
     const body = hang.context.table.classBodies.get(record.id) ?? null;

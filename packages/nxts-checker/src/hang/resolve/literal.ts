@@ -33,7 +33,7 @@ const templateText = (node: Extract<Node, { type: 'TemplateLiteral' }>) => {
   return node.quasis.map((quasi) => quasi.value.cooked ?? '').join('');
 };
 
-const literalValueOf = (node: Node) => {
+export function literalValueOf(node: Node) {
   if (node.type === 'BooleanLiteral') {
     return {
       base: 'boolean' as const,
@@ -83,7 +83,7 @@ const literalValueOf = (node: Node) => {
       value: numericText(signed),
     } satisfies LiteralValue,
   };
-};
+}
 
 // 字面量
 // `true`

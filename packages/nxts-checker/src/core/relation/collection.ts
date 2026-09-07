@@ -1,7 +1,6 @@
 import type { TupleElement } from '../../types';
 import type { TypeTable } from '../typeTable';
-import { arrayElementOf, equal } from './shared';
-import type { Of } from './shared';
+import { arrayElementOf, equal, type Of } from './shared';
 
 const restOf = (table: TypeTable, item: TupleElement) => {
   return item.rest ? arrayElementOf(table, item.type) : null;

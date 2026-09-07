@@ -2,6 +2,7 @@ import { isNil } from 'aidly';
 import type {
   AtomKind,
   ClassBody,
+  ObjectMember,
   TypeId,
   TypeRecord,
   TypeShape,
@@ -12,6 +13,8 @@ export class TypeTable {
   readonly types: TypeRecord[] = [];
   // 类实例体。和图鉴同寿，不参与驻留键。
   readonly classBodies = new Map<TypeId, ClassBody>();
+  // `typeof Enum` 命名空间成员。和图鉴同寿，不参与驻留键。
+  readonly enumNamespaces = new Map<TypeId, ObjectMember[]>();
   private unknownId: TypeId | null = null;
   private readonly atoms = new Map<AtomKind, TypeId>();
   private readonly byHash = new Map<number, TypeId[]>();

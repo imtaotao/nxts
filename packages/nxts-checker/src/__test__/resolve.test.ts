@@ -645,14 +645,19 @@ describe('resolveByType', () => {
     expect(check.types[event ?? -1]).toMatchObject({ kind: 'union' });
   });
 
-  it('leaves unannotated typeof unhung', async () => {
+  it('hangs typeof of inferred unannotated literals', async () => {
     const { bind, check } = await checkSource(
       'const n = 1;\ntype Query = typeof n;\n',
     );
     const file = bind.files[0];
     const query = typeSymbol(bind.files[0], 'Query');
 
-    expect(check.files[0]?.symbolTypes[query?.id ?? -1] ?? null).toBeNull();
+    expect(
+      check.types[check.files[0]?.symbolTypes[query?.id ?? -1] ?? -1],
+    ).toMatchObject({
+      kind: 'literal',
+      value: { kind: 'numeric', value: '1' },
+    });
     expect(aliasOf(file.nodes, 'Query')?.typeAnnotation.type).toBe(
       'TSTypeQuery',
     );
@@ -694,7 +699,9 @@ describe('resolveByType', () => {
     expect(check.types[token ?? -1]).toMatchObject({ kind: 'uniqueSymbol' });
     expect(bad).toBeNull();
     expect(alone).toBeNull();
-    expect(enumName).toBeNull();
+    expect(check.types[enumName ?? -1]).toMatchObject({
+      kind: 'enumNamespace',
+    });
     expect(check.types[ready ?? -1]).toMatchObject({ kind: 'enumMember' });
   });
 });

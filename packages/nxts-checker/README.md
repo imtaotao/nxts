@@ -2,17 +2,17 @@
 
 消费 `bindProgram` 结果。公开入口只有 `checkProgram`。
 
-当前只 hang：把能确定的类型写法和声明收成图鉴 `TypeId`，写入 `symbolTypes` / `nodeTypes`。不查赋值、不推导、不收窄、不求常量。`complete` 为 `false`。
+当前 hang 之后查有注解标识符初值，并推导缺注解的简单初值。不收窄、不求常量。`complete` 为 `false`。
 
 ## 任务
 
-按模块从大到小。`[x]` 已接到 `checkProgram` 或能独立调用；`[ ]` 还空着。当前可开工的最小切片是 Check 的有注解初值。
+按模块从大到小。`[x]` 已接到 `checkProgram` 或能独立调用；`[ ]` 还空着。
 
 ### 图鉴与底座
 
 - [x] `TypeId` / `TypeTable` / `typeKey`
 - [x] `TypeShape` 图鉴种类（原子、字面量、对象、名义类型等）
-- [ ] `ErrorType`（只内部抑制连锁，不进公开 `types[]`）
+- [x] `ErrorType`（只内部抑制连锁，不进公开 `types[]`）
 - [ ] `Brand<T, Tag>`（等 T49 标准环境身份）
 
 ### Hang
@@ -24,10 +24,10 @@
 - [x] `keyof`、`T[K]`、条件 / infer / mapped、闭合模板
 - [x] 双索引 dictionary、`extends Named<T>`、类实例字段侧表、有注解解构
 - [x] 已挂钩值的 `typeof`（含属性链、`typeof Class`、`typeof Enum.Member`）
-- [x] `const` 上的 `unique symbol`、跨文件 import 抄 `TypeId`
-- [ ] 无注解 `typeof`、`const x = Symbol()`（等 Infer / T05）
+- [x] `const` 上的 `unique symbol`、`const x = Symbol()`、跨文件 import 抄 `TypeId`
+- [x] 无注解简单初值的 `typeof`、`typeof Enum` 命名空间
 - [ ] 分支里的 `typeof`、`x is T`（等 Flow / T06）
-- [ ] `typeof Enum` 命名空间、`this`、`import('x')`、对象 rest、开放模板
+- [ ] `this`、`import('x')`、对象 rest、开放模板
 - [ ] 数组 / 类方法进 `keyof`、字典再带调用 / 构造
 
 ### Relation
@@ -42,13 +42,14 @@
 
 走 AST 查这次使用。未接。
 
-- [ ] 有注解初值 `const n: T = e`（用已有 `assignable`）
+- [x] 有注解标识符初值 `const n: T = e`（直接字面量、已挂钩标识符）
 - [ ] 表达式、成员 / 索引、调用 / `new`、语句
 - [ ] `this` / `super`（等 T56）
 
 ### Infer
 
-- [ ] 缺注解初值、实参、上下文推导（T05 已定，等 Check 走初始化器）
+- [x] 缺注解标识符初值（直接字面量、已挂钩标识符、`Symbol()`）
+- [ ] 对象字面量、返回值、实参、上下文推导（等 Check 走表达式）
 
 ### Flow
 
@@ -62,8 +63,8 @@
 
 ### 诊断与结果
 
-- [ ] `catalog` / `createDiagnostic`（第一次赋值不兼容时接上）
-- [ ] `TypeDisplay`（诊断不写 `TypeId`）
+- [x] `catalog` / `createDiagnostic`（`checker.notAssignable` / NXT3101）
+- [x] `TypeDisplay`（诊断不写 `TypeId`）
 - [ ] `nodeReachable` / `nodeConstants` 实填
 - [ ] `complete: true`
 
@@ -78,11 +79,11 @@ src/
   index.ts              对外导出 checkProgram
   checkProgram.ts       hangTypes / hangValues 不动点
   types.ts              TypeId、TypeShape、结果形状
-  catalog.ts            NXT3xxx / NXT4xxx（未接）
+  catalog.ts            NXT3101 checker.notAssignable
   context.ts            一次检查：图鉴 + 各文件 Hang
 
   core/                 底座：只对 TypeId 干活
-    typeTable.ts        驻留、去重、classBodies
+    typeTable.ts        驻留、去重、classBodies、enumNamespaces
     typeKey.ts          规范键
     relation/           可赋值
       index.ts          equal、assignable、按 kind 分派
@@ -91,13 +92,14 @@ src/
       collection.ts     数组、元组
       dictionary.ts     对象/数组进字典、字典只读视图
       function.ts       函数、构造
-    infer.ts            缺注解推导（未接）
-    error.ts            ErrorType（未接）
+    infer.ts            Infer：缺注解简单初值
+    display.ts          Display：TypeDisplay
 
   hang/                 类型写法 / 名义声明 → TypeId
     index.ts            typeOfTypeSymbol、resolveAtomType、hangNode、instantiate
     resolve/            类型 AST → TypeId
     intern.ts           class / interface / enum / 类型参数
+    enumNamespace.ts    EnumNamespace：`typeof Enum`
     instantiate.ts      Foo<i32>
     lookup.ts           keyof / T[K]
     match.ts            条件 extends / infer
@@ -118,10 +120,11 @@ src/
     import.ts           ModuleLink → 对方 TypeId
     builtin.ts          builtinId → 原子类型
 
-  check/                走 AST 查这次使用（未接）
-    expr.ts             运算符、字面量
-    access.ts           成员、索引
-    assign.ts           赋值、解构
+  check/                走 AST 查这次使用
+    init.ts             SimpleInit：直接字面量 / 已挂钩标识符
+    expr.ts             运算符、字面量（未接）
+    access.ts           成员、索引（未接）
+    assign.ts           AnnotatedInits：有注解标识符初值；解构未接
     call.ts             调用、new
     stmt.ts             if / 循环 / return
     this.ts             this / super

@@ -2,8 +2,7 @@ import { isNil } from 'aidly';
 import type { TypeId } from '../../types';
 import type { TypeTable } from '../typeTable';
 import { objectToInterface } from './object';
-import { equal } from './shared';
-import type { Of, Relate } from './shared';
+import { equal, type Of, type Relate } from './shared';
 
 const bodyOf = (table: TypeTable, typeId: TypeId) => {
   return table.classBodies.get(typeId) ?? null;

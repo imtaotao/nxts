@@ -155,6 +155,9 @@ const fields = (shape: TypeShape) => {
         ...shape.args,
       );
       break;
+    case 'enumNamespace':
+      out.push(shape.enum);
+      break;
     case 'enumMember':
       out.push(shape.enum, shape.value.kind, String(shape.value.value));
       break;

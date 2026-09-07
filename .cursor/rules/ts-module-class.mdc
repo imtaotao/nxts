@@ -1,0 +1,30 @@
+---
+description: 内聚 TS 模块用带名字的 class，不要散成导出函数袋
+globs: "**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# 模块用 class
+
+独立、内聚的一块能力做成 `export class`，给专属名字。调用写成 `new X(...).方法()`。已有样板：`Hang`、`TypeTable`、`CheckContext`、`Infer`、`Display`、`SimpleInit`、`AnnotatedInits`、`EnumNamespace`。
+
+```ts
+// 不要
+export function inferSimpleInits(hang: Hang) { ... }
+export function displayOf(table: TypeTable, typeId: TypeId) { ... }
+
+// 要
+export class Infer {
+  constructor(readonly hang: Hang) {}
+  simpleInits() { ... }
+}
+
+export class Display {
+  constructor(readonly table: TypeTable) {}
+  of(typeId: TypeId) { ... }
+}
+```
+
+不要把按 AST `type` 分派的表（如 `hang/resolve`）硬收成 class。纯数据、纯谓词、单行再导出可以仍是 `export function`。
+
+同文件内：不导出的辅助用箭头；导出的独立函数用 `function`。同一模块的 type 和 value 写进一条 `import`。

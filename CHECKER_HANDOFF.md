@@ -6,13 +6,13 @@
 
 ## 现状
 
-| 包 / 文档                 | 状态                                                                                                                                           |
-| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
-| `@nxts/parser`            | 已实现。`parseFile`                                                                                                                            |
-| `@nxts/binder`            | 已实现。`bindFile`、`bindProgram`、`ExportResolver`。T57 规范已定稿                                                                            |
-| `@nxts/checker`           | `checkProgram` 只 hang。`core/relation/` 已有 `assignable`，还没接到初值检查。`complete` 为 `false`。`check` / `flow` / `const` / `infer` 未接 |
-| `6-constantEvaluation.md` | 部分定稿。求值/折叠分层已写入第 5 篇；位数、深度、步数预算仍归第 6 篇                                                                          |
-| `7-effectAnalysis.md`     | 文档待建立（T58）                                                                                                                              |
+| 包 / 文档                 | 状态                                                                                            |
+| ------------------------- | ----------------------------------------------------------------------------------------------- |
+| `@nxts/parser`            | 已实现。`parseFile`                                                                             |
+| `@nxts/binder`            | 已实现。`bindFile`、`bindProgram`、`ExportResolver`。T57 规范已定稿                             |
+| `@nxts/checker`           | hang 之后查有注解标识符初值，并推导缺注解简单初值。`complete` 为 `false`。`flow` / `const` 未接 |
+| `6-constantEvaluation.md` | 部分定稿。求值/折叠分层已写入第 5 篇；位数、深度、步数预算仍归第 6 篇                           |
+| `7-effectAnalysis.md`     | 文档待建立（T58）                                                                               |
 
 不要重议 ScopeId / SymbolId 按文件分配、名称空间，或 checker 是否提供 `checkFile`。单文件检查 = 边为空的单模块 `checkProgram`。不要把 `TypeRecord` 再收成「只有原子」的过渡形状。不要把未确定的类型写法猜成一种接近的 `kind`。
 
@@ -33,13 +33,13 @@ table.intern({ kind: 'object', props: [...] });
 
 `checkProgram` 在类型/值之间转不动点：`hangTypes`（type / interface / class / enum / 类型参数）和 `hangValues`（const / let / function）交替，直到 `symbolTypes` 不再增加。这样 `typeof` 能读到后置的值挂钩。`decl/` 扫声明；`hang/resolve/` 读类型写法；`hang/intern.ts` 收名义声明。`symbolTypes` 挂名字，`nodeTypes` 挂 AST 位置。`i32` 按 `builtinId` 认，不按标识符文本。
 
-已能挂上的：原子、字面量、数组/元组/对象、联合/交叉、函数/构造、别名、名义类型、泛型默认实例化、对象/接口/数组/元组/联合/字典的 `keyof`、`T[K]`（键联合、可选 `| undefined`、数组/元组下标）、单/双索引 dictionary、`extends Named<T>` / 字典 heritage、条件/infer/mapped/闭合模板、有注解的数组解构与固定元组 rest、类实例字段侧表、跨文件 import 抄 TypeId、已挂钩值的 `typeof`（含属性链、`typeof Class`、`typeof Enum.Member`）、`const` 上的 `unique symbol` 注解。
+已能挂上的：原子、字面量、数组/元组/对象、联合/交叉、函数/构造、别名、名义类型、泛型默认实例化、对象/接口/数组/元组/联合/字典的 `keyof`、`T[K]`（键联合、可选 `| undefined`、数组/元组下标）、单/双索引 dictionary、`extends Named<T>` / 字典 heritage、条件/infer/mapped/闭合模板、有注解的数组解构与固定元组 rest、类实例字段侧表、跨文件 import 抄 TypeId、已挂钩值的 `typeof`（含属性链、`typeof Class`、`typeof Enum` 命名空间、`typeof Enum.Member`）、`const` 上的 `unique symbol` 注解与 `const x = Symbol()`、缺注解简单初值。
 
-还空着的：无注解初值的 `typeof` / `Symbol()` 推导、`typeof Enum` 命名空间、`this`、`x is T`、`import('x')`、开放模板（如 `` `user:${i32}` ``）、对象 rest、类方法进 `keyof`（等 T49）。
+还空着的：分支里的 `typeof`、`x is T`、`this`、`import('x')`、开放模板（如 `` `user:${i32}` ``）、对象 rest、类方法进 `keyof`（等 T49）。
 
 测试：`pnpm --filter @nxts/checker test`。空环境时 `i32` 未绑定，格子只能空着。测试 / playground 可传演示 `BindEnv`（例如 `{ name: 'i32', space: 'type', builtinId: 'i32' }`），不锁标准名单。
 
-Playground：`pnpm dev:app`。页面只编辑源码；hang 结果在控制台三份 log（挂上的 symbols/nodes、`bind`、`check`）。Badge 只表示有没有诊断。`assignable` 还不会在这里跑。
+Playground：`pnpm dev:app`。页面只编辑源码；hang / 初值检查在控制台三份 log。Badge 表示有没有诊断。有注解标识符初值会跑 `assignable`。
 
 ## 已落地的 relation
 
@@ -51,7 +51,7 @@ Playground：`pnpm dev:app`。页面只编辑源码；hang 结果在控制台三
 
 ## 下一步
 
-把 `assignable` 接到 `const n: i32 = 1` 这类有注解初值。缺注解推导、收窄、常量、表达式/语句检查先不做。公开入口仍只有 `checkProgram`。
+TypeDisplay / ErrorType、Infer 第一刀（`const n = 1` / `let s = "a"` / `Symbol()`）、`typeof Enum` 命名空间已接。下一刀先写 T50 文档第一刀（算术入口），再接 `check/expr`。收窄、常量、对象字面量推导先不做。公开入口仍只有 `checkProgram`。
 
 ## 实现入口
 
@@ -83,4 +83,4 @@ Playground：`pnpm dev:app`。页面只编辑源码；hang 结果在控制台三
 5. `packages/nxts-binder/src/types.ts`、`bindProgram.ts`
 6. `packages/nxts-checker/src/types.ts`、`core/typeTable.ts`、`hang/index.ts`
 7. `packages/nxts-checker/README.md`、`core/relation/`
-8. 下一步：`check/assign.ts` 用 `assignable` 查有注解初值
+8. 有注解初值：`AnnotatedInits` / `SimpleInit`；简单推导：`Infer`；展示：`Display`

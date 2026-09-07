@@ -27,4 +27,20 @@ describe('checkEnums', () => {
     });
     expect(checked.symbolTypes[busy?.id ?? -1]).toBeNull();
   });
+
+  it('hangs typeof enum as a namespace and supports keyof / index', async () => {
+    const { bind, check } = await checkSource(
+      'enum Kind { Ready }\ntype Names = keyof typeof Kind;\ntype Ready = (typeof Kind)["Ready"];\n',
+    );
+    const file = bind.files[0];
+    const checked = check.files[0];
+    const names = checked.symbolTypes[typeSymbol(file, 'Names')?.id ?? -1];
+    const ready = checked.symbolTypes[typeSymbol(file, 'Ready')?.id ?? -1];
+
+    expect(check.types[names ?? -1]).toMatchObject({
+      kind: 'literal',
+      value: { kind: 'string', value: 'Ready' },
+    });
+    expect(check.types[ready ?? -1]).toMatchObject({ kind: 'enumMember' });
+  });
 });

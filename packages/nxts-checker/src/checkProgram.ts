@@ -11,6 +11,8 @@ import { Hang } from './hang';
 import { checkInterfaces } from './decl/interface';
 import { checkVariables } from './decl/variable';
 import { checkImports } from './link/import';
+import { AnnotatedInits } from './check/assign';
+import { Infer } from './core/infer';
 
 const filledCount = (hangs: readonly Hang[]) => {
   let count = 0;
@@ -46,6 +48,7 @@ const hangTypes = (program: BindProgramResult, hangs: Hang[]) => {
 const hangValues = (program: BindProgramResult, hangs: Hang[]) => {
   for (const hang of hangs) {
     checkVariables(hang);
+    new Infer(hang).simpleInits();
     checkFunctions(hang);
   }
   checkImports(program, hangs);
@@ -58,7 +61,7 @@ const finishFile = (hang: Hang) => {
     nodeTypes: hang.nodeTypes,
     nodeReachable: Array.from({ length: nodeCount }, () => true),
     nodeConstants: Array.from({ length: nodeCount }, () => null),
-    diagnostics: [],
+    diagnostics: hang.diagnostics,
     complete: false,
   } satisfies CheckFileResult;
 };
@@ -76,11 +79,15 @@ export function checkProgram(program: BindProgramResult) {
     hangValues(program, hangs);
     after = filledCount(hangs);
   }
+  for (const hang of hangs) {
+    new AnnotatedInits(hang).check();
+  }
 
+  const files = hangs.map(finishFile);
   return {
     types: context.table.types,
-    files: hangs.map(finishFile),
-    diagnostics: [],
+    files,
+    diagnostics: files.flatMap((file) => file.diagnostics),
     diagnosticsTruncated: false,
     complete: false,
   } satisfies CheckProgramResult;

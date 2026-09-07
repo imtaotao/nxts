@@ -69,13 +69,12 @@ export type LiteralValue =
 // 一次检查的规范类型条目。挂钩表只存 TypeId，问「这个号是什么」查 types[]。
 // 条件 / infer / 映射 / 模板是类型运算，闭合后落到下面已有 kind，不新开条目。
 // TODO: `x is T` 是收窄谓词，不是返回值 kind。继续：T06 已定；谓词挂在 flow/narrow，不进 types[]。
-// TODO: ErrorType 只在 checker 内部抑制连锁，公开 types[] 不占条目。继续：等 catalog 诊断和第一次 check 出错再引入。
 export type TypeShape =
   | { kind: 'atom'; atom: AtomKind }
   // TODO: 不能用来冒充 any；关键字 any/unknown 由诊断拒绝。继续：等 catalog 接上拒绝诊断。
   | { kind: 'unknown' }
   | { kind: 'literal'; base: TypeId; value: LiteralValue }
-  // unique symbol 是声明身份。显式 `const x: unique symbol` 已挂；`const x = Symbol()` 推导还空着。
+  // unique symbol 是声明身份。`const x: unique symbol` 与 `const x = Symbol()` 都挂这里。
   | { kind: 'uniqueSymbol'; decl: DeclId }
   | {
       kind: 'object';
@@ -119,6 +118,8 @@ export type TypeShape =
   | { kind: 'class'; decl: DeclId; args: readonly TypeId[] }
   | { kind: 'classCtor'; decl: DeclId; args: readonly TypeId[] }
   | { kind: 'enum'; decl: DeclId }
+  // `typeof Enum` 的编译期命名空间。成员在 TypeTable.enumNamespaces，不进驻留键。
+  | { kind: 'enumNamespace'; enum: TypeId }
   | { kind: 'enumMember'; enum: TypeId; value: LiteralValue }
   | { kind: 'generic'; decl: DeclId; args: readonly TypeId[] }
   | { kind: 'typeParam'; decl: DeclId }
@@ -127,6 +128,84 @@ export type TypeShape =
 
 export type TypeRecord = TypeShape & {
   id: TypeId;
+};
+
+export type DisplayMember = {
+  key: string;
+  type: DisplayShape;
+  optional: boolean;
+  readonly: boolean;
+  role: MemberRole;
+};
+
+// 诊断用的规范形状树。与图鉴同构，不含 TypeId。回边用 cycle。
+export type DisplayShape =
+  | { kind: 'atom'; atom: AtomKind }
+  | { kind: 'unknown' }
+  | { kind: 'literal'; base: DisplayShape; value: LiteralValue }
+  | { kind: 'uniqueSymbol'; name: string | null }
+  | {
+      kind: 'object';
+      props: readonly DisplayMember[];
+      calls: readonly DisplayShape[];
+      constructs: readonly DisplayShape[];
+    }
+  | {
+      kind: 'interface';
+      name: string | null;
+      props: readonly DisplayMember[];
+      calls: readonly DisplayShape[];
+      constructs: readonly DisplayShape[];
+      args: readonly DisplayShape[];
+    }
+  | {
+      kind: 'dictionary';
+      key: DisplayShape;
+      value: DisplayShape;
+      readonly: boolean;
+      props: readonly DisplayMember[];
+      numeric: {
+        key: DisplayShape;
+        value: DisplayShape;
+        readonly: boolean;
+      } | null;
+    }
+  | { kind: 'array'; element: DisplayShape; readonly: boolean }
+  | {
+      kind: 'tuple';
+      elements: readonly {
+        type: DisplayShape;
+        optional: boolean;
+        rest: boolean;
+      }[];
+      readonly: boolean;
+    }
+  | {
+      kind: 'function' | 'construct';
+      signatures: readonly {
+        receiver: DisplayShape | null;
+        params: readonly {
+          type: DisplayShape;
+          optional: boolean;
+          rest: boolean;
+        }[];
+        returnType: DisplayShape;
+      }[];
+    }
+  | { kind: 'union' | 'intersection'; members: readonly DisplayShape[] }
+  | { kind: 'brand'; base: DisplayShape; tag: DisplayShape }
+  | { kind: 'class' | 'classCtor' | 'generic'; name: string | null }
+  | { kind: 'enum'; name: string | null }
+  | { kind: 'enumNamespace'; name: string | null }
+  | { kind: 'enumMember'; enum: DisplayShape; value: LiteralValue }
+  | { kind: 'typeParam'; name: string | null }
+  | { kind: 'this'; classType: DisplayShape }
+  | { kind: 'cycle' };
+
+export type TypeDisplay = {
+  primary: string;
+  path: readonly string[];
+  canonical: DisplayShape;
 };
 
 export type CheckerDiagnostic = {

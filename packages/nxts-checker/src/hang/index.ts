@@ -1,8 +1,9 @@
 import { isNil } from 'aidly';
 import type { BindFileResult } from '@nxts/binder';
 import type { Identifier, Node } from '@babel/types';
-import type { TypeId } from '../types';
+import type { CheckerDiagnostic, TypeId } from '../types';
 import type { CheckContext } from '../context';
+import { createDiagnostic, type MessageId } from '../catalog';
 import { internBuiltin } from '../link/builtin';
 import { hasTypeParams, unwrapType } from './ast';
 import { aliasDeclOf, internNominal, internTypeParam } from './intern';
@@ -13,11 +14,9 @@ import { resolveByType } from './resolve';
 // hang 只把能确定的类型写法和声明收成 TypeId。下面这些现在保持空：
 //
 // 要等推导 / 控制流
-// - 无注解初值的 typeof、`const x = Symbol()` 的 unique symbol。继续：T05；hang 不猜初值。
 // - 分支里的 typeof。继续：T06，等 flow/narrow。
 //
 // 要等文档 / 图鉴
-// - typeof Enum 命名空间。继续：T40；不能把 enum 行冒充命名空间。
 // - this、import('x')。继续：T56 / T55。
 // - 对象 rest。继续：T52。
 // - 数组 / 类方法进 keyof、Brand。继续：T49。
@@ -33,6 +32,8 @@ export class Hang {
   readonly file: BindFileResult;
   readonly symbolTypes: (TypeId | null)[];
   readonly nodeTypes: (TypeId | null)[];
+  readonly diagnostics: CheckerDiagnostic[] = [];
+  readonly errorNodes = new Set<number>();
   readonly resolving = new Set<number>();
 
   constructor(context: CheckContext, file: BindFileResult) {
@@ -69,6 +70,32 @@ export class Hang {
     if (!isNil(nodeId)) {
       this.nodeTypes[nodeId] = typeId;
     }
+  }
+
+  markError(node: Node) {
+    const nodeId = this.nodeIdOf(node);
+    if (!isNil(nodeId)) {
+      this.errorNodes.add(nodeId);
+    }
+  }
+
+  isError(node: Node) {
+    const nodeId = this.nodeIdOf(node);
+    if (isNil(nodeId)) {
+      return false;
+    }
+    return this.errorNodes.has(nodeId);
+  }
+
+  diagnose(messageId: MessageId, node: Node, args: readonly unknown[] = []) {
+    this.diagnostics.push(
+      createDiagnostic(messageId, args, {
+        start: node.start ?? 0,
+        end: node.end ?? 0,
+        fileId: this.file.snapshot.fileId,
+        sourceVersion: this.file.snapshot.sourceVersion,
+      }),
+    );
   }
 
   // 类型空间名字

@@ -1,8 +1,7 @@
 import { isNil } from 'aidly';
 import type { FunctionParam, FunctionSignature, TypeId } from '../../types';
 import type { TypeTable } from '../typeTable';
-import { arrayElementOf, isAtom, recordOf } from './shared';
-import type { Relate } from './shared';
+import { arrayElementOf, isAtom, recordOf, type Relate } from './shared';
 
 const requiredCount = (params: readonly FunctionParam[]) => {
   let count = 0;

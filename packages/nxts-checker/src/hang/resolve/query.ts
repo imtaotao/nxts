@@ -2,6 +2,7 @@ import { isNil } from 'aidly';
 import type { Node } from '@babel/types';
 import type { TypeId } from '../../types';
 import type { Hang } from '../index';
+import { EnumNamespace } from '../enumNamespace';
 import { indexAccess, stringLiteralOf } from '../lookup';
 import { finish } from './shared';
 
@@ -36,10 +37,15 @@ const enumMemberOf = (hang: Hang, enumSymbolId: number, name: string) => {
 };
 
 const valueTypeOf = (hang: Hang, symbolId: number) => {
-  if (!isNil(enumDeclOf(hang, symbolId))) {
+  const typeId = hang.symbolTypes[symbolId] ?? null;
+  if (isNil(typeId)) {
     return null;
   }
-  return hang.symbolTypes[symbolId] ?? null;
+  const record = hang.context.table.types[typeId] ?? null;
+  if (record?.kind === 'enum') {
+    return new EnumNamespace(hang).of(typeId);
+  }
+  return typeId;
 };
 
 const queryName = (hang: Hang, node: Node): TypeId | null => {
@@ -77,8 +83,6 @@ export function resolveQuery(
   type: Node,
   subst?: ReadonlyMap<number, TypeId>,
 ) {
-  if (type.type !== 'TSTypeQuery') {
-    return null;
-  }
+  if (type.type !== 'TSTypeQuery') return null;
   return finish(hang, type, queryName(hang, type.exprName), subst);
 }

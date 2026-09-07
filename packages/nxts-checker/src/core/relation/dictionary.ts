@@ -1,8 +1,7 @@
 import { isNil } from 'aidly';
 import type { TypeTable } from '../typeTable';
 import { memberOf } from './object';
-import { atomOf, equal } from './shared';
-import type { Of, Relate } from './shared';
+import { atomOf, equal, type Of, type Relate } from './shared';
 
 const keyWiden = (table: TypeTable, source: number, target: number) => {
   if (equal(source, target)) {
