@@ -6,8 +6,27 @@ import type { CheckContext } from '../context';
 import { internBuiltin } from '../link/builtin';
 import { hasTypeParams, unwrapType } from './ast';
 import { aliasDeclOf, internNominal, internTypeParam } from './intern';
+import { instantiateRef } from './instantiate';
 import { hangPattern as applyPattern } from './pattern';
 import { resolveByType } from './resolve';
+
+// hang 只把能确定的类型写法和声明收成 TypeId。下面这些现在保持空：
+//
+// 要等推导 / 控制流
+// - 无注解初值的 typeof、`const x = Symbol()` 的 unique symbol。继续：T05；hang 不猜初值。
+// - 分支里的 typeof。继续：T06，等 flow/narrow。
+//
+// 要等文档 / 图鉴
+// - typeof Enum 命名空间。继续：T40；不能把 enum 行冒充命名空间。
+// - this、import('x')。继续：T56 / T55。
+// - 对象 rest。继续：T52。
+// - 数组 / 类方法进 keyof、Brand。继续：T49。
+// - 字典再带调用 / 构造。继续：T29 / T32 先定图鉴怎么合。
+//
+// 类型运算边界
+// - 开放模板（`user:${i32}`）。继续：T41 不新开 delay 节点。
+// - x is T。继续：T06；谓词不进 types[]。
+// - unique symbol 出现在非 const 注解。继续：T18 只允许 const / 以后的 static readonly。
 
 export class Hang {
   readonly context: CheckContext;
@@ -52,6 +71,12 @@ export class Hang {
     }
   }
 
+  // 类型空间名字
+  // `type A = i32`
+  // `interface Box`
+  // `class Box`
+  // `enum Kind`
+  // `<T>`
   typeOfTypeSymbol(symbolId: number): TypeId | null {
     const cached = this.symbolTypes[symbolId] ?? null;
     if (!isNil(cached)) {
@@ -96,6 +121,10 @@ export class Hang {
     return internTypeParam(this, symbolId);
   }
 
+  // 类型写法入口，按 AST type 分派
+  // `i32[]`
+  // `{ x: number }`
+  // `Foo<i32>`
   resolveAtomType(
     node: Node,
     subst?: ReadonlyMap<number, TypeId>,
@@ -108,7 +137,19 @@ export class Hang {
     return applyPattern(this, node);
   }
 
+  // 有注解的绑定
+  // `const n: i32`
+  // `function f(n: i32)`
+  // `const [x, y]: [i32, string]`
   hangPattern(node: Node, expected?: TypeId) {
     return applyPattern(this, node, expected);
+  }
+
+  // 泛型实例
+  // `Cell<i32>`
+  // `Box<string>`
+  // `Named<T>`
+  instantiate(symbolId: number, args: TypeId[]) {
+    return instantiateRef(this, symbolId, args);
   }
 }

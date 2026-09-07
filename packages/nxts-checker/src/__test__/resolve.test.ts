@@ -421,7 +421,21 @@ describe('resolveByType', () => {
       kind: 'tuple',
       readonly: true,
     });
-    expect(keys).toBeNull();
+    expect(check.types[keys ?? -1]).toMatchObject({ kind: 'union' });
+    const keyMembers = check.types[keys ?? -1];
+    const keyAtoms =
+      keyMembers?.kind === 'union'
+        ? keyMembers.members.map((member) => check.types[member])
+        : [];
+    expect(keyAtoms).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({ kind: 'atom', atom: 'i32' }),
+        expect.objectContaining({
+          kind: 'literal',
+          value: { kind: 'string', value: 'length' },
+        }),
+      ]),
+    );
   });
 
   it('resolves keyof of objects and interfaces', async () => {
@@ -491,7 +505,10 @@ describe('resolveByType', () => {
       atom: 'string',
     });
     expect(missing).toBeNull();
-    expect(both).toBeNull();
+    expect(check.types[both ?? -1]).toMatchObject({
+      kind: 'atom',
+      atom: 'number',
+    });
   });
 
   it('resolves construct types and callable objects', async () => {
@@ -547,10 +564,88 @@ describe('resolveByType', () => {
     expect(
       !isNil(mixedRecord) && 'props' in mixedRecord ? mixedRecord.props : [],
     ).toHaveLength(1);
-    expect(both).toBeNull();
+    expect(check.types[both ?? -1]).toMatchObject({
+      kind: 'dictionary',
+    });
+    const bothRecord = check.types[both ?? -1];
+    expect(
+      !isNil(bothRecord) && 'numeric' in bothRecord ? bothRecord.numeric : null,
+    ).not.toBeNull();
   });
 
-  it('leaves unknown type AST unhung', async () => {
+  it('resolves array and tuple keyof, index, and optional reads', async () => {
+    const { bind, check } = await checkSource(
+      'type User = { id: i32; nickname?: string };\ntype Left = { id: i32; name: string };\ntype Right = { id: i32; enabled: boolean };\ntype Nick = User["nickname"];\ntype Common = keyof (Left | Right);\ntype Shared = (Left | Right)["id"];\ntype Name = (Left | Right)["name"];\ntype Item = i32[][i32];\ntype Len = i32[]["length"];\ntype First = [string, i32][0];\ntype Wide = [string, i32][i32];\n',
+      atomEnv,
+    );
+    const file = bind.files[0];
+    const checked = check.files[0];
+    const nick = checked.symbolTypes[typeSymbol(file, 'Nick')?.id ?? -1];
+    const common = checked.symbolTypes[typeSymbol(file, 'Common')?.id ?? -1];
+    const shared = checked.symbolTypes[typeSymbol(file, 'Shared')?.id ?? -1];
+    const name = checked.symbolTypes[typeSymbol(file, 'Name')?.id ?? -1];
+    const item = checked.symbolTypes[typeSymbol(file, 'Item')?.id ?? -1];
+    const len = checked.symbolTypes[typeSymbol(file, 'Len')?.id ?? -1];
+    const first = checked.symbolTypes[typeSymbol(file, 'First')?.id ?? -1];
+    const wide = checked.symbolTypes[typeSymbol(file, 'Wide')?.id ?? -1];
+
+    expect(check.types[nick ?? -1]).toMatchObject({ kind: 'union' });
+    expect(check.types[common ?? -1]).toMatchObject({
+      kind: 'literal',
+      value: { kind: 'string', value: 'id' },
+    });
+    expect(check.types[shared ?? -1]).toMatchObject({
+      kind: 'atom',
+      atom: 'i32',
+    });
+    expect(name).toBeNull();
+    expect(check.types[item ?? -1]).toMatchObject({ kind: 'union' });
+    expect(check.types[len ?? -1]).toMatchObject({
+      kind: 'atom',
+      atom: 'i32',
+    });
+    expect(check.types[first ?? -1]).toMatchObject({
+      kind: 'atom',
+      atom: 'string',
+    });
+    expect(check.types[wide ?? -1]).toMatchObject({ kind: 'union' });
+  });
+
+  it('resolves conditionals, mapped objects, and closed templates', async () => {
+    const { bind, check } = await checkSource(
+      "type Ready = 'ready' extends string ? true : false;\ntype OnlyString<T> = T extends string ? T : never;\ntype Picked = OnlyString<string | number>;\ntype Whole<T> = [T] extends [string] ? T : never;\ntype Shut = Whole<string | number>;\ntype Point = { x: number; y: number };\ntype Copy = { [K in keyof Point]: Point[K] };\ntype Event = `${'open' | 'close'}Changed`;\n",
+    );
+    const file = bind.files[0];
+    const checked = check.files[0];
+    const ready = checked.symbolTypes[typeSymbol(file, 'Ready')?.id ?? -1];
+    const picked = checked.symbolTypes[typeSymbol(file, 'Picked')?.id ?? -1];
+    const shut = checked.symbolTypes[typeSymbol(file, 'Shut')?.id ?? -1];
+    const copy = checked.symbolTypes[typeSymbol(file, 'Copy')?.id ?? -1];
+    const event = checked.symbolTypes[typeSymbol(file, 'Event')?.id ?? -1];
+    const copyRecord = check.types[copy ?? -1];
+    const copyKeys =
+      !isNil(copyRecord) && 'props' in copyRecord
+        ? copyRecord.props.map((prop) => prop.key).sort()
+        : [];
+
+    expect(check.types[ready ?? -1]).toMatchObject({
+      kind: 'literal',
+      value: { kind: 'boolean', value: true },
+    });
+    expect(check.types[picked ?? -1]).toMatchObject({
+      kind: 'atom',
+      atom: 'string',
+    });
+    expect(check.types[shut ?? -1]).toMatchObject({
+      kind: 'atom',
+      atom: 'never',
+    });
+    expect(check.types[copy ?? -1]).toMatchObject({ kind: 'object' });
+    expect(copyKeys).toEqual(['x', 'y']);
+    expect(check.types[event ?? -1]).toMatchObject({ kind: 'union' });
+  });
+
+  it('leaves unannotated typeof unhung', async () => {
     const { bind, check } = await checkSource(
       'const n = 1;\ntype Query = typeof n;\n',
     );
@@ -561,5 +656,45 @@ describe('resolveByType', () => {
     expect(aliasOf(file.nodes, 'Query')?.typeAnnotation.type).toBe(
       'TSTypeQuery',
     );
+  });
+
+  it('resolves typeof of hung values and unique symbol const', async () => {
+    const { bind, check } = await checkSource(
+      'const n: i32 = 1;\ntype N = typeof n;\nfunction f(n: i32): i32 { return n; }\ntype F = typeof f;\nclass Box {}\ntype C = typeof Box;\nconst config: { host: string } = { host: "a" };\ntype Host = typeof config.host;\nconst token: unique symbol = Symbol();\ntype Token = typeof token;\nlet bad: unique symbol = Symbol();\ntype Alone = unique symbol;\nenum Kind { Ready }\ntype EnumName = typeof Kind;\ntype Ready = typeof Kind.Ready;\n',
+      atomEnv,
+    );
+    const file = bind.files[0];
+    const checked = check.files[0];
+    const n = checked.symbolTypes[typeSymbol(file, 'N')?.id ?? -1];
+    const fn = checked.symbolTypes[typeSymbol(file, 'F')?.id ?? -1];
+    const ctor = checked.symbolTypes[typeSymbol(file, 'C')?.id ?? -1];
+    const host = checked.symbolTypes[typeSymbol(file, 'Host')?.id ?? -1];
+    const token = checked.symbolTypes[typeSymbol(file, 'Token')?.id ?? -1];
+    const tokenValue =
+      checked.symbolTypes[valueSymbol(file, 'token')?.id ?? -1];
+    const bad = checked.symbolTypes[valueSymbol(file, 'bad')?.id ?? -1];
+    const alone = checked.symbolTypes[typeSymbol(file, 'Alone')?.id ?? -1];
+    const enumName =
+      checked.symbolTypes[typeSymbol(file, 'EnumName')?.id ?? -1];
+    const ready = checked.symbolTypes[typeSymbol(file, 'Ready')?.id ?? -1];
+    const boxValue = checked.symbolTypes[valueSymbol(file, 'Box')?.id ?? -1];
+
+    expect(check.types[n ?? -1]).toMatchObject({
+      kind: 'atom',
+      atom: 'i32',
+    });
+    expect(check.types[fn ?? -1]).toMatchObject({ kind: 'function' });
+    expect(ctor).toBe(boxValue);
+    expect(check.types[ctor ?? -1]).toMatchObject({ kind: 'classCtor' });
+    expect(check.types[host ?? -1]).toMatchObject({
+      kind: 'atom',
+      atom: 'string',
+    });
+    expect(token).toBe(tokenValue);
+    expect(check.types[token ?? -1]).toMatchObject({ kind: 'uniqueSymbol' });
+    expect(bad).toBeNull();
+    expect(alone).toBeNull();
+    expect(enumName).toBeNull();
+    expect(check.types[ready ?? -1]).toMatchObject({ kind: 'enumMember' });
   });
 });

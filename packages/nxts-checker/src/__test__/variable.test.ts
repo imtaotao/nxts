@@ -94,6 +94,43 @@ describe('checkVariables', () => {
       kind: 'atom',
       atom: 'string',
     });
-    expect(checked.symbolTypes[head?.id ?? -1] ?? null).toBeNull();
+    expect(
+      check.types[checked.symbolTypes[head?.id ?? -1] ?? -1],
+    ).toMatchObject({
+      kind: 'atom',
+      atom: 'i32',
+    });
+  });
+
+  it('hangs array rest as remaining tuple slots', async () => {
+    const { bind, check } = await checkSource(
+      'const [x, ...rest]: [i32, string, boolean] = [1, "a", true];\n',
+      atomEnv,
+    );
+    const file = bind.files[0];
+    const checked = check.files[0];
+    const x = valueSymbol(file, 'x');
+    const rest = valueSymbol(file, 'rest');
+    const restType = checked.symbolTypes[rest?.id ?? -1];
+
+    expect(check.types[checked.symbolTypes[x?.id ?? -1] ?? -1]).toMatchObject({
+      kind: 'atom',
+      atom: 'i32',
+    });
+    expect(check.types[restType ?? -1]).toMatchObject({
+      kind: 'tuple',
+    });
+    const restRecord = check.types[restType ?? -1];
+    const slots =
+      !isNil(restRecord) && 'elements' in restRecord ? restRecord.elements : [];
+    expect(slots).toHaveLength(2);
+    expect(check.types[slots[0]?.type ?? -1]).toMatchObject({
+      kind: 'atom',
+      atom: 'string',
+    });
+    expect(check.types[slots[1]?.type ?? -1]).toMatchObject({
+      kind: 'atom',
+      atom: 'boolean',
+    });
   });
 });

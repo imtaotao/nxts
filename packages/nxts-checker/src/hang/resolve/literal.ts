@@ -85,6 +85,11 @@ const literalValueOf = (node: Node) => {
   };
 };
 
+// 字面量
+// `true`
+// `"ready"`
+// `1`
+// `-1`
 export function resolveLiteral(
   hang: Hang,
   type: Node,

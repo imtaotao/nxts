@@ -3,7 +3,14 @@ import type { Node } from '@babel/types';
 import type { Hang } from './index';
 import type { MemberRole, ObjectMember, TypeId } from '../types';
 import { hasTypeParams } from './ast';
+import { recordClassBody } from './classBody';
 import { constructTypeOf, functionTypeOf } from './resolve/function';
+
+export type IndexSig = {
+  key: TypeId;
+  value: TypeId;
+  readonly: boolean;
+};
 
 export function aliasDeclOf(hang: Hang, symbolId: number) {
   for (const node of hang.file.nodes) {
@@ -94,6 +101,52 @@ const indexKeyAtom = (hang: Hang, typeId: TypeId) => {
   return null;
 };
 
+const keyKindOf = (hang: Hang, typeId: TypeId) => {
+  const record = hang.context.table.types[typeId] ?? null;
+  if (record?.kind === 'atom' && record.atom === 'string') {
+    return 'string';
+  }
+  if (record?.kind === 'atom' && record.atom === 'number') {
+    return 'number';
+  }
+  return null;
+};
+
+const sameIndex = (left: IndexSig, right: IndexSig) => {
+  return (
+    left.key === right.key &&
+    left.value === right.value &&
+    left.readonly === right.readonly
+  );
+};
+
+const takeIndex = (
+  hang: Hang,
+  indexes: readonly IndexSig[],
+  kind: 'string' | 'number',
+) => {
+  return indexes.find((index) => keyKindOf(hang, index.key) === kind) ?? null;
+};
+
+const mergeIndexes = (hang: Hang, items: readonly IndexSig[]) => {
+  const merged: IndexSig[] = [];
+  for (const item of items) {
+    const kind = keyKindOf(hang, item.key);
+    if (isNil(kind)) {
+      return null;
+    }
+    const current = takeIndex(hang, merged, kind);
+    if (isNil(current)) {
+      merged.push(item);
+      continue;
+    }
+    if (!sameIndex(current, item)) {
+      return null;
+    }
+  }
+  return merged;
+};
+
 const indexOf = (
   hang: Hang,
   member: Node,
@@ -150,6 +203,10 @@ const methodOf = (
   };
 };
 
+// 对象、接口成员表
+// `{ n: number; size(): number }`
+// `{ (v: i32): i32 }`
+// `{ [key: string]: i32 }`
 export function signatureBody(
   hang: Hang,
   members: readonly Node[],
@@ -158,7 +215,7 @@ export function signatureBody(
   const props: ObjectMember[] = [];
   const calls: TypeId[] = [];
   const constructs: TypeId[] = [];
-  let index: { key: TypeId; value: TypeId; readonly: boolean } | null = null;
+  const indexes: IndexSig[] = [];
   for (const member of members) {
     if (member.type === 'TSPropertySignature') {
       const field = fieldOf(hang, member, subst);
@@ -207,16 +264,19 @@ export function signatureBody(
       if (isNil(item)) {
         return null;
       }
-      if (!isNil(index)) {
-        // TODO: 字符串与数值双索引要进同一条 dictionary。继续：T30 已定；先扩展 dictionary 形状能存两套索引。
+      const kind = keyKindOf(hang, item.key);
+      if (
+        isNil(kind) ||
+        indexes.some((index) => keyKindOf(hang, index.key) === kind)
+      ) {
         return null;
       }
-      index = item;
+      indexes.push(item);
       continue;
     }
     return null;
   }
-  return { props, calls, constructs, index };
+  return { props, calls, constructs, indexes };
 }
 
 export function signatureProps(
@@ -229,13 +289,16 @@ export function signatureProps(
     isNil(body) ||
     body.calls.length > 0 ||
     body.constructs.length > 0 ||
-    !isNil(body.index)
+    body.indexes.length > 0
   ) {
     return null;
   }
   return body.props;
 }
 
+// 类型参数
+// `function id<T>(value: T): T`
+// `type Cell<T> = T`
 export function internTypeParam(hang: Hang, symbolId: number) {
   const node = typeParamOf(hang, symbolId);
   if (isNil(node)) {
@@ -250,6 +313,7 @@ export function internTypeParam(hang: Hang, symbolId: number) {
   return typeId;
 }
 
+// 枚举。`enum Kind { Ready, Busy }`
 const internEnum = (
   hang: Hang,
   node: Extract<Node, { type: 'TSEnumDeclaration' }>,
@@ -267,6 +331,9 @@ const internEnum = (
   return typeId;
 };
 
+// 类身份，实例行；成员在 recordClassBody
+// `class Box {}`
+// `class Box<T> { value: T }`
 const internClass = (
   hang: Hang,
   node: Extract<Node, { type: 'ClassDeclaration' | 'ClassExpression' }>,
@@ -291,6 +358,7 @@ const internClass = (
   if (!isNil(valueId)) {
     hang.symbolTypes[valueId] = ctor;
   }
+  recordClassBody(hang, instance, node);
   return instance;
 };
 
@@ -300,6 +368,7 @@ const inheritOf = (
   props: ObjectMember[],
   calls: TypeId[],
   constructs: TypeId[],
+  indexes: IndexSig[],
 ) => {
   const record = hang.context.table.types[typeId] ?? null;
   if (record?.kind === 'interface') {
@@ -323,8 +392,16 @@ const inheritOf = (
     return true;
   }
   if (record?.kind === 'dictionary') {
-    // TODO: extends 字典要合并 key/value。继续：T30 已定；heritage 已能拿到 TypeId，这里补合并。
-    return false;
+    props.push(...record.props);
+    indexes.push({
+      key: record.key,
+      value: record.value,
+      readonly: record.readonly,
+    });
+    if (!isNil(record.numeric)) {
+      indexes.push(record.numeric);
+    }
+    return true;
   }
   return false;
 };
@@ -340,13 +417,20 @@ const heritageTypeOf = (
   ) {
     return null;
   }
-  if (!isNil(node.typeArguments)) {
-    // TODO: extends Named<T> 要走 instantiateRef。继续：T37 instantiate 已有；把入口挂到 Hang 上，intern 不要直接 import。
-    return null;
-  }
   const symbolId = hang.symbolIn(node.expression, 'type');
   if (isNil(symbolId)) {
     return null;
+  }
+  if (!isNil(node.typeArguments)) {
+    const args: TypeId[] = [];
+    for (const arg of node.typeArguments.params) {
+      const typeId = hang.resolveAtomType(arg, subst);
+      if (isNil(typeId)) {
+        return null;
+      }
+      args.push(typeId);
+    }
+    return hang.instantiate(symbolId, args);
   }
   return subst?.get(symbolId) ?? hang.typeOfTypeSymbol(symbolId);
 };
@@ -414,15 +498,38 @@ export function collapseCallable(
   return null;
 }
 
+// 索引签名对象
+// `{ [key: string]: i32 }`
+// `{ n: number; [key: string]: number; [i: number]: number }`
 export function dictionaryOf(
   hang: Hang,
   props: readonly ObjectMember[],
-  index: { key: TypeId; value: TypeId; readonly: boolean },
+  indexes: readonly IndexSig[],
   calls: readonly TypeId[],
   constructs: readonly TypeId[],
 ) {
   if (calls.length > 0 || constructs.length > 0) {
     // TODO: 字典再带调用/构造还没有合在一条上的形状。继续：T29/T32 已定；先定图鉴是 interface 带 index 还是 dictionary 带 calls。
+    return null;
+  }
+  const merged = mergeIndexes(hang, indexes);
+  if (isNil(merged) || merged.length === 0 || merged.length > 2) {
+    return null;
+  }
+  const stringIndex = takeIndex(hang, merged, 'string');
+  const numberIndex = takeIndex(hang, merged, 'number');
+  if (!isNil(stringIndex) && !isNil(numberIndex)) {
+    return hang.context.table.intern({
+      kind: 'dictionary',
+      key: stringIndex.key,
+      value: stringIndex.value,
+      readonly: stringIndex.readonly,
+      props,
+      numeric: numberIndex,
+    });
+  }
+  const index = stringIndex ?? numberIndex ?? null;
+  if (isNil(index)) {
     return null;
   }
   return hang.context.table.intern({
@@ -431,9 +538,13 @@ export function dictionaryOf(
     value: index.value,
     readonly: index.readonly,
     props,
+    numeric: null,
   });
 }
 
+// 接口展开
+// `interface Row extends Named { ok: boolean }`
+// `interface Box extends Cell<number> {}`
 export function interfaceShape(
   hang: Hang,
   node: Extract<Node, { type: 'TSInterfaceDeclaration' }>,
@@ -442,6 +553,7 @@ export function interfaceShape(
   const inheritedProps: ObjectMember[] = [];
   const inheritedCalls: TypeId[] = [];
   const inheritedConstructs: TypeId[] = [];
+  const inheritedIndexes: IndexSig[] = [];
   for (const parent of node.extends ?? []) {
     const typeId = heritageTypeOf(hang, parent, subst);
     if (
@@ -452,6 +564,7 @@ export function interfaceShape(
         inheritedProps,
         inheritedCalls,
         inheritedConstructs,
+        inheritedIndexes,
       )
     ) {
       return null;
@@ -468,8 +581,12 @@ export function interfaceShape(
   const props = mergeOwn(parents, own.props);
   const calls = [...inheritedCalls, ...own.calls];
   const constructs = [...inheritedConstructs, ...own.constructs];
-  if (!isNil(own.index)) {
-    return dictionaryOf(hang, props, own.index, calls, constructs);
+  const indexes = mergeIndexes(hang, [...inheritedIndexes, ...own.indexes]);
+  if (isNil(indexes)) {
+    return null;
+  }
+  if (indexes.length > 0) {
+    return dictionaryOf(hang, props, indexes, calls, constructs);
   }
   const collapsed = collapseCallable(hang, props, calls, constructs);
   if (!isNil(collapsed)) {
@@ -500,6 +617,10 @@ const internInterface = (
   return typeId;
 };
 
+// 名义声明
+// `class Box {}`
+// `interface Named { title: string }`
+// `enum Kind { Ready }`
 export function internNominal(hang: Hang, symbolId: number) {
   const node = typeDeclOf(hang, symbolId);
   if (isNil(node)) {

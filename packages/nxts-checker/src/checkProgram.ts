@@ -68,8 +68,14 @@ export function checkProgram(program: BindProgramResult) {
   const hangs = program.files.map((file) => new Hang(context, file));
   context.program = program;
   context.hangs = hangs;
-  hangTypes(program, hangs);
-  hangValues(program, hangs);
+  let before = -1;
+  let after = 0;
+  while (after > before) {
+    before = after;
+    hangTypes(program, hangs);
+    hangValues(program, hangs);
+    after = filledCount(hangs);
+  }
 
   return {
     types: context.table.types,

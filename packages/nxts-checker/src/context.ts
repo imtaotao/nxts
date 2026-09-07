@@ -2,11 +2,18 @@ import { isNil } from 'aidly';
 import type { BindProgramResult } from '@nxts/binder';
 import type { Hang } from './hang';
 import { TypeTable } from './core/typeTable';
+import type { ObjectMember, TypeId } from './types';
+
+export type ClassBody = {
+  extends: TypeId | null;
+  props: readonly ObjectMember[];
+};
 
 export class CheckContext {
   hangs: Hang[] = [];
   program: BindProgramResult | null = null;
   readonly table = new TypeTable();
+  readonly classBodies = new Map<TypeId, ClassBody>();
   private readonly builtinDecls = new Map<string, number>();
 
   builtinDecl(builtinId: string) {
@@ -23,6 +30,7 @@ export class CheckContext {
     let hang = from;
     let id = symbolId;
     const seen = new Set<string>();
+
     for (;;) {
       const key = `${hang.file.snapshot.fileId}:${id}`;
       if (seen.has(key)) {
@@ -42,6 +50,7 @@ export class CheckContext {
         this.hangs.find(
           (item) => item.file.snapshot.fileId === link.toFileId,
         ) ?? null;
+
       if (isNil(next)) {
         return { hang, symbolId: id };
       }

@@ -4,6 +4,7 @@ import type { Hang } from './index';
 import type { TypeId } from '../types';
 import { internBuiltin } from '../link/builtin';
 import { hasTypeParams, typeParamsOf } from './ast';
+import { recordClassBody } from './classBody';
 import { aliasDeclOf, interfaceShape, typeDeclOf } from './intern';
 
 const genericOf = (hang: Hang, symbolId: number, args: TypeId[]) => {
@@ -72,14 +73,6 @@ const filledArgs = (
   return out;
 };
 
-const instantiateArgs = (hang: Hang, params: Node | null, args: TypeId[]) => {
-  const subst = substOf(hang, params, args);
-  if (isNil(subst)) {
-    return null;
-  }
-  return filledArgs(hang, params, subst);
-};
-
 const instantiateAlias = (
   hang: Hang,
   symbolId: number,
@@ -131,19 +124,19 @@ const instantiate = (
     return genericOf(hang, symbolId, args);
   }
   if (decl.type === 'ClassDeclaration' || decl.type === 'ClassExpression') {
-    const filled = instantiateArgs(
-      hang,
-      typeParamsOf(decl.typeParameters),
-      args,
-    );
-    if (isNil(filled)) {
+    const params = typeParamsOf(decl.typeParameters);
+    const subst = substOf(hang, params, args);
+    const filled = isNil(subst) ? null : filledArgs(hang, params, subst);
+    if (isNil(filled) || isNil(subst)) {
       return null;
     }
-    return hang.context.table.intern({
+    const typeId = hang.context.table.intern({
       kind: 'class',
       decl: { fileId: hang.file.snapshot.fileId, symbolId },
       args: filled,
     });
+    recordClassBody(hang, typeId, decl, subst);
+    return typeId;
   }
   if (decl.type === 'TSInterfaceDeclaration') {
     const subst = substOf(hang, typeParamsOf(decl.typeParameters), args);
@@ -181,11 +174,16 @@ const instantiateIfDefaults = (hang: Hang, symbolId: number) => {
   return null;
 };
 
+// 带实参实例化
+// `Cell<i32>`
+// `Named<string>`
+// `Promise<i32>`
 export function instantiateRef(hang: Hang, symbolId: number, args: TypeId[]) {
   const target = hang.context.ctorOf(hang, symbolId);
   return instantiate(target.hang, target.symbolId, args);
 }
 
+// 默认实参。`type Box<T = number> = T` 写成 `Box`
 export function instantiateDefaults(hang: Hang, symbolId: number) {
   const target = hang.context.ctorOf(hang, symbolId);
   return instantiateIfDefaults(target.hang, target.symbolId);

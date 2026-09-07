@@ -162,7 +162,7 @@ describe('checkGenerics', () => {
     });
   });
 
-  it('keeps unexpanded generic aliases as generic instances', async () => {
+  it('expands conditional infer on generic aliases', async () => {
     const { bind, check } = await checkSource(
       'type Later = Promise<i32>;\ntype Unwrap<T> = T extends Promise<infer U> ? U : T;\nconst later: Later = 1;\nconst value: Unwrap<Later> = 1;\n',
       genericEnv,
@@ -179,6 +179,9 @@ describe('checkGenerics', () => {
     expect(laterType).not.toBeNull();
     expect(laterValueType).toBe(laterType);
     expect(check.types[laterType ?? -1]).toMatchObject({ kind: 'generic' });
-    expect(check.types[valueType ?? -1]).toMatchObject({ kind: 'generic' });
+    expect(check.types[valueType ?? -1]).toMatchObject({
+      kind: 'atom',
+      atom: 'i32',
+    });
   });
 });

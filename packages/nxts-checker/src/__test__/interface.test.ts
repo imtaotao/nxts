@@ -105,13 +105,23 @@ describe('checkInterfaces', () => {
     });
   });
 
-  it('leaves generic heritage unhung', async () => {
+  it('flattens generic heritage', async () => {
     const { bind, check } = await checkSource(
       'interface Cell<T> { value: T }\ninterface Box extends Cell<number> {}\n',
     );
     const file = bind.files[0];
-    const box = typeSymbol(file, 'Box');
+    const box =
+      check.types[
+        check.files[0]?.symbolTypes[typeSymbol(file, 'Box')?.id ?? -1] ?? -1
+      ];
+    const value = (!isNil(box) && 'props' in box ? box.props : []).find(
+      (prop) => prop.key === 'value',
+    );
 
-    expect(check.files[0]?.symbolTypes[box?.id ?? -1] ?? null).toBeNull();
+    expect(box).toMatchObject({ kind: 'interface' });
+    expect(check.types[value?.type ?? -1]).toMatchObject({
+      kind: 'atom',
+      atom: 'number',
+    });
   });
 });

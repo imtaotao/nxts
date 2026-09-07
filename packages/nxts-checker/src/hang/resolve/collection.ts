@@ -5,6 +5,9 @@ import type { TupleElement, TypeId } from '../../types';
 import { collapseCallable, dictionaryOf, signatureBody } from '../intern';
 import { finish } from './shared';
 
+// 数组
+// `i32[]`
+// `string[]`
 export function resolveArray(
   hang: Hang,
   type: Node,
@@ -60,6 +63,10 @@ const tupleElementOf = (
   return { type: typeId, optional, rest };
 };
 
+// 元组
+// `[i32, string]`
+// `[x: i32, y?: string]`
+// `[...i32[]]`
 export function resolveTuple(
   hang: Hang,
   type: Node,
@@ -88,6 +95,9 @@ export function resolveTuple(
   );
 }
 
+// 对象字面量
+// `{ x: number; y?: string }`
+// `{ [key: string]: i32 }`
 export function resolveObject(
   hang: Hang,
   type: Node,
@@ -100,11 +110,11 @@ export function resolveObject(
   if (isNil(body)) {
     return null;
   }
-  if (!isNil(body.index)) {
+  if (body.indexes.length > 0) {
     return finish(
       hang,
       type,
-      dictionaryOf(hang, body.props, body.index, body.calls, body.constructs),
+      dictionaryOf(hang, body.props, body.indexes, body.calls, body.constructs),
       subst,
     );
   }

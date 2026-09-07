@@ -1,6 +1,6 @@
 # Checker 接手
 
-- 最后更新：2026-09-04
+- 最后更新：2026-09-07
 - 目标读者：按已定稿模型继续实现 `@nxts/checker` 的人
 - 权威不在本文。Binder 看 [`docs/compiler/frontend/4-nameBinding.md`](docs/compiler/frontend/4-nameBinding.md)，Checker 看 [`docs/compiler/frontend/5-checkerSemanticModel.md`](docs/compiler/frontend/5-checkerSemanticModel.md)。语言规则看 [`docs/language/types/index.md`](docs/language/types/index.md)。类型身份看 [`docs/language/types/2-typeIdentity.md`](docs/language/types/2-typeIdentity.md)。类型兼容看 [`docs/language/types/3-typeCompatibility.md`](docs/language/types/3-typeCompatibility.md)。
 
@@ -31,11 +31,11 @@ table.intern({ kind: 'object', props: [...] });
 
 `TypeRecord = TypeShape & { id }`。`kind` 是类别（`atom` / `object` / `class` …），原子名在 `atom` 字段。名义声明用 `DeclId`（`fileId` + `symbolId`）。
 
-`checkProgram` 先 `hangTypes`（type / interface / class / enum / 类型参数），再 `hangValues`（const / let / function）。`decl/` 扫声明；`hang/resolve/` 读类型写法；`hang/intern.ts` 收名义声明。`symbolTypes` 挂名字，`nodeTypes` 挂 AST 位置。`i32` 按 `builtinId` 认，不按标识符文本。
+`checkProgram` 在类型/值之间转不动点：`hangTypes`（type / interface / class / enum / 类型参数）和 `hangValues`（const / let / function）交替，直到 `symbolTypes` 不再增加。这样 `typeof` 能读到后置的值挂钩。`decl/` 扫声明；`hang/resolve/` 读类型写法；`hang/intern.ts` 收名义声明。`symbolTypes` 挂名字，`nodeTypes` 挂 AST 位置。`i32` 按 `builtinId` 认，不按标识符文本。
 
-已能挂上的：原子、字面量、数组/元组/对象、联合/交叉、函数/构造、别名、名义类型、泛型默认实例化、对象/接口的 `keyof`、`T['x']` 固定字符串键、单索引 dictionary、有注解的解构、跨文件 import 抄 TypeId。
+已能挂上的：原子、字面量、数组/元组/对象、联合/交叉、函数/构造、别名、名义类型、泛型默认实例化、对象/接口/数组/元组/联合/字典的 `keyof`、`T[K]`（键联合、可选 `| undefined`、数组/元组下标）、单/双索引 dictionary、`extends Named<T>` / 字典 heritage、条件/infer/mapped/闭合模板、有注解的数组解构与固定元组 rest、类实例字段侧表、跨文件 import 抄 TypeId、已挂钩值的 `typeof`（含属性链、`typeof Class`、`typeof Enum.Member`）、`const` 上的 `unique symbol` 注解。
 
-还空着的：`typeof`、条件/infer/mapped/模板、`this`、`x is T`、`import('x')`、unique symbol、双索引、数组 `keyof`、可选属性读出 `| undefined`。
+还空着的：无注解初值的 `typeof` / `Symbol()` 推导、`typeof Enum` 命名空间、`this`、`x is T`、`import('x')`、开放模板（如 `` `user:${i32}` ``）、对象 rest、类方法进 `keyof`（等 T49）。
 
 测试：`pnpm --filter @nxts/checker test`。空环境时 `i32` 未绑定，格子只能空着。测试 / playground 可传演示 `BindEnv`（例如 `{ name: 'i32', space: 'type', builtinId: 'i32' }`），不锁标准名单。
 

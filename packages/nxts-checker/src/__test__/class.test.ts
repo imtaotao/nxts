@@ -23,4 +23,33 @@ describe('checkClasses', () => {
     expect(check.types[instance ?? -1]).toMatchObject({ kind: 'class' });
     expect(check.types[ctor ?? -1]).toMatchObject({ kind: 'classCtor' });
   });
+
+  it('hangs public instance fields for keyof and index', async () => {
+    const { bind, check } = await checkSource(
+      'class Point { x: number; y: number }\ntype Keys = keyof Point;\ntype X = Point["x"];\n',
+    );
+    const file = bind.files[0];
+    const checked = check.files[0];
+    const keys = checked.symbolTypes[typeSymbol(file, 'Keys')?.id ?? -1];
+    const x = checked.symbolTypes[typeSymbol(file, 'X')?.id ?? -1];
+    const keyRecord = check.types[keys ?? -1];
+    const keyTexts =
+      keyRecord?.kind === 'union'
+        ? keyRecord.members.flatMap((member) => {
+            const item = check.types[member];
+            if (item?.kind === 'literal' && item.value.kind === 'string') {
+              return [item.value.value];
+            }
+            return [];
+          })
+        : keyRecord?.kind === 'literal' && keyRecord.value.kind === 'string'
+          ? [keyRecord.value.value]
+          : [];
+
+    expect(keyTexts.sort()).toEqual(['x', 'y']);
+    expect(check.types[x ?? -1]).toMatchObject({
+      kind: 'atom',
+      atom: 'number',
+    });
+  });
 });

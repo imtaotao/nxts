@@ -19,6 +19,7 @@ export function walkPatternIdents(
       walkPatternIdents(node.parameter, visit);
       return;
     case 'RestElement':
+      walkPatternIdents(node.argument, visit);
       return;
     case 'ObjectPattern':
       for (const property of node.properties) {
@@ -100,14 +101,44 @@ const hangObjectPattern = (
   }
 };
 
+const arrayOf = (hang: Hang, typeId: TypeId) => {
+  const record = hang.context.table.types[typeId] ?? null;
+  if (record?.kind === 'array') {
+    return record;
+  }
+  return null;
+};
+
 const hangArrayPattern = (
   hang: Hang,
   node: Extract<Node, { type: 'ArrayPattern' }>,
   typeId: TypeId,
 ) => {
+  const array = arrayOf(hang, typeId);
+  if (!isNil(array)) {
+    for (const element of node.elements) {
+      if (isNil(element)) {
+        continue;
+      }
+      if (element.type === 'RestElement') {
+        hangPattern(
+          hang,
+          element,
+          hang.context.table.intern({
+            kind: 'array',
+            element: array.element,
+            readonly: array.readonly,
+          }),
+        );
+        continue;
+      }
+      hangPattern(hang, element, array.element);
+    }
+    return;
+  }
+  const record = hang.context.table.types[typeId] ?? null;
   const elements = tupleOf(hang, typeId);
-  if (isNil(elements)) {
-    // TODO: 数组模式对 array 的元素类型。继续：T34 已定，图鉴已有 element，按元素类型挂每个槽即可。
+  if (isNil(elements) || isNil(record) || record.kind !== 'tuple') {
     return;
   }
   for (const [index, element] of node.elements.entries()) {
@@ -115,7 +146,19 @@ const hangArrayPattern = (
       continue;
     }
     if (element.type === 'RestElement') {
-      // TODO: 数组 rest 要吃掉剩余 tuple 槽。继续：T35 已定，可先做固定元组剩余槽；泛型/variadic 等 T37。
+      const rest = elements.slice(index);
+      if (rest.some((slot) => slot.rest)) {
+        continue;
+      }
+      hangPattern(
+        hang,
+        element,
+        hang.context.table.intern({
+          kind: 'tuple',
+          elements: rest,
+          readonly: record.readonly,
+        }),
+      );
       continue;
     }
     const slot = elements[index] ?? null;
@@ -126,6 +169,36 @@ const hangArrayPattern = (
   }
 };
 
+// const 上的 unique symbol。`const token: unique symbol = Symbol()`
+export function hangUniqueConst(hang: Hang, node: Identifier) {
+  const annotation = annotationOf(node);
+  if (isNil(annotation)) {
+    return null;
+  }
+  const type = unwrapType(annotation);
+  if (type.type !== 'TSTypeOperator' || type.operator !== 'unique') {
+    return null;
+  }
+  if (unwrapType(type.typeAnnotation).type !== 'TSSymbolKeyword') {
+    return null;
+  }
+  const symbolId = hang.symbolIn(node, 'value');
+  if (isNil(symbolId)) {
+    return null;
+  }
+  const typeId = hang.context.table.intern({
+    kind: 'uniqueSymbol',
+    decl: { fileId: hang.file.snapshot.fileId, symbolId },
+  });
+  hang.hangNode(type, typeId);
+  hangIdent(hang, node, typeId);
+  return typeId;
+}
+
+// 绑定模式
+// `const n: i32`
+// `const { title }: Named`
+// `const [x, ...rest]: [i32, string, boolean]`
 export function hangPattern(hang: Hang, node: Node, expected?: TypeId) {
   const annotation = annotationOf(node);
   const annotated = isNil(annotation) ? null : hang.resolveAtomType(annotation);
@@ -153,11 +226,8 @@ export function hangPattern(hang: Hang, node: Node, expected?: TypeId) {
       hangArrayPattern(hang, node, typeId);
       return typeId;
     case 'RestElement':
-      if (!isNil(annotated)) {
-        return hangPattern(hang, node.argument, typeId);
-      }
-      // TODO: 无注解 rest 绑定的是剩余集合，不是当前 expected。继续：元组剩余见 T35；对象剩余等 T52。
-      return null;
+      hang.hangNode(node, typeId);
+      return hangPattern(hang, node.argument, typeId);
     default:
       return null;
   }

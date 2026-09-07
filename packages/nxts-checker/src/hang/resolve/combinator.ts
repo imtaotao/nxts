@@ -30,6 +30,9 @@ const resolveMembers = (
   );
 };
 
+// 联合
+// `string | i32`
+// `"a" | "b"`
 export function resolveUnion(
   hang: Hang,
   type: Node,
@@ -38,6 +41,7 @@ export function resolveUnion(
   return resolveMembers(hang, type, 'TSUnionType', 'union', subst);
 }
 
+// 交叉。`{ name: string } & { age: i32 }`
 export function resolveIntersection(
   hang: Hang,
   type: Node,

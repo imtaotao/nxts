@@ -61,7 +61,7 @@ export type LiteralValue =
   | { kind: 'numeric'; value: string };
 
 // 一次检查的规范类型条目。挂钩表只存 TypeId，问「这个号是什么」查 types[]。
-// TODO: 条件 / infer / 映射 / 模板是类型运算，闭合后落到下面已有 kind。继续：T41 已定；等 resolve/computed 能调用 assignable 并写出结果 TypeId。
+// 条件 / infer / 映射 / 模板是类型运算，闭合后落到下面已有 kind，不新开条目。
 // TODO: `x is T` 是收窄谓词，不是返回值 kind。继续：T06 已定；谓词挂在 flow/narrow，不进 types[]。
 // TODO: ErrorType 只在 checker 内部抑制连锁，公开 types[] 不占条目。继续：等 catalog 诊断和第一次 check 出错再引入。
 export type TypeShape =
@@ -69,7 +69,7 @@ export type TypeShape =
   // TODO: 不能用来冒充 any；关键字 any/unknown 由诊断拒绝。继续：等 catalog 接上拒绝诊断。
   | { kind: 'unknown' }
   | { kind: 'literal'; base: TypeId; value: LiteralValue }
-  // TODO: unique symbol 是声明身份。继续：T18 已定；等 hangValues 给 `const x = Symbol()` 挂 uniqueSymbol(decl)，typeof 能读到。
+  // unique symbol 是声明身份。显式 `const x: unique symbol` 已挂；`const x = Symbol()` 推导还空着。
   | { kind: 'uniqueSymbol'; decl: DeclId }
   | {
       kind: 'object';
@@ -84,13 +84,18 @@ export type TypeShape =
       constructs: readonly TypeId[];
       args: readonly TypeId[];
     }
-  // hang：`[key: string | number]: V`。双索引继续：T30 已定，先扩展本行能存 string+number 两套索引；symbol 键 T18 不支持。
+  // hang：`[key: string | number]: V`。双索引时 `key/value` 是字符串索引，`numeric` 是数值索引。symbol 键 T18 不支持。
   | {
       kind: 'dictionary';
       key: TypeId;
       value: TypeId;
       readonly: boolean;
       props: readonly ObjectMember[];
+      numeric?: {
+        key: TypeId;
+        value: TypeId;
+        readonly: boolean;
+      } | null;
     }
   | { kind: 'array'; element: TypeId; readonly: boolean }
   | {

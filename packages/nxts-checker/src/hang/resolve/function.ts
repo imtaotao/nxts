@@ -104,6 +104,9 @@ const signatureOf = (
   return { receiver, params: collected, returnType: resolvedReturn };
 };
 
+// 函数签名
+// `(n: i32) => string`
+// `(this: Box, n: i32) => void`
 export function functionTypeOf(
   hang: Hang,
   params: readonly Node[],
@@ -120,6 +123,7 @@ export function functionTypeOf(
   });
 }
 
+// 构造签名。`new (n: i32) => Box`
 export function constructTypeOf(
   hang: Hang,
   params: readonly Node[],
@@ -136,6 +140,7 @@ export function constructTypeOf(
   });
 }
 
+// 函数类型写法。`type F = (n: i32) => string`
 export function resolveFunction(
   hang: Hang,
   type: Node,

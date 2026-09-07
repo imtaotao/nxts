@@ -6,6 +6,11 @@ import { typeArgsOf } from '../ast';
 import { instantiateDefaults, instantiateRef } from '../instantiate';
 import { finish } from './shared';
 
+// 类型名引用
+// `i32`
+// `Point`
+// `Cell<i32>`
+// `Box`
 export function resolveReference(
   hang: Hang,
   type: Node,

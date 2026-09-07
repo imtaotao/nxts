@@ -87,6 +87,19 @@ export function dictionaryToDictionary(
   if (!equal(source.value, target.value)) {
     return false;
   }
+  const sourceNumeric = source.numeric ?? null;
+  const targetNumeric = target.numeric ?? null;
+  if (!isNil(targetNumeric)) {
+    if (isNil(sourceNumeric)) {
+      return false;
+    }
+    if (!keyWiden(table, sourceNumeric.key, targetNumeric.key)) {
+      return false;
+    }
+    if (!equal(sourceNumeric.value, targetNumeric.value)) {
+      return false;
+    }
+  }
   return (
     valueOf(relate, table, source, target, seen) &&
     fixedOf(relate, table, source, target, seen)

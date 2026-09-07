@@ -1,3 +1,4 @@
+import { isNil } from 'aidly';
 import type { TypeId, TypeShape } from '../types';
 
 const byId = (left: TypeId, right: TypeId) => left - right;
@@ -33,8 +34,13 @@ export function canonicalize(shape: TypeShape) {
   switch (shape.kind) {
     case 'object':
     case 'interface':
-    case 'dictionary':
       return { ...shape, props: sortedMembers(shape) };
+    case 'dictionary':
+      return {
+        ...shape,
+        props: sortedMembers(shape),
+        numeric: shape.numeric ?? null,
+      };
     case 'union':
     case 'intersection':
       return { ...shape, members: uniqueSorted(shape.members) };
@@ -85,7 +91,7 @@ const fields = (shape: TypeShape) => {
         out.push(shape.args.length, ...shape.args);
       }
       break;
-    case 'dictionary':
+    case 'dictionary': {
       out.push(
         shape.key,
         shape.value,
@@ -101,7 +107,14 @@ const fields = (shape: TypeShape) => {
           prop.role,
         );
       }
+      const numeric = shape.numeric ?? null;
+      if (isNil(numeric)) {
+        out.push(0);
+        break;
+      }
+      out.push(1, numeric.key, numeric.value, flag(numeric.readonly));
       break;
+    }
     case 'array':
       out.push(shape.element, flag(shape.readonly));
       break;

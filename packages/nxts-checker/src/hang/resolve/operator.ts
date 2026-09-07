@@ -2,6 +2,7 @@ import { isNil } from 'aidly';
 import type { Node } from '@babel/types';
 import type { Hang } from '../index';
 import type { TypeId } from '../../types';
+import { keyofOf } from '../lookup';
 import { finish } from './shared';
 
 const readonlyOf = (hang: Hang, typeId: TypeId) => {
@@ -23,26 +24,9 @@ const readonlyOf = (hang: Hang, typeId: TypeId) => {
   return null;
 };
 
-const keyofOf = (hang: Hang, typeId: TypeId) => {
-  const record = hang.context.table.types[typeId] ?? null;
-  if (record?.kind !== 'object' && record?.kind !== 'interface') {
-    // TODO: 数组/元组/类/联合的 keyof。继续：T40 已定；数组/元组图鉴已有，可先做；类要等成员表；联合按分配即可。
-    return null;
-  }
-  const string = hang.context.table.atom('string');
-  const keys = record.props.map((prop) =>
-    hang.context.table.intern({
-      kind: 'literal',
-      base: string,
-      value: { kind: 'string', value: prop.key },
-    }),
-  );
-  if (keys.length === 0) {
-    return hang.context.table.atom('never');
-  }
-  return hang.context.table.intern({ kind: 'union', members: keys });
-};
-
+// 类型算子；`unique symbol` 见 hangUniqueConst
+// `keyof Point`
+// `readonly i32[]`
 export function resolveOperator(
   hang: Hang,
   type: Node,
@@ -52,7 +36,7 @@ export function resolveOperator(
     return null;
   }
   if (type.operator === 'unique') {
-    // TODO: unique 不是对任意内层的算子。继续：T18 已定；等 const 声明挂上 uniqueSymbol 后再认注解位置。
+    // unique symbol 只挂在 const 注解上，见 hang/pattern。这里当普通类型写法保持空。
     return null;
   }
   const inner = hang.resolveAtomType(type.typeAnnotation, subst);
