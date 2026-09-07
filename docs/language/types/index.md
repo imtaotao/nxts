@@ -32,12 +32,12 @@
 | 可调用与集合类型     | T32–T35  | [`20-functionTypes.md`](./20-functionTypes.md)、[`21-arrayTypes.md`](./21-arrayTypes.md)、[`22-tupleTypes.md`](./22-tupleTypes.md)                                                                                                                                                             |
 | 类、泛型与类型级能力 | T36–T42  | [`23-classTypes.md`](./23-classTypes.md)、[`24-generics.md`](./24-generics.md)、[`25-enumTypes.md`](./25-enumTypes.md)、[`26-typeOperators.md`](./26-typeOperators.md)、[`27-advancedTypes.md`](./27-advancedTypes.md)                                                                         |
 | 类型断言与表示转换   | T43–T44  | [`28-typeConversions.md`](./28-typeConversions.md)                                                                                                                                                                                                                                             |
+| 表达式运算符         | T50      | [`29-expressionTypes.md`](./29-expressionTypes.md)                                                                                                                                                                                                                                             |
 
 ## 规划规范
 
 | 顺序 | 静态能力                | 任务编号 | 规划文档                  |
 | ---- | ----------------------- | -------- | ------------------------- |
-| 29   | 运算符结果类型          | T50      | `29-expressionTypes.md`   |
 | 30   | 成员与索引访问类型      | T51      | `30-accessTypes.md`       |
 | 31   | 赋值、解构与展开类型    | T52      | `31-assignmentTypes.md`   |
 | 32   | 调用与构造类型          | T53      | `32-callTypes.md`         |

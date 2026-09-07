@@ -179,7 +179,7 @@ Nxts 的源码接受范围是 TypeScript 的严格静态子集：除仅用于产
 
 | 编号 | 能力               | 必须确定的内容                                               | 规范状态 | 详细设计                                                                                                     |
 | ---- | ------------------ | ------------------------------------------------------------ | -------- | ------------------------------------------------------------------------------------------------------------ |
-| T50  | 运算符类型规则     | 一元、二元、比较、逻辑、空值合并、条件表达式和结果类型       | 待讨论   | `../language/types/29-expressionTypes.md`、`../language/semantics/19-expressionSemantics.md`，文档待建立     |
+| T50  | 运算符类型规则     | 一元、二元、比较、逻辑、空值合并、条件表达式和结果类型       | 已定稿   | [`29-expressionTypes.md`](../language/types/29-expressionTypes.md)；`19-expressionSemantics.md` 待建立       |
 | T51  | 成员访问与索引访问 | 直接字段、接口 witness、动态 key、数组索引、可选链和失败边界 | 待讨论   | `../language/types/30-accessTypes.md`、`../language/semantics/20-accessSemantics.md`，文档待建立             |
 | T52  | 赋值、解构与展开   | 左值、接口可选写入、解构、rest、spread 和临时值成本          | 待讨论   | `../language/types/31-assignmentTypes.md`、`../language/semantics/21-assignmentSemantics.md`，文档待建立     |
 | T53  | 调用与构造         | 函数与接口方法调用、`new`、接收者、重载入口和调用诊断        | 待讨论   | `../language/types/32-callTypes.md`、`../language/semantics/22-callSemantics.md`，文档待建立                 |
