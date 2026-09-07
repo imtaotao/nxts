@@ -35,7 +35,7 @@
 - [x] `equal` / `assignable`（只给 true / false）
 - [x] 字面量、联合 / 交叉、精确对象、对象→接口、接口互赋
 - [x] 数组 / 元组、对象 / 数组进字典、函数 / 构造（含重载、`this` 接收者）
-- [ ] 类→基类、类→接口
+- [x] 类→基类 / 类→接口（读 `TypeTable.classBodies`）
 - [ ] `subtype` 独立查询、NoOp / Pack、只读元素协变
 
 ### Check
@@ -82,10 +82,11 @@ src/
   context.ts            一次检查：图鉴 + 各文件 Hang
 
   core/                 底座：只对 TypeId 干活
-    typeTable.ts        驻留、去重
+    typeTable.ts        驻留、去重、classBodies
     typeKey.ts          规范键
     relation/           可赋值
       index.ts          equal、assignable、按 kind 分派
+      class.ts          类→基类、类→接口
       object.ts         精确对象、对象→接口、接口互赋
       collection.ts     数组、元组
       dictionary.ts     对象/数组进字典、字典只读视图

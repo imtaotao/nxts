@@ -37,6 +37,12 @@ export type ObjectMember = {
   role: MemberRole;
 };
 
+// 类实例侧表。不进 TypeRecord / typeKey，按 TypeId 挂在 TypeTable.classBodies。
+export type ClassBody = {
+  extends: TypeId | null;
+  props: readonly ObjectMember[];
+};
+
 export type FunctionParam = {
   type: TypeId;
   optional: boolean;

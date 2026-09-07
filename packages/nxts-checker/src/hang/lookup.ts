@@ -83,7 +83,7 @@ const propsOf = (hang: Hang, record: TypeRecord) => {
     return record.props;
   }
   if (record.kind === 'class') {
-    return hang.context.classBodies.get(record.id)?.props ?? null;
+    return hang.context.table.classBodies.get(record.id)?.props ?? null;
   }
   return null;
 };
@@ -403,7 +403,7 @@ export function keyofOf(hang: Hang, typeId: TypeId) {
     return keysOfProps(hang, record.props);
   }
   if (record.kind === 'class') {
-    const body = hang.context.classBodies.get(record.id) ?? null;
+    const body = hang.context.table.classBodies.get(record.id) ?? null;
     if (isNil(body)) {
       return null;
     }

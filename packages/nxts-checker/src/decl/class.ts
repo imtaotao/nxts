@@ -1,5 +1,6 @@
 import { isNil } from 'aidly';
 import type { Hang } from '../hang';
+import { recordClassBody } from '../hang/classBody';
 
 export function checkClasses(hang: Hang) {
   for (const node of hang.file.nodes) {
@@ -9,7 +10,10 @@ export function checkClasses(hang: Hang) {
     if (!isNil(node.id)) {
       const symbolId = hang.symbolIn(node.id, 'type');
       if (!isNil(symbolId)) {
-        hang.typeOfTypeSymbol(symbolId);
+        const typeId = hang.typeOfTypeSymbol(symbolId);
+        if (!isNil(typeId)) {
+          recordClassBody(hang, typeId, node);
+        }
       }
     }
     for (const member of node.body.body) {

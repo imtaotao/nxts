@@ -1,9 +1,17 @@
 import { isNil } from 'aidly';
-import type { AtomKind, TypeId, TypeRecord, TypeShape } from '../types';
+import type {
+  AtomKind,
+  ClassBody,
+  TypeId,
+  TypeRecord,
+  TypeShape,
+} from '../types';
 import { canonicalize, equalShape, hashShape } from './typeKey';
 
 export class TypeTable {
   readonly types: TypeRecord[] = [];
+  // 类实例体。和图鉴同寿，不参与驻留键。
+  readonly classBodies = new Map<TypeId, ClassBody>();
   private unknownId: TypeId | null = null;
   private readonly atoms = new Map<AtomKind, TypeId>();
   private readonly byHash = new Map<number, TypeId[]>();

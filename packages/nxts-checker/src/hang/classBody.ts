@@ -43,31 +43,85 @@ const fieldOf = (
   };
 };
 
+const superArgsOf = (
+  hang: Hang,
+  node: Extract<Node, { type: 'ClassDeclaration' | 'ClassExpression' }>,
+  subst?: ReadonlyMap<number, TypeId>,
+) => {
+  const typeArgs = node.superTypeArguments ?? null;
+  if (isNil(typeArgs) || typeArgs.type !== 'TSTypeParameterInstantiation') {
+    return [];
+  }
+  const args: TypeId[] = [];
+  for (const arg of typeArgs.params) {
+    const typeId = hang.resolveAtomType(arg, subst);
+    if (isNil(typeId)) {
+      return null;
+    }
+    args.push(typeId);
+  }
+  return args;
+};
+
+const superValueOf = (
+  hang: Hang,
+  node: Extract<Node, { type: 'ClassDeclaration' | 'ClassExpression' }>,
+) => {
+  if (isNil(node.superClass) || node.superClass.type !== 'Identifier') {
+    return null;
+  }
+  const valueId = hang.symbolIn(node.superClass, 'value');
+  if (isNil(valueId)) {
+    return null;
+  }
+  return hang.context.ctorOf(hang, valueId);
+};
+
+// binder 把 extends 绑在值空间。先读 classCtor，再收实例行。
 const heritageOf = (
   hang: Hang,
   node: Extract<Node, { type: 'ClassDeclaration' | 'ClassExpression' }>,
   subst?: ReadonlyMap<number, TypeId>,
 ) => {
-  if (isNil(node.superClass) || node.superClass.type !== 'Identifier') {
+  const args = superArgsOf(hang, node, subst);
+  if (isNil(args)) {
     return null;
   }
-  const symbolId = hang.symbolIn(node.superClass, 'type');
-  if (isNil(symbolId)) {
+  const resolved = superValueOf(hang, node);
+  if (isNil(resolved)) {
     return null;
   }
-  const typeArgs = node.superTypeArguments ?? null;
-  if (!isNil(typeArgs) && typeArgs.type === 'TSTypeParameterInstantiation') {
-    const args: TypeId[] = [];
-    for (const arg of typeArgs.params) {
-      const typeId = hang.resolveAtomType(arg, subst);
-      if (isNil(typeId)) {
-        return null;
-      }
-      args.push(typeId);
-    }
-    return hang.instantiate(symbolId, args);
+  const hung = resolved.hang.symbolTypes[resolved.symbolId] ?? null;
+  const record = hang.context.table.types[hung ?? -1] ?? null;
+  if (record?.kind === 'classCtor' || record?.kind === 'class') {
+    return hang.context.table.intern({
+      kind: 'class',
+      decl: record.decl,
+      args,
+    });
   }
-  return subst?.get(symbolId) ?? hang.typeOfTypeSymbol(symbolId);
+  if (isNil(node.superClass)) {
+    return null;
+  }
+  const typeId = hang.symbolIn(node.superClass, 'type');
+  if (isNil(typeId)) {
+    return null;
+  }
+  if (args.length > 0) {
+    return hang.instantiate(typeId, args);
+  }
+  return subst?.get(typeId) ?? hang.typeOfTypeSymbol(typeId);
+};
+
+const heritagePending = (
+  hang: Hang,
+  node: Extract<Node, { type: 'ClassDeclaration' | 'ClassExpression' }>,
+) => {
+  const resolved = superValueOf(hang, node);
+  if (isNil(resolved)) {
+    return false;
+  }
+  return isNil(resolved.hang.symbolTypes[resolved.symbolId]);
 };
 
 // 类实例字段侧表
@@ -79,10 +133,15 @@ export function recordClassBody(
   node: Extract<Node, { type: 'ClassDeclaration' | 'ClassExpression' }>,
   subst?: ReadonlyMap<number, TypeId>,
 ) {
-  if (hang.context.classBodies.has(typeId)) {
+  const bodies = hang.context.table.classBodies;
+  const existing = bodies.get(typeId) ?? null;
+  if (!isNil(existing?.extends)) {
     return;
   }
-  hang.context.classBodies.set(typeId, { extends: null, props: [] });
+  if (!isNil(existing) && !heritagePending(hang, node)) {
+    return;
+  }
+  bodies.set(typeId, { extends: null, props: [] });
   const own: ObjectMember[] = [];
   for (const member of node.body.body) {
     const field = fieldOf(hang, member, subst);
@@ -91,15 +150,17 @@ export function recordClassBody(
     }
   }
   const parent = heritageOf(hang, node, subst);
-  const inherited = isNil(parent)
-    ? []
-    : (hang.context.classBodies.get(parent)?.props ?? []);
+  if (isNil(parent) && heritagePending(hang, node)) {
+    bodies.delete(typeId);
+    return;
+  }
+  const inherited = isNil(parent) ? [] : (bodies.get(parent)?.props ?? []);
   const byKey = new Map(inherited.map((prop) => [prop.key, prop]));
 
   for (const prop of own) {
     byKey.set(prop.key, prop);
   }
-  hang.context.classBodies.set(typeId, {
+  bodies.set(typeId, {
     extends: parent,
     props: [...byKey.values()],
   });

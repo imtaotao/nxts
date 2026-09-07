@@ -130,7 +130,7 @@ const propsOf = (hang: Hang, typeId: TypeId) => {
     return record.props;
   }
   if (record?.kind === 'class') {
-    return hang.context.classBodies.get(record.id)?.props ?? null;
+    return hang.context.table.classBodies.get(record.id)?.props ?? null;
   }
   return null;
 };

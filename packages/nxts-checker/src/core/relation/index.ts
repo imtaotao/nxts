@@ -1,6 +1,7 @@
 import { isNil } from 'aidly';
 import type { TypeId, TypeRecord } from '../../types';
 import type { TypeTable } from '../typeTable';
+import { classToClass, classToInterface } from './class';
 import { arrayToArray, tupleToArray, tupleToTuple } from './collection';
 import {
   arrayToDictionary,
@@ -14,24 +15,31 @@ import {
   objectToObject,
 } from './object';
 import { equal, isAtom, pending, recordOf } from './shared';
-import type { Of, PairRule } from './shared';
+import type { Of, PairRule, Relate } from './shared';
 
 export { equal } from './shared';
 
 // source 的值能不能当作 target 用。还不区分 NoOp / Pack，只给 true / false。
+// class → 基类 / 接口读 table.classBodies；没有体时这两对为 false。
 export function assignable(table: TypeTable, source: TypeId, target: TypeId) {
+  const relate: Relate = (table, source, target, seen) => {
+    return walk(table, source, target, seen, relate, pairs);
+  };
+  const pairs = pairsOf(relate);
   return relate(table, source, target, new Set());
 }
 
 const pairOf = (source: TypeId, target: TypeId) => `${source}>${target}`;
 
 // 相等 / 环 / never → 联合交叉展开 → 字面量放宽 → 按 kind 对查表。
-const relate = (
+const walk = (
   table: TypeTable,
   source: TypeId,
   target: TypeId,
   seen: Set<string>,
-): boolean => {
+  relate: Relate,
+  pairs: Record<string, Record<string, PairRule>>,
+) => {
   if (equal(source, target)) {
     return true;
   }
@@ -49,10 +57,16 @@ const relate = (
     return true;
   }
   seen.add(key);
+  if (from.kind === 'class' && to.kind === 'class') {
+    return classToClass(table, source, target);
+  }
+  if (from.kind === 'class' && to.kind === 'interface') {
+    return classToInterface(relate, table, source, to, seen);
+  }
   return (
-    combinatorOf(table, from, to, source, target, seen) ??
-    widenerOf[from.kind]?.(table, from, to, target, seen) ??
-    byPair[from.kind]?.[to.kind]?.(table, from, to, seen) ??
+    combinatorOf(relate, table, from, to, source, target, seen) ??
+    widenerOf(relate, table, from, to, target, seen) ??
+    pairs[from.kind]?.[to.kind]?.(table, from, to, seen) ??
     false
   );
 };
@@ -60,6 +74,7 @@ const relate = (
 // S|T → U 每个成员都要能赋；S → U|V 命中一个即可。
 // S → U&V 两边都要收；S&T → U 有一边能赋即可。顺序不能换。
 const combinatorOf = (
+  relate: Relate,
   table: TypeTable,
   from: TypeRecord,
   to: TypeRecord,
@@ -91,31 +106,28 @@ const combinatorOf = (
 };
 
 // 更窄身份丢到基础类型：字面量/品牌看 base，unique symbol 只到 symbol。
-const widenerOf: Partial<
-  Record<
-    TypeRecord['kind'],
-    (
-      table: TypeTable,
-      from: TypeRecord,
-      to: TypeRecord,
-      target: TypeId,
-      seen: Set<string>,
-    ) => boolean
-  >
-> = {
-  literal: (table, from, _to, target, seen) => {
-    return from.kind === 'literal' && relate(table, from.base, target, seen);
-  },
-  brand: (table, from, _to, target, seen) => {
-    return from.kind === 'brand' && relate(table, from.base, target, seen);
-  },
-  uniqueSymbol: (_table, _from, to) => {
+const widenerOf = (
+  relate: Relate,
+  table: TypeTable,
+  from: TypeRecord,
+  to: TypeRecord,
+  target: TypeId,
+  seen: Set<string>,
+) => {
+  if (from.kind === 'literal') {
+    return relate(table, from.base, target, seen);
+  }
+  if (from.kind === 'brand') {
+    return relate(table, from.base, target, seen);
+  }
+  if (from.kind === 'uniqueSymbol') {
     return isAtom(to, 'symbol');
-  },
+  }
+  return null;
 };
 
 // 源 kind → 目标 kind。没登记的格子就是不兼容（this / 泛型 / unknown 也走这里）。
-const byPair: Record<string, Record<string, PairRule>> = {
+const pairsOf = (relate: Relate): Record<string, Record<string, PairRule>> => ({
   object: {
     object: (table, from, to, seen) => {
       return objectToObject(
@@ -206,12 +218,6 @@ const byPair: Record<string, Record<string, PairRule>> = {
       );
     },
   },
-  class: {
-    // TODO: 派生类到基类。继续：T36 已定；等 intern 把 extends 链挂到 class 行。
-    class: pending,
-    // TODO: 类到接口 InterfacePack。继续：T29/T36 已定；等 class 实例成员可查（现在 class 行只有 decl）。
-    interface: pending,
-  },
   dictionary: {
     dictionary: (table, from, to, seen) => {
       return dictionaryToDictionary(
@@ -223,4 +229,4 @@ const byPair: Record<string, Record<string, PairRule>> = {
       );
     },
   },
-};
+});

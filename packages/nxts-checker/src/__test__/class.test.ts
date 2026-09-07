@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { checkSource, typeSymbol, valueSymbol } from './utils';
+import { atomEnv, checkSource, typeSymbol, valueSymbol } from './utils';
 
 describe('checkClasses', () => {
   it('hangs class instance and constructor as different types', async () => {
@@ -50,6 +50,36 @@ describe('checkClasses', () => {
     expect(check.types[x ?? -1]).toMatchObject({
       kind: 'atom',
       atom: 'number',
+    });
+  });
+
+  it('uses hung class bodies when relating extends', async () => {
+    const { bind, check } = await checkSource(
+      'class Animal {}\nclass Dog extends Animal {}\nclass Cat { value: i32 }\nclass Fox { value: i32 }\ntype Ok = Dog extends Animal ? true : false;\ntype Back = Animal extends Dog ? true : false;\ntype Other = Dog extends Cat ? true : false;\ntype Same = Cat extends Fox ? true : false;\n',
+      atomEnv,
+    );
+    const file = bind.files[0];
+    const checked = check.files[0];
+    const ok = checked.symbolTypes[typeSymbol(file, 'Ok')?.id ?? -1];
+    const back = checked.symbolTypes[typeSymbol(file, 'Back')?.id ?? -1];
+    const other = checked.symbolTypes[typeSymbol(file, 'Other')?.id ?? -1];
+    const same = checked.symbolTypes[typeSymbol(file, 'Same')?.id ?? -1];
+
+    expect(check.types[ok ?? -1]).toMatchObject({
+      kind: 'literal',
+      value: { kind: 'boolean', value: true },
+    });
+    expect(check.types[back ?? -1]).toMatchObject({
+      kind: 'literal',
+      value: { kind: 'boolean', value: false },
+    });
+    expect(check.types[other ?? -1]).toMatchObject({
+      kind: 'literal',
+      value: { kind: 'boolean', value: false },
+    });
+    expect(check.types[same ?? -1]).toMatchObject({
+      kind: 'literal',
+      value: { kind: 'boolean', value: false },
     });
   });
 });

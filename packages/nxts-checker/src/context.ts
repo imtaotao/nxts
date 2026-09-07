@@ -2,18 +2,11 @@ import { isNil } from 'aidly';
 import type { BindProgramResult } from '@nxts/binder';
 import type { Hang } from './hang';
 import { TypeTable } from './core/typeTable';
-import type { ObjectMember, TypeId } from './types';
-
-export type ClassBody = {
-  extends: TypeId | null;
-  props: readonly ObjectMember[];
-};
 
 export class CheckContext {
   hangs: Hang[] = [];
   program: BindProgramResult | null = null;
   readonly table = new TypeTable();
-  readonly classBodies = new Map<TypeId, ClassBody>();
   private readonly builtinDecls = new Map<string, number>();
 
   builtinDecl(builtinId: string) {

@@ -24,7 +24,7 @@ const filledCount = (hangs: readonly Hang[]) => {
   return count;
 };
 
-// 给类型空间的名字挂上 TypeId：type / interface / class / enum / 类型参数。互相引用就多转几圈。
+// 给类型空间的名字挂上 TypeId。class / interface 先于别名，避免 `Dog extends Animal` 被提前缓存。
 const hangTypes = (program: BindProgramResult, hangs: Hang[]) => {
   let before = -1;
   let after = 0;
@@ -32,10 +32,10 @@ const hangTypes = (program: BindProgramResult, hangs: Hang[]) => {
     before = after;
     for (const hang of hangs) {
       checkGenerics(hang);
-      checkAliases(hang);
       checkEnums(hang);
       checkClasses(hang);
       checkInterfaces(hang);
+      checkAliases(hang);
     }
     checkImports(program, hangs);
     after = filledCount(hangs);

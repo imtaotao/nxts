@@ -47,7 +47,7 @@ Playground：`pnpm dev:app`。页面只编辑源码；hang 结果在控制台三
 
 已能判：相等、`never`、字面量、`unique symbol`、品牌、联合/交叉、精确对象、对象→接口、接口互赋、`T[] → readonly T[]`、同构元组→只读数组、可选/rest 元组长度形状、对象/数组进字典、字典只读与 `NumberDict → StringDict`、单签名与重载函数（rest、`this` 接收者）。
 
-还空着：类→基类、类→接口（class 行没有 `extends` / 成员）、只读元素协变（要等 NoOp / Pack）。TODO 都写了 `继续：` 条件。
+已能判类→基类和类→接口。体在 `TypeTable.classBodies`，`assignable(table, source, target)` 自己读。还空着：只读元素协变（要等 NoOp / Pack）。TODO 都写了 `继续：` 条件。
 
 ## 下一步
 

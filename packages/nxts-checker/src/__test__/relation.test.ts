@@ -446,4 +446,178 @@ describe('assignable', () => {
     expect(assignable(table, dog, animal)).toBe(false);
     expect(assignable(table, table.atom('i32'), boxed)).toBe(false);
   });
+
+  it('assigns a derived class to its base along extends', () => {
+    const table = new TypeTable();
+    const animal = table.intern({
+      kind: 'class',
+      decl: { fileId: 0, symbolId: 1 },
+      args: [],
+    });
+    const dog = table.intern({
+      kind: 'class',
+      decl: { fileId: 0, symbolId: 2 },
+      args: [],
+    });
+    const cat = table.intern({
+      kind: 'class',
+      decl: { fileId: 0, symbolId: 3 },
+      args: [],
+    });
+    table.classBodies.set(animal, { extends: null, props: [] });
+    table.classBodies.set(dog, { extends: animal, props: [] });
+    table.classBodies.set(cat, { extends: null, props: [] });
+
+    expect(assignable(table, dog, animal)).toBe(true);
+    expect(assignable(table, animal, dog)).toBe(false);
+    expect(assignable(table, dog, cat)).toBe(false);
+  });
+
+  it('walks a longer class extends chain', () => {
+    const table = new TypeTable();
+    const animal = table.intern({
+      kind: 'class',
+      decl: { fileId: 0, symbolId: 1 },
+      args: [],
+    });
+    const mammal = table.intern({
+      kind: 'class',
+      decl: { fileId: 0, symbolId: 2 },
+      args: [],
+    });
+    const dog = table.intern({
+      kind: 'class',
+      decl: { fileId: 0, symbolId: 3 },
+      args: [],
+    });
+    table.classBodies.set(animal, { extends: null, props: [] });
+    table.classBodies.set(mammal, { extends: animal, props: [] });
+    table.classBodies.set(dog, { extends: mammal, props: [] });
+
+    expect(assignable(table, dog, mammal)).toBe(true);
+    expect(assignable(table, dog, animal)).toBe(true);
+    expect(assignable(table, mammal, dog)).toBe(false);
+  });
+
+  it('packs a class into an interface from instance fields', () => {
+    const table = new TypeTable();
+    const num = table.atom('number');
+    const text = table.atom('string');
+    const point = table.intern({
+      kind: 'class',
+      decl: { fileId: 0, symbolId: 1 },
+      args: [],
+    });
+    const view = table.intern({
+      kind: 'interface',
+      props: [field('x', num)],
+      calls: [],
+      constructs: [],
+      args: [],
+    });
+    const labeled = table.intern({
+      kind: 'interface',
+      props: [field('x', num), field('label', text)],
+      calls: [],
+      constructs: [],
+      args: [],
+    });
+    table.classBodies.set(point, {
+      extends: null,
+      props: [field('x', num), field('y', num)],
+    });
+
+    expect(assignable(table, point, view)).toBe(true);
+    expect(assignable(table, point, labeled)).toBe(false);
+    expect(assignable(table, view, point)).toBe(false);
+  });
+
+  it('relates nested class fields when packing into an interface', () => {
+    const table = new TypeTable();
+    const animal = table.intern({
+      kind: 'class',
+      decl: { fileId: 0, symbolId: 1 },
+      args: [],
+    });
+    const dog = table.intern({
+      kind: 'class',
+      decl: { fileId: 0, symbolId: 2 },
+      args: [],
+    });
+    const box = table.intern({
+      kind: 'class',
+      decl: { fileId: 0, symbolId: 3 },
+      args: [],
+    });
+    const view = table.intern({
+      kind: 'interface',
+      props: [field('value', animal, { readonly: true })],
+      calls: [],
+      constructs: [],
+      args: [],
+    });
+    table.classBodies.set(animal, { extends: null, props: [] });
+    table.classBodies.set(dog, { extends: animal, props: [] });
+    table.classBodies.set(box, {
+      extends: null,
+      props: [field('value', dog, { readonly: true })],
+    });
+
+    expect(assignable(table, box, view)).toBe(true);
+  });
+
+  it('rejects same-shape classes without extends', () => {
+    const table = new TypeTable();
+    const i32 = table.atom('i32');
+    const left = table.intern({
+      kind: 'class',
+      decl: { fileId: 0, symbolId: 1 },
+      args: [],
+    });
+    const right = table.intern({
+      kind: 'class',
+      decl: { fileId: 0, symbolId: 2 },
+      args: [],
+    });
+    const props = [field('value', i32)];
+    table.classBodies.set(left, { extends: null, props });
+    table.classBodies.set(right, { extends: null, props });
+
+    expect(assignable(table, left, right)).toBe(false);
+    expect(assignable(table, right, left)).toBe(false);
+  });
+
+  it('rejects writable class fields that only relate one way', () => {
+    const table = new TypeTable();
+    const animal = table.intern({
+      kind: 'class',
+      decl: { fileId: 0, symbolId: 1 },
+      args: [],
+    });
+    const dog = table.intern({
+      kind: 'class',
+      decl: { fileId: 0, symbolId: 2 },
+      args: [],
+    });
+    const box = table.intern({
+      kind: 'class',
+      decl: { fileId: 0, symbolId: 3 },
+      args: [],
+    });
+    const view = table.intern({
+      kind: 'interface',
+      props: [field('value', animal)],
+      calls: [],
+      constructs: [],
+      args: [],
+    });
+    table.classBodies.set(animal, { extends: null, props: [] });
+    table.classBodies.set(dog, { extends: animal, props: [] });
+    table.classBodies.set(box, {
+      extends: null,
+      props: [field('value', dog)],
+    });
+
+    expect(assignable(table, box, view)).toBe(false);
+  });
 });
